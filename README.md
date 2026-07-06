@@ -21,7 +21,7 @@
   <b>🌐 Check the official website: <a href="https://satodu.github.io/bamboo-end-store/">satodu.github.io/bamboo-end-store/</a></b>
 </p>
 
-A modern, high-performance, and beautiful community-driven store for **Bamboo OS/Arch Linux**, built with **Laravel**, **Livewire (Volt)**, and **NativePHP**. 
+A modern, high-performance, and beautiful community-driven store for **EndeavourOS/Arch Linux**, built with **Laravel**, **Livewire (Volt)**, and **NativePHP**. 
 
 Designed and crafted specifically for **EndeavourOS** users, this project is created by a passionate daily fan of the system as a tribute and tool to enhance the desktop experience.
 

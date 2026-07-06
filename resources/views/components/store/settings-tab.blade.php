@@ -176,7 +176,7 @@
                     <div>
                         <h2 class="text-2xl font-black tracking-tighter mb-3">About the Author</h2>
                         <p class="text-sm text-muted-foreground leading-relaxed">
-                            Developer and Bamboo OS fan. Built with ❤️ to enhance the Linux experience.
+                            Developer and EndeavourOS fan. Built with ❤️ to enhance the Linux experience.
                         </p>
                     </div>
                     
