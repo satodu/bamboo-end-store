@@ -5,19 +5,19 @@
 </p>
 
 <p align="center">
-    <a href="https://github.com/satodu/panda-bamboo-store/releases">
-        <img src="https://img.shields.io/github/v/release/satodu/panda-bamboo-store?style=for-the-badge&color=2e7d32" alt="Release">
+    <a href="https://github.com/satodu/bamboo-end-store/releases">
+        <img src="https://img.shields.io/github/v/release/satodu/bamboo-end-store?style=for-the-badge&color=2e7d32" alt="Release">
     </a>
     <a href="LICENSE">
-        <img src="https://img.shields.io/github/license/satodu/panda-bamboo-store?style=for-the-badge&color=2e7d32" alt="License">
+        <img src="https://img.shields.io/github/license/satodu/bamboo-end-store?style=for-the-badge&color=2e7d32" alt="License">
     </a>
-    <a href="https://satodu.github.io/panda-bamboo-store/">
+    <a href="https://satodu.github.io/bamboo-end-store/">
         <img src="https://img.shields.io/badge/Official_Website-Visit_Site-2e7d32?style=for-the-badge&logo=googlechrome&logoColor=white" alt="Website">
     </a>
 </p>
 
 <p align="center">
-  <b>🌐 Check the official website: <a href="https://satodu.github.io/panda-bamboo-store/">satodu.github.io/panda-bamboo-store/</a></b>
+  <b>🌐 Check the official website: <a href="https://satodu.github.io/bamboo-end-store/">satodu.github.io/bamboo-end-store/</a></b>
 </p>
 
 A modern, high-performance, and beautiful community-driven store for **Bamboo OS/Arch Linux**, built with **Laravel**, **Livewire (Volt)**, and **NativePHP**. 
@@ -85,8 +85,8 @@ If you want to contribute or run the latest development version:
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/satodu/panda-bamboo-store.git
-   cd panda-bamboo-store
+   git clone https://github.com/satodu/bamboo-end-store.git
+   cd bamboo-end-store
    ```
 
 2. **Install dependencies:**
