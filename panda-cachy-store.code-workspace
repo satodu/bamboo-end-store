@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "../panda-cachy-store-aur"
+		},
+		{
+			"path": "../cachyos-store-bin"
+		}
+	],
+	"settings": {}
+}
