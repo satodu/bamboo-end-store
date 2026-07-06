@@ -9,7 +9,7 @@
         <img src="https://img.shields.io/github/v/release/satodu/bamboo-end-store?style=for-the-badge&color=2e7d32" alt="Release">
     </a>
     <a href="LICENSE">
-        <img src="https://img.shields.io/github/license/satodu/bamboo-end-store?style=for-the-badge&color=2e7d32" alt="License">
+        <img src="https://img.shields.io/badge/license-MIT-2e7d32?style=for-the-badge" alt="License">
     </a>
     <a href="https://satodu.github.io/bamboo-end-store/">
         <img src="https://img.shields.io/badge/Official_Website-Visit_Site-2e7d32?style=for-the-badge&logo=googlechrome&logoColor=white" alt="Website">
