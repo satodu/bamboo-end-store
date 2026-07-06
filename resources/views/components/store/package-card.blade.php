@@ -1,4 +1,4 @@
-@props(['pkg', 'pendingInstallations'])
+@props(['pkg', 'pendingInstallations', 'userState' => 'idle', 'activePackage' => null])
 
 @php 
     $isPending = isset($pendingInstallations[$pkg['name']]);
@@ -49,15 +49,27 @@
             <p class="text-[13px] text-muted-foreground mb-4 line-clamp-2 leading-relaxed flex-1">{{ $pkg['description'] }}</p>
             <div class="flex items-center gap-3">
                 @if($pkg['installed'])
-                    <button wire:click="remove('{{ $pkg['name'] }}', {{ $isFlatpakVal }})" class="flex-1 h-10 bg-destructive/10 hover:bg-destructive text-destructive hover:text-destructive-foreground text-[11px] font-black rounded transition-all uppercase tracking-widest disabled:opacity-50">
-                        <span wire:loading.remove wire:target="remove('{{ $pkg['name'] }}', {{ $isFlatpakVal }})">{{ __('Uninstall') }}</span>
+                    <button wire:click="remove('{{ $pkg['name'] }}', {{ $isFlatpakVal }})" @if($userState !== 'idle') disabled @endif class="flex-1 h-10 bg-destructive/10 hover:bg-destructive text-destructive hover:text-destructive-foreground text-[11px] font-black rounded transition-all uppercase tracking-widest disabled:opacity-50">
+                        <span wire:loading.remove wire:target="remove('{{ $pkg['name'] }}', {{ $isFlatpakVal }})">
+                            @if($userState === 'uninstalling' && $activePackage === $pkg['name'])
+                                {{ __('Uninstalling...') }}
+                            @else
+                                {{ __('Uninstall') }}
+                            @endif
+                        </span>
                         <span wire:loading wire:target="remove('{{ $pkg['name'] }}', {{ $isFlatpakVal }})">{{ __('Wait...') }}</span>
                     </button>
                 @elseif($isPending)
                     <button disabled class="flex-1 h-10 bg-bamboo/20 text-bamboo text-[11px] font-black rounded transition-all uppercase tracking-widest animate-pulse">{{ __('Finalizing...') }}</button>
                 @else
-                    <button wire:click="install('{{ $pkg['name'] }}', {{ $isAurVal }}, {{ $isFlatpakVal }})" class="flex-1 h-10 bg-bamboo hover:bg-bamboo/90 text-white text-[11px] font-black rounded transition-all uppercase tracking-widest shadow-md disabled:opacity-50">
-                        <span wire:loading.remove wire:target="install('{{ $pkg['name'] }}', {{ $isAurVal }}, {{ $isFlatpakVal }})">{{ __('Install') }}</span>
+                    <button wire:click="install('{{ $pkg['name'] }}', {{ $isAurVal }}, {{ $isFlatpakVal }})" @if($userState !== 'idle') disabled @endif class="flex-1 h-10 bg-bamboo hover:bg-bamboo/90 text-white text-[11px] font-black rounded transition-all uppercase tracking-widest shadow-md disabled:opacity-50">
+                        <span wire:loading.remove wire:target="install('{{ $pkg['name'] }}', {{ $isAurVal }}, {{ $isFlatpakVal }})">
+                            @if($userState === 'installing' && $activePackage === $pkg['name'])
+                                {{ __('Installing...') }}
+                            @else
+                                {{ __('Install') }}
+                            @endif
+                        </span>
                         <span wire:loading wire:target="install('{{ $pkg['name'] }}', {{ $isAurVal }}, {{ $isFlatpakVal }})">{{ __('Loading...') }}</span>
                     </button>
                 @endif
@@ -95,15 +107,27 @@
             
             <div class="mt-auto flex items-center gap-3 pt-6">
                 @if($pkg['installed'])
-                    <button wire:click="remove('{{ $pkg['name'] }}', {{ $isFlatpakVal }})" class="flex-1 h-10 bg-destructive/10 hover:bg-destructive text-destructive hover:text-destructive-foreground text-[11px] font-black rounded transition-all uppercase tracking-widest disabled:opacity-50">
-                        <span wire:loading.remove wire:target="remove('{{ $pkg['name'] }}', {{ $isFlatpakVal }})">{{ __('Uninstall') }}</span>
+                    <button wire:click="remove('{{ $pkg['name'] }}', {{ $isFlatpakVal }})" @if($userState !== 'idle') disabled @endif class="flex-1 h-10 bg-destructive/10 hover:bg-destructive text-destructive hover:text-destructive-foreground text-[11px] font-black rounded transition-all uppercase tracking-widest disabled:opacity-50">
+                        <span wire:loading.remove wire:target="remove('{{ $pkg['name'] }}', {{ $isFlatpakVal }})">
+                            @if($userState === 'uninstalling' && $activePackage === $pkg['name'])
+                                {{ __('Uninstalling...') }}
+                            @else
+                                {{ __('Uninstall') }}
+                            @endif
+                        </span>
                         <span wire:loading wire:target="remove('{{ $pkg['name'] }}', {{ $isFlatpakVal }})">{{ __('Wait...') }}</span>
                     </button>
                 @elseif($isPending)
                     <button disabled class="flex-1 h-10 bg-bamboo/20 text-bamboo text-[11px] font-black rounded transition-all uppercase tracking-widest animate-pulse">{{ __('Finalizing...') }}</button>
                 @else
-                    <button wire:click="install('{{ $pkg['name'] }}', {{ $isAurVal }}, {{ $isFlatpakVal }})" class="flex-1 h-10 bg-bamboo hover:bg-bamboo/90 text-white text-[11px] font-black rounded transition-all uppercase tracking-widest shadow-md disabled:opacity-50">
-                        <span wire:loading.remove wire:target="install('{{ $pkg['name'] }}', {{ $isAurVal }}, {{ $isFlatpakVal }})">{{ __('Install') }}</span>
+                    <button wire:click="install('{{ $pkg['name'] }}', {{ $isAurVal }}, {{ $isFlatpakVal }})" @if($userState !== 'idle') disabled @endif class="flex-1 h-10 bg-bamboo hover:bg-bamboo/90 text-white text-[11px] font-black rounded transition-all uppercase tracking-widest shadow-md disabled:opacity-50">
+                        <span wire:loading.remove wire:target="install('{{ $pkg['name'] }}', {{ $isAurVal }}, {{ $isFlatpakVal }})">
+                            @if($userState === 'installing' && $activePackage === $pkg['name'])
+                                {{ __('Installing...') }}
+                            @else
+                                {{ __('Install') }}
+                            @endif
+                        </span>
                         <span wire:loading wire:target="install('{{ $pkg['name'] }}', {{ $isAurVal }}, {{ $isFlatpakVal }})">{{ __('Loading...') }}</span>
                     </button>
                 @endif

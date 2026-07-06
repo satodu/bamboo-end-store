@@ -8,7 +8,13 @@ class AppServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        //
+        $this->app->singleton(\App\Services\SettingsService::class, function () {
+            return new \App\Services\SettingsService();
+        });
+
+        $this->app->singleton(\App\Services\UserStateMachine::class, function () {
+            return new \App\Services\UserStateMachine();
+        });
     }
 
     /**
@@ -17,36 +23,8 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         // Set app locale based on settings
-        $locale = 'system';
-        $settingsPath = storage_path('app/private/settings.json');
-        if (!file_exists($settingsPath)) {
-            $settingsPath = storage_path('app/settings.json');
-        }
-
-        // Fallback para CLI Artisan/Background commands que rodam fora do context do Electron:
-        if (!file_exists($settingsPath)) {
-            $home = getenv('HOME');
-            if ($home) {
-                // Tenta caminhos de desenvolvimento e produção
-                $paths = [
-                    "{$home}/.config/bamboo-end-store-dev/storage/app/private/settings.json",
-                    "{$home}/.config/bamboo-end-store/storage/app/private/settings.json",
-                    "{$home}/.config/bamboo-end-store-dev/storage/app/settings.json",
-                    "{$home}/.config/bamboo-end-store/storage/app/settings.json",
-                ];
-                foreach ($paths as $p) {
-                    if (file_exists($p)) {
-                        $settingsPath = $p;
-                        break;
-                    }
-                }
-            }
-        }
-        
-        if (file_exists($settingsPath)) {
-            $settings = json_decode(file_get_contents($settingsPath), true);
-            $locale = $settings['locale'] ?? 'system';
-        }
+        $settings = $this->app->make(\App\Services\SettingsService::class);
+        $locale = $settings->get('locale', 'system');
 
         if ($locale === 'system') {
             $lang = getenv('LANG') ?: getenv('LANGUAGE') ?: (isset($_SERVER['HTTP_ACCEPT_LANGUAGE']) ? $_SERVER['HTTP_ACCEPT_LANGUAGE'] : 'en');

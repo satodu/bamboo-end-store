@@ -1,4 +1,4 @@
-@props(['packages', 'pendingInstallations', 'search', 'totalResults', 'page', 'settings'])
+@props(['packages', 'pendingInstallations', 'search', 'totalResults', 'page', 'settings', 'userState' => 'idle', 'activePackage' => null])
 
 <div class="mb-10 flex items-end justify-between">
     <div>
@@ -35,7 +35,7 @@
     wire:target="updatedSearch, clearSearch"
 >
     @forelse($packages as $pkg)
-        <x-store.package-card :$pkg :$pendingInstallations wire:key="search-{{ $pkg['name'] }}-{{ $loop->index }}" />
+        <x-store.package-card :$pkg :$pendingInstallations :$userState :$activePackage wire:key="search-{{ $pkg['name'] }}-{{ $loop->index }}" />
     @empty
         <div class="col-span-full py-32 text-center">
             <div class="w-20 h-20 rounded-full bg-muted/30 flex items-center justify-center mx-auto mb-6">

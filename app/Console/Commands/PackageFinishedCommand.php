@@ -22,6 +22,9 @@ class PackageFinishedCommand extends Command
         $name = $this->argument('name');
         $action = $this->argument('action');
 
+        // Reset user state machine
+        app(\App\Services\UserStateMachine::class)->reset();
+
         if ($name === 'System Update') {
             Cache::forget("pkg_installed_list");
             Notification::new()

@@ -23,6 +23,10 @@ new class extends Component
     public $confirmingAppImageDeletion = null; 
     public $confirmingPackageRemoval = null; 
     
+    // User State Machine
+    public string $userState = 'idle';
+    public ?string $activePackage = null;
+    
     // Terminal Integrado
     public $isTerminalOpen = false;
     public $terminalOutput = "";
@@ -50,6 +54,13 @@ new class extends Component
         'os' => 'BambooOS'
     ];
 
+    public function syncUserState()
+    {
+        $stateMachine = app(\App\Services\UserStateMachine::class);
+        $this->userState = $stateMachine->getState()->value;
+        $this->activePackage = $stateMachine->getActivePackage();
+    }
+
     public function mount()
     {
         $this->sysInfo['kernel'] = php_uname('r');
@@ -62,6 +73,7 @@ new class extends Component
 
         $this->loadData();
         $this->checkPendingInstallations();
+        $this->syncUserState();
     }
 
     protected function t(string $key): string
@@ -73,11 +85,13 @@ new class extends Component
     {
         $service = new PackageService();
         $service->runBambooUpdate();
+        $this->syncUserState();
         $this->showNotification($this->t('refreshed'), $this->t('update_started'));
     }
 
     public function checkPendingInstallations()
     {
+        $this->syncUserState();
         foreach ($this->pendingInstallations as $name => $data) {
             // Se o cache sumiu, o comando terminou via callback oficial
             if (!\Illuminate\Support\Facades\Cache::has("installing_{$name}")) {
@@ -146,6 +160,7 @@ new class extends Component
             // Ignora silenciosamente
         }
         
+        $this->syncUserState();
         $this->loadData();
         
         if ($message) {
@@ -532,6 +547,7 @@ new class extends Component
                 $this->showNotification($this->t('error'), sprintf($this->t('install_fail'), $name), 'error');
             }
             
+            $this->syncUserState();
             $this->loadData();
             return;
         }
@@ -564,6 +580,7 @@ new class extends Component
             $this->showNotification($this->t('error'), sprintf($this->t('install_fail'), $name), 'error');
         }
 
+        $this->syncUserState();
         $this->loadData();
     }
 
@@ -667,6 +684,7 @@ new class extends Component
         } else {
             $this->showNotification($this->t('error'), sprintf($this->t('remove_fail'), $name), 'error');
         }
+        $this->syncUserState();
         // loadData() removido aqui — o pollTerminal chama finalizeOperation → loadData() quando terminar
     }
 
@@ -689,6 +707,7 @@ new class extends Component
     protected function runRemoveInBackground($name, $isFlatpak, $logFile)
     {
         file_put_contents($logFile, "Iniciando remoção de {$name}...\n");
+        app(\App\Services\UserStateMachine::class)->transitionTo(\App\Enums\UserState::UNINSTALLING, $name);
         
         if ($isFlatpak) {
             $scope = $this->getFlatpakInstallation($name);
@@ -819,7 +838,7 @@ new class extends Component
     class="flex h-screen bg-background text-foreground overflow-hidden relative font-sans" 
     x-data="{ show: false, timeout: null }" 
     x-on:notify.window="show = true; clearTimeout(timeout); timeout = setTimeout(() => show = false, 4000)"
-    @if(count($pendingInstallations) > 0) wire:poll.2s="checkPendingInstallations" @endif
+    @if(count($pendingInstallations) > 0 || $userState !== 'idle') wire:poll.2s="checkPendingInstallations" @endif
 >
     
     <!-- Toast Notification -->
@@ -883,6 +902,8 @@ new class extends Component
                             :$packages
                             :$systemPackages
                             :$pendingInstallations
+                            :$userState
+                            :$activePackage
                         />
 
                     {{-- === SEARCH RESULTS (explore com busca ativa) === --}}
@@ -894,6 +915,8 @@ new class extends Component
                             :$totalResults
                             :$page
                             :$settings
+                            :$userState
+                            :$activePackage
                         />
 
                     {{-- === INSTALLED === --}}
