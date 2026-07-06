@@ -131,7 +131,7 @@ class AppImageService
         $content .= "Icon=" . $iconPath . "\n";
         $content .= "Categories=Utility;\n";
         $content .= "Terminal=false\n";
-        $content .= "Comment=Installed via CachyOS Store\n";
+        $content .= "Comment=Installed via Bamboo End Store\n";
 
         return File::put($desktopPath, $content) !== false;
     }

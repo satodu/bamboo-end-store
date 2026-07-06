@@ -22,7 +22,7 @@ class NativeAppServiceProvider implements ProvidesPhpIni
             ->height(800)
             ->minWidth(800)
             ->minHeight(600)
-            ->title('CachyOS Store - v' . config('nativephp.version'))
+            ->title('Bamboo End Store - v' . config('nativephp.version'))
             ->rememberState();
     }
 

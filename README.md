@@ -30,19 +30,19 @@ A modern, high-performance, and beautiful community-driven store for **Bamboo OS
 ## 📸 Visual Preview
 
 <p align="center">
-  <img src="resources/screenshots/home.png" width="800" alt="Home Screen">
+  <img src="resources/prints/Home.png" width="800" alt="Home Screen">
 </p>
 
 <div align="center">
-  <img src="resources/screenshots/details.png" width="48%" alt="Package Details">
-  <img src="resources/screenshots/search.png" width="48%" alt="Search Results">
+  <img src="resources/prints/Installed.png" width="48%" alt="Installed Packages">
+  <img src="resources/prints/Search.png" width="48%" alt="Search Results">
 </div>
 
 <br>
 
 <div align="center">
-  <img src="resources/screenshots/appimages.png" width="48%" alt="AppImages Manager">
-  <img src="resources/screenshots/settings.png" width="48%" alt="Settings Menu">
+  <img src="resources/prints/AppImages.png" width="48%" alt="AppImages Manager">
+  <img src="resources/prints/Settings.png" width="48%" alt="Settings Menu">
 </div>
 
 ---
