@@ -2,9 +2,9 @@
 
 <div class="mb-10 flex items-end justify-between">
     <div>
-        <h2 class="text-3xl font-black tracking-tight mb-2">Search Results</h2>
+        <h2 class="text-3xl font-black tracking-tight mb-2">{{ __('Search Results') }}</h2>
         <p class="text-xs text-muted-foreground font-bold uppercase tracking-widest">
-            Found {{ $totalResults }} packages
+            {{ __('Found') }} {{ $totalResults }} {{ __('packages') }}
         </p>
     </div>
 </div>
@@ -43,8 +43,8 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                 </svg>
             </div>
-            <h3 class="text-xl font-bold text-muted-foreground">No packages found for "{{ $search }}"</h3>
-            <p class="text-sm text-slate-500 mt-2">Try a different search term or check your filters.</p>
+            <h3 class="text-xl font-bold text-muted-foreground">{{ __('No packages found.') }}</h3>
+            <p class="text-sm text-slate-500 mt-2">{{ __('Try a different search term or check your filters.') }}</p>
         </div>
     @endforelse
 </div>
@@ -53,14 +53,14 @@
 @if($totalResults > $settings['search_limit'])
     <div class="mt-16 flex items-center justify-between border-t border-border pt-8 pb-20">
         <div class="text-sm text-muted-foreground font-bold">
-            Showing <span class="text-foreground">{{ min(($page - 1) * $settings['search_limit'] + 1, $totalResults) }}</span>
-            to <span class="text-foreground">{{ min($page * $settings['search_limit'], $totalResults) }}</span>
-            of <span class="text-foreground">{{ $totalResults }}</span> results
+            {{ __('Showing') }} <span class="text-foreground">{{ min(($page - 1) * $settings['search_limit'] + 1, $totalResults) }}</span>
+            {{ __('to') }} <span class="text-foreground">{{ min($page * $settings['search_limit'], $totalResults) }}</span>
+            {{ __('of') }} <span class="text-foreground">{{ $totalResults }}</span> {{ __('results') }}
         </div>
         <div class="flex items-center gap-2">
-            <button wire:click="prevPage" @if($page === 1) disabled @endif class="h-10 px-4 border border-input rounded-md text-xs font-black uppercase tracking-widest transition-all hover:bg-accent disabled:opacity-30 disabled:hover:bg-transparent">Previous</button>
+            <button wire:click="prevPage" @if($page === 1) disabled @endif class="h-10 px-4 border border-input rounded-md text-xs font-black uppercase tracking-widest transition-all hover:bg-accent disabled:opacity-30 disabled:hover:bg-transparent">{{ __('Previous') }}</button>
             <div class="h-10 px-4 bg-accent/50 rounded-md flex items-center justify-center text-xs font-black">{{ $page }} / {{ ceil($totalResults / $settings['search_limit']) }}</div>
-            <button wire:click="nextPage" @if($page * $settings['search_limit'] >= $totalResults) disabled @endif class="h-10 px-4 border border-input rounded-md text-xs font-black uppercase tracking-widest transition-all hover:bg-accent disabled:opacity-30 disabled:hover:bg-transparent">Next</button>
+            <button wire:click="nextPage" @if($page * $settings['search_limit'] >= $totalResults) disabled @endif class="h-10 px-4 border border-input rounded-md text-xs font-black uppercase tracking-widest transition-all hover:bg-accent disabled:opacity-30 disabled:hover:bg-transparent">{{ __('Next') }}</button>
         </div>
     </div>
 @endif

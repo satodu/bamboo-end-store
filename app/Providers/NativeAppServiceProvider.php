@@ -3,7 +3,14 @@
 namespace App\Providers;
 
 use Native\Laravel\Facades\Window;
+use Native\Laravel\Facades\MenuBar;
+use Native\Laravel\Facades\Menu;
 use Native\Laravel\Contracts\ProvidesPhpIni;
+use App\Events\UpdateSystemEvent;
+use App\Events\OpenStoreEvent;
+use App\Services\PackageService;
+use Illuminate\Support\Facades\Event;
+use Native\Laravel\Events\MenuBar\MenuBarClicked;
 
 class NativeAppServiceProvider implements ProvidesPhpIni
 {
@@ -17,13 +24,29 @@ class NativeAppServiceProvider implements ProvidesPhpIni
             return;
         }
 
-        Window::open()
+        // Open main store window
+        Window::open('main')
             ->width(1200)
             ->height(800)
             ->minWidth(800)
             ->minHeight(600)
             ->title('Bamboo End Store - v' . config('nativephp.version'))
             ->rememberState();
+
+        // Create System Tray / Menu Bar Icon
+        MenuBar::create()
+            ->showDockIcon()
+            ->icon(public_path('logo-without-background.png'))
+            ->onlyShowContextMenu()
+            ->withContextMenu(
+                Menu::make(
+                    Menu::label(__('Open Store'))->event(OpenStoreEvent::class),
+                    Menu::separator(),
+                    Menu::label(__('Update System'))->event(UpdateSystemEvent::class),
+                    Menu::separator(),
+                    Menu::quit()
+                )
+            );
     }
 
     /**

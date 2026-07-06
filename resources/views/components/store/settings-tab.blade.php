@@ -5,16 +5,17 @@
         <!-- App Settings -->
         <div class="space-y-12">
             <div>
-                <h2 class="text-4xl font-black tracking-tight mb-3">Settings</h2>
-                <p class="text-[17px] text-muted-foreground font-medium">Manage your repositories and preferences.</p>
+                <h2 class="text-4xl font-black tracking-tight mb-3">{{ __('Settings') }}</h2>
+                <p class="text-[17px] text-muted-foreground font-medium">{{ __('Manage your repositories and preferences.') }}</p>
             </div>
 
             <div class="space-y-8">
+                <!-- AUR -->
                 <div class="bg-card rounded-xl p-10 space-y-8 shadow-md">
                     <div class="flex items-center justify-between">
                         <div class="space-y-1">
-                            <h4 class="text-[17px] font-black tracking-tight">Arch User Repository</h4>
-                            <p class="text-sm text-muted-foreground leading-relaxed">Search and install thousands of community-maintained packages.</p>
+                            <h4 class="text-[17px] font-black tracking-tight">{{ __('Arch User Repository') }}</h4>
+                            <p class="text-sm text-muted-foreground leading-relaxed">{{ __('Search and install thousands of community-maintained packages.') }}</p>
                         </div>
                         <button 
                             wire:click="$set('settings.enable_aur', {{ !$settings['enable_aur'] ? 'true' : 'false' }})"
@@ -26,8 +27,8 @@
                     <div class="pt-8 space-y-6 border-t border-border">
                         <div class="flex items-start justify-between">
                             <div class="space-y-1">
-                                <h4 class="text-[17px] font-black tracking-tight">Flatpak Integration</h4>
-                                <p class="text-sm text-muted-foreground leading-relaxed">Access Flathub's universal application ecosystem.</p>
+                                <h4 class="text-[17px] font-black tracking-tight">{{ __('Flatpak Integration') }}</h4>
+                                <p class="text-sm text-muted-foreground leading-relaxed">{{ __('Access Flathub\'s universal application ecosystem.') }}</p>
                             </div>
                             <button 
                                 wire:click="$set('settings.enable_flatpak', {{ !$settings['enable_flatpak'] ? 'true' : 'false' }})"
@@ -44,7 +45,7 @@
 
                         {{-- Status checklist --}}
                         <div class="bg-muted/30 rounded-xl p-6 space-y-4">
-                            <p class="text-[11px] font-black uppercase tracking-widest text-muted-foreground mb-4">System Status</p>
+                            <p class="text-[11px] font-black uppercase tracking-widest text-muted-foreground mb-4">{{ __('System Status') }}</p>
 
                             {{-- Flatpak binary --}}
                             <div class="flex items-center justify-between">
@@ -53,17 +54,17 @@
                                         <div class="w-6 h-6 rounded-full bg-green-500/15 flex items-center justify-center">
                                             <svg class="w-3.5 h-3.5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
                                         </div>
-                                        <span class="text-sm font-semibold">Flatpak instalado</span>
+                                        <span class="text-sm font-semibold">{{ __('Flatpak instalado') }}</span>
                                     @else
                                         <div class="w-6 h-6 rounded-full bg-destructive/15 flex items-center justify-center">
                                             <svg class="w-3.5 h-3.5 text-destructive" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"/></svg>
                                         </div>
-                                        <span class="text-sm font-semibold text-muted-foreground">Flatpak não instalado</span>
+                                        <span class="text-sm font-semibold text-muted-foreground">{{ __('Flatpak não instalado') }}</span>
                                     @endif
                                 </div>
                                 @if(!$flatpakInstalled)
                                     <button wire:click="installFlatpak" class="h-8 px-4 bg-bamboo text-white text-[11px] font-black rounded-lg hover:bg-bamboo/90 transition-all uppercase tracking-widest shadow-md">
-                                        Instalar
+                                        {{ __('Instalar') }}
                                     </button>
                                 @else
                                     <span class="text-[10px] text-green-500 font-black uppercase tracking-widest">OK</span>
@@ -77,12 +78,12 @@
                                         <div class="w-6 h-6 rounded-full bg-green-500/15 flex items-center justify-center">
                                             <svg class="w-3.5 h-3.5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
                                         </div>
-                                        <span class="text-sm font-semibold">Flathub configurado</span>
+                                        <span class="text-sm font-semibold">{{ __('Flathub configurado') }}</span>
                                     @else
                                         <div class="w-6 h-6 rounded-full bg-yellow-500/15 flex items-center justify-center">
                                             <svg class="w-3.5 h-3.5 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
                                         </div>
-                                        <span class="text-sm font-semibold text-muted-foreground">Flathub remote não configurado</span>
+                                        <span class="text-sm font-semibold text-muted-foreground">{{ __('Flathub remote não configurado') }}</span>
                                     @endif
                                 </div>
                                 @if(!$flathubConfigured)
@@ -90,7 +91,7 @@
                                         wire:click="addFlathubRemote"
                                         @if(!$flatpakInstalled) disabled @endif
                                         class="h-8 px-4 bg-orange-500 text-white text-[11px] font-black rounded-lg hover:bg-orange-500/90 transition-all uppercase tracking-widest shadow-md disabled:opacity-40 disabled:cursor-not-allowed">
-                                        Adicionar
+                                        {{ __('Adicionar') }}
                                     </button>
                                 @else
                                     <span class="text-[10px] text-green-500 font-black uppercase tracking-widest">OK</span>
@@ -98,22 +99,22 @@
                             </div>
                         </div>
                     </div>
-
                 </div>
 
+                <!-- Limit -->
                 <div class="bg-card rounded-xl p-10 flex items-center justify-between shadow-md">
                     <div class="space-y-1">
-                        <h4 class="text-[17px] font-black tracking-tight">Search Results Limit</h4>
-                        <p class="text-sm text-muted-foreground leading-relaxed">Limit the number of packages displayed for better performance.</p>
+                        <h4 class="text-[17px] font-black tracking-tight">{{ __('Search Results Limit') }}</h4>
+                        <p class="text-sm text-muted-foreground leading-relaxed">{{ __('Limit the number of packages displayed for better performance.') }}</p>
                     </div>
-                    <!-- Shadcn Style Limit Select -->
+                    <!-- Limit Select -->
                     <div x-data="{ open: false, selected: @entangle('settings.search_limit') }" class="relative">
                         <button 
                             @click="open = !open" 
                             @click.away="open = false"
-                            class="h-10 w-40 flex items-center justify-between rounded-md border border-input bg-background px-4 py-2 text-sm font-medium ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 hover:bg-accent/50 transition-colors"
+                            class="h-10 w-40 flex items-center justify-between rounded-md border border-input bg-background px-4 py-2 text-sm font-medium hover:bg-accent/50 transition-colors"
                         >
-                            <span x-text="selected + ' Results'"></span>
+                            <span x-text="selected + ' {{ __('Results') }}'"></span>
                             <svg class="h-4 w-4 opacity-50" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
                         </button>
 
@@ -127,17 +128,55 @@
                             x-transition:leave-end="opacity-0 scale-95"
                             class="absolute right-0 top-12 z-50 min-w-[10rem] overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-md no-drag"
                         >
-                            <div class="px-2 py-1.5 text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-70">Limit</div>
-                            <button @click="selected = 25; open = false" class="relative flex w-full cursor-default select-none items-center rounded-sm px-2 py-1.5 text-xs outline-none hover:bg-accent hover:text-accent-foreground transition-colors">25 Results</button>
-                            <button @click="selected = 50; open = false" class="relative flex w-full cursor-default select-none items-center rounded-sm px-2 py-1.5 text-xs outline-none hover:bg-accent hover:text-accent-foreground transition-colors">50 Results</button>
-                            <button @click="selected = 100; open = false" class="relative flex w-full cursor-default select-none items-center rounded-sm px-2 py-1.5 text-xs outline-none hover:bg-accent hover:text-accent-foreground transition-colors">100 Results</button>
+                            <div class="px-2 py-1.5 text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-70">{{ __('Limit') }}</div>
+                            <button @click="selected = 25; open = false" class="relative flex w-full cursor-default select-none items-center rounded-sm px-2 py-1.5 text-xs outline-none hover:bg-accent hover:text-accent-foreground transition-colors">25 {{ __('Results') }}</button>
+                            <button @click="selected = 50; open = false" class="relative flex w-full cursor-default select-none items-center rounded-sm px-2 py-1.5 text-xs outline-none hover:bg-accent hover:text-accent-foreground transition-colors">50 {{ __('Results') }}</button>
+                            <button @click="selected = 100; open = false" class="relative flex w-full cursor-default select-none items-center rounded-sm px-2 py-1.5 text-xs outline-none hover:bg-accent hover:text-accent-foreground transition-colors">100 {{ __('Results') }}</button>
                         </div>
                     </div>
                 </div>
+
+                <!-- Language Selector -->
                 <div class="bg-card rounded-xl p-10 flex items-center justify-between shadow-md">
                     <div class="space-y-1">
-                        <h4 class="text-[17px] font-black tracking-tight">AppImage Storage Directory</h4>
-                        <p class="text-sm text-muted-foreground leading-relaxed">Choose where your AppImages are stored and managed.</p>
+                        <h4 class="text-[17px] font-black tracking-tight">{{ __('Language') }}</h4>
+                        <p class="text-sm text-muted-foreground leading-relaxed">{{ __('Choose your interface language.') }}</p>
+                    </div>
+                    <div x-data="{ open: false, selected: @entangle('settings.locale') }" class="relative">
+                        <button 
+                            @click="open = !open" 
+                            @click.away="open = false"
+                            class="h-10 w-48 flex items-center justify-between rounded-md border border-input bg-background px-4 py-2 text-sm font-medium hover:bg-accent/50 transition-colors"
+                        >
+                            <span x-text="selected === 'system' ? '{{ __('System Default') }}' : (selected === 'pt' ? '{{ __('Portuguese') }}' : (selected === 'en' ? '{{ __('English') }}' : (selected === 'es' ? '{{ __('Spanish') }}' : '{{ __('Russian') }}')))"></span>
+                            <svg class="h-4 w-4 opacity-50" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                        </button>
+
+                        <div 
+                            x-show="open" 
+                            x-transition:enter="transition ease-out duration-100"
+                            x-transition:enter-start="opacity-0 scale-95"
+                            x-transition:enter-end="opacity-100 scale-100"
+                            x-transition:leave="transition ease-in duration-75"
+                            x-transition:leave-start="opacity-100 scale-100"
+                            x-transition:leave-end="opacity-0 scale-95"
+                            class="absolute right-0 top-12 z-50 min-w-[10rem] overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-md no-drag"
+                        >
+                            <div class="px-2 py-1.5 text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-70">{{ __('Language') }}</div>
+                            <button @click="selected = 'system'; open = false" class="relative flex w-full cursor-default select-none items-center rounded-sm px-2 py-1.5 text-xs outline-none hover:bg-accent hover:text-accent-foreground transition-colors">{{ __('System Default') }}</button>
+                            <button @click="selected = 'pt'; open = false" class="relative flex w-full cursor-default select-none items-center rounded-sm px-2 py-1.5 text-xs outline-none hover:bg-accent hover:text-accent-foreground transition-colors">{{ __('Portuguese') }}</button>
+                            <button @click="selected = 'en'; open = false" class="relative flex w-full cursor-default select-none items-center rounded-sm px-2 py-1.5 text-xs outline-none hover:bg-accent hover:text-accent-foreground transition-colors">{{ __('English') }}</button>
+                            <button @click="selected = 'es'; open = false" class="relative flex w-full cursor-default select-none items-center rounded-sm px-2 py-1.5 text-xs outline-none hover:bg-accent hover:text-accent-foreground transition-colors">{{ __('Spanish') }}</button>
+                            <button @click="selected = 'ru'; open = false" class="relative flex w-full cursor-default select-none items-center rounded-sm px-2 py-1.5 text-xs outline-none hover:bg-accent hover:text-accent-foreground transition-colors">{{ __('Russian') }}</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Storage Directory -->
+                <div class="bg-card rounded-xl p-10 flex items-center justify-between shadow-md">
+                    <div class="space-y-1">
+                        <h4 class="text-[17px] font-black tracking-tight">{{ __('AppImage Storage Directory') }}</h4>
+                        <p class="text-sm text-muted-foreground leading-relaxed">{{ __('Choose where your AppImages are stored and managed.') }}</p>
                     </div>
                     <div class="flex items-center gap-4">
                         <div class="px-4 py-2 bg-muted/50 rounded-md text-xs font-mono text-muted-foreground truncate max-w-[200px]">
@@ -147,13 +186,14 @@
                             wire:click="selectAppImagePath"
                             class="h-10 px-4 bg-accent/50 rounded-md text-xs font-bold hover:bg-accent transition-colors"
                         >
-                            Change
+                            {{ __('Change') }}
                         </button>
                     </div>
                 </div>
 
+                <!-- Save Changes -->
                 <div class="flex justify-end pt-4">
-                    <button wire:click="saveSettings" class="h-12 px-10 bg-primary text-primary-foreground text-xs font-black rounded-md hover:bg-primary/90 transition-all uppercase tracking-[0.2em] shadow-xl">Save Changes</button>
+                    <button wire:click="saveSettings" class="h-12 px-10 bg-primary text-primary-foreground text-xs font-black rounded-md hover:bg-primary/90 transition-all uppercase tracking-[0.2em] shadow-xl">{{ __('Save Changes') }}</button>
                 </div>
             </div>
         </div>
@@ -174,9 +214,9 @@
                 </div>
                 <div class="md:w-2/3 p-10 space-y-8">
                     <div>
-                        <h2 class="text-2xl font-black tracking-tighter mb-3">About the Author</h2>
+                        <h2 class="text-2xl font-black tracking-tighter mb-3">{{ __('About the Author') }}</h2>
                         <p class="text-sm text-muted-foreground leading-relaxed">
-                            Developer and EndeavourOS fan. Built with ❤️ to enhance the Linux experience.
+                            {{ __('Developer and EndeavourOS fan. Built with ❤️ to enhance the Linux experience.') }}
                         </p>
                     </div>
                     

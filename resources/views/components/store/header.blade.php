@@ -9,7 +9,7 @@
         <input 
             wire:model.live.debounce.600ms="search"
             type="text" 
-            placeholder="{{ $tab === 'installed' ? 'Search installed applications...' : 'Type to search packages...' }}" 
+            placeholder="{{ $tab === 'installed' ? __('Search installed applications...') : __('Search packages...') }}" 
             class="w-full h-10 bg-background border border-input rounded-md pl-12 pr-10 text-[15px] placeholder:text-muted-foreground focus:ring-2 focus:ring-bamboo focus:border-bamboo outline-none transition-all"
         >
         @if(!empty($search))
@@ -31,11 +31,11 @@
                 class="h-10 w-48 flex items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-xs font-medium ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 hover:bg-accent/50 transition-colors"
             >
                 <span x-text="{
-                    'all': 'All Repositories',
-                    'official': 'Official Repos',
-                    'aur': 'AUR Repo',
-                    'flatpak': 'Flatpak (Flathub)'
-                }[selected] || 'All Repositories'"></span>
+                    'all': '{{ __('All Repositories') }}',
+                    'official': '{{ __('Official') }}',
+                    'aur': '{{ __('AUR') }}',
+                    'flatpak': '{{ __('Flatpaks') }}'
+                }[selected] || '{{ __('All Repositories') }}'"></span>
                 <svg class="h-4 w-4 opacity-50" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
             </button>
 
@@ -49,14 +49,14 @@
                 x-transition:leave-end="opacity-0 scale-95"
                 class="absolute right-0 top-11 z-50 min-w-[12rem] overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-md no-drag"
             >
-                <div class="px-2 py-1.5 text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-70">Repositories</div>
-                <button @click="selected = 'all'; $wire.set('filterRepo', 'all'); open = false" class="relative flex w-full cursor-default select-none items-center rounded-sm px-2 py-1.5 text-xs outline-none hover:bg-accent hover:text-accent-foreground transition-colors">All Repositories</button>
-                <button @click="selected = 'official'; $wire.set('filterRepo', 'official'); open = false" class="relative flex w-full cursor-default select-none items-center rounded-sm px-2 py-1.5 text-xs outline-none hover:bg-accent hover:text-accent-foreground transition-colors">Official Repos</button>
+                <div class="px-2 py-1.5 text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-70">{{ __('All Repositories') }}</div>
+                <button @click="selected = 'all'; $wire.set('filterRepo', 'all'); open = false" class="relative flex w-full cursor-default select-none items-center rounded-sm px-2 py-1.5 text-xs outline-none hover:bg-accent hover:text-accent-foreground transition-colors">{{ __('All Repositories') }}</button>
+                <button @click="selected = 'official'; $wire.set('filterRepo', 'official'); open = false" class="relative flex w-full cursor-default select-none items-center rounded-sm px-2 py-1.5 text-xs outline-none hover:bg-accent hover:text-accent-foreground transition-colors">{{ __('Official') }}</button>
                 @if($settings['enable_aur'])
-                    <button @click="selected = 'aur'; $wire.set('filterRepo', 'aur'); open = false" class="relative flex w-full cursor-default select-none items-center rounded-sm px-2 py-1.5 text-xs outline-none hover:bg-accent hover:text-accent-foreground transition-colors">AUR Repo</button>
+                    <button @click="selected = 'aur'; $wire.set('filterRepo', 'aur'); open = false" class="relative flex w-full cursor-default select-none items-center rounded-sm px-2 py-1.5 text-xs outline-none hover:bg-accent hover:text-accent-foreground transition-colors">{{ __('AUR') }}</button>
                 @endif
                 @if($settings['enable_flatpak'])
-                    <button @click="selected = 'flatpak'; $wire.set('filterRepo', 'flatpak'); open = false" class="relative flex w-full cursor-default select-none items-center rounded-sm px-2 py-1.5 text-xs outline-none hover:bg-accent hover:text-accent-foreground transition-colors">Flatpak (Flathub)</button>
+                    <button @click="selected = 'flatpak'; $wire.set('filterRepo', 'flatpak'); open = false" class="relative flex w-full cursor-default select-none items-center rounded-sm px-2 py-1.5 text-xs outline-none hover:bg-accent hover:text-accent-foreground transition-colors">{{ __('Flatpaks') }}</button>
                 @endif
             </div>
         </div>

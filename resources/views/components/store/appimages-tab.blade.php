@@ -5,14 +5,14 @@
         <div class="flex items-center justify-between mb-12">
             <div>
                 <h2 class="text-4xl font-black tracking-tight mb-3">AppImages</h2>
-                <p class="text-[17px] text-muted-foreground font-medium">Manage and integrate standalone AppImage applications.</p>
+                <p class="text-[17px] text-muted-foreground font-medium">{{ __('Manage and integrate standalone AppImage applications.') }}</p>
             </div>
             <button 
                 wire:click="selectAppImage"
                 class="h-14 px-8 bg-bamboo text-white text-sm font-black rounded-xl hover:bg-bamboo/90 transition-all uppercase tracking-[0.2em] shadow-xl flex items-center gap-3"
             >
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-                <span>Add AppImage</span>
+                <span>{{ __('Add AppImage') }}</span>
             </button>
         </div>
 
@@ -29,21 +29,21 @@
                         </div>
                         <div class="flex flex-col items-end gap-1.5">
                             @if($app['has_desktop']) 
-                                <span class="text-[9px] font-black bg-bamboo/10 text-bamboo px-2.5 py-0.5 rounded uppercase">Integrated</span> 
+                                <span class="text-[9px] font-black bg-bamboo/10 text-bamboo px-2.5 py-0.5 rounded uppercase">{{ __('Integrated') }}</span> 
                             @endif
                             <span class="text-[9px] font-black bg-purple-400/10 text-purple-400 px-2 py-0.5 rounded uppercase tracking-widest">AppImage</span>
                         </div>
                     </div>
 
                     <h3 class="text-[17px] font-black mb-1 truncate tracking-tight">{{ str_replace(['.AppImage', '.appimage'], '', $app['name']) }}</h3>
-                    <p class="text-[13px] text-muted-foreground mb-6 line-clamp-2 leading-relaxed h-10">Standalone application. {{ $app['size'] }}</p>
+                    <p class="text-[13px] text-muted-foreground mb-6 line-clamp-2 leading-relaxed h-10">{{ __('Standalone application.') }} {{ $app['size'] }}</p>
                     
                     <div class="mt-auto flex items-center gap-3 pt-6">
                         <button 
                             wire:click="launchAppImage('{{ addslashes($app['path']) }}')"
                             class="flex-1 h-10 bg-accent hover:bg-accent/80 text-accent-foreground text-[11px] font-black rounded transition-all uppercase tracking-widest"
                         >
-                            Launch
+                            {{ __('Launch') }}
                         </button>
                         
                         @if(!$app['has_desktop'])
@@ -51,7 +51,7 @@
                                 wire:click="registerAppImage('{{ addslashes($app['path']) }}')"
                                 class="flex-1 h-10 bg-bamboo hover:bg-bamboo/90 text-white text-[11px] font-black rounded transition-all uppercase tracking-widest shadow-md"
                             >
-                                Integrate
+                                {{ __('Integrate') }}
                             </button>
                         @endif
 
@@ -68,15 +68,15 @@
                     <div class="w-20 h-20 rounded-full bg-muted flex items-center justify-center mb-6 text-3xl grayscale opacity-50">
                         📦
                     </div>
-                    <h3 class="text-2xl font-black tracking-tight mb-2">No AppImages Yet</h3>
+                    <h3 class="text-2xl font-black tracking-tight mb-2">{{ __('No AppImages Yet') }}</h3>
                     <p class="text-muted-foreground max-w-sm mx-auto font-medium mb-8">
-                        Add your first AppImage to have it automatically integrated into your system menu and managed from here.
+                        {{ __('Add your first AppImage to have it automatically integrated into your system menu and managed from here.') }}
                     </p>
                     <button 
                         wire:click="selectAppImage"
                         class="h-12 px-10 bg-accent text-accent-foreground text-xs font-black rounded-xl hover:bg-primary hover:text-primary-foreground transition-all uppercase tracking-widest"
                     >
-                        Register AppImage
+                        {{ __('Register AppImage') }}
                     </button>
                 </div>
             @endforelse

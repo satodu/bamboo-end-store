@@ -39,7 +39,8 @@ new class extends Component
         'enable_aur' => true,
         'enable_flatpak' => false,
         'search_limit' => 50,
-        'appimage_path' => ''
+        'appimage_path' => '',
+        'locale' => 'system'
     ];
 
     public $sysInfo = [
@@ -64,29 +65,7 @@ new class extends Component
 
     protected function t(string $key): string
     {
-        $lang = strtolower(substr(getenv('LANG') ?: getenv('LANGUAGE') ?: 'en', 0, 2));
-        $isPt = $lang === 'pt';
-
-        $translations = [
-            'installing'       => $isPt ? 'Instalando'       : 'Installing',
-            'removing'         => $isPt ? 'Removendo'        : 'Removing',
-            'install_start'    => $isPt ? 'Operação de instalação iniciada para %s...' : 'Installation of %s started...',
-            'remove_start'     => $isPt ? 'Operação de remoção iniciada para %s...'    : 'Removal of %s started...',
-            'install_done'     => $isPt ? 'Operação de instalação de %s concluída com sucesso.' : 'Installation of %s completed successfully.',
-            'remove_done'      => $isPt ? 'Operação de remoção de %s concluída com sucesso.'    : 'Removal of %s completed successfully.',
-            'op_done_generic'  => $isPt ? 'Operação com %s concluída. Verifique o console.'     : 'Operation with %s completed. Check the console.',
-            'install_fail'     => $isPt ? 'Falha ao iniciar a instalação de %s.'  : 'Failed to start installation for %s.',
-            'remove_fail'      => $isPt ? 'Falha ao iniciar a remoção de %s.'     : 'Failed to start removal for %s.',
-            'done'             => $isPt ? 'Concluído'  : 'Done',
-            'error'            => $isPt ? 'Erro'        : 'Error',
-            'saved'            => $isPt ? 'Salvo'       : 'Saved',
-            'settings_saved'   => $isPt ? 'Configurações salvas com sucesso.' : 'Settings updated successfully.',
-            'refreshed'        => $isPt ? 'Atualizado'  : 'Refreshed',
-            'refreshed_msg'    => $isPt ? 'Dados da loja atualizados.' : 'Store data has been updated.',
-            'update_started'   => $isPt ? 'Atualização do sistema iniciada no terminal.' : 'Running update process in terminal.',
-        ];
-
-        return $translations[$key] ?? $key;
+        return __($key);
     }
 
     public function runSystemUpdate()
@@ -188,6 +167,21 @@ new class extends Component
     public function saveSettings()
     {
         Storage::put('settings.json', json_encode($this->settings));
+        
+        $newLocale = $this->settings['locale'] ?? 'system';
+        if ($newLocale === 'system') {
+            $lang = getenv('LANG') ?: getenv('LANGUAGE') ?: (isset($_SERVER['HTTP_ACCEPT_LANGUAGE']) ? $_SERVER['HTTP_ACCEPT_LANGUAGE'] : 'en');
+            $newLocale = 'en';
+            if (str_starts_with($lang, 'pt')) {
+                $newLocale = 'pt';
+            } elseif (str_starts_with($lang, 'es')) {
+                $newLocale = 'es';
+            } elseif (str_starts_with($lang, 'ru')) {
+                $newLocale = 'ru';
+            }
+        }
+        app()->setLocale($newLocale);
+
         $this->showNotification($this->t('saved'), $this->t('settings_saved'));
         $this->loadData();
     }
@@ -205,7 +199,7 @@ new class extends Component
         $this->activePackageName = 'flatpak';
         $this->isTerminalOpen = true;
         $this->pendingInstallations['flatpak'] = ['type' => 'install', 'is_flatpak' => false, 'log' => $logFile];
-        $this->showNotification($this->t('installing'), 'Instalando Flatpak...');
+        $this->showNotification($this->t('installing'), __('Installing Flatpak...'));
     }
 
     public function addFlathubRemote()
@@ -219,7 +213,7 @@ new class extends Component
         $this->activePackageName = 'flathub-remote';
         $this->isTerminalOpen = true;
         $this->pendingInstallations['flathub-remote'] = ['type' => 'install', 'is_flatpak' => false, 'log' => $logFile];
-        $this->showNotification($this->t('installing'), 'Adicionando Flathub remote...');
+        $this->showNotification($this->t('installing'), __('Configuring Flathub remote...'));
     }
 
     public function showDetails($name, $isAur = false, $isFlatpak = false)
@@ -725,7 +719,7 @@ new class extends Component
     public function launchAppImage($path)
     {
         (new AppImageService())->launch($path);
-        $this->showNotification("Launching", "Starting application...");
+        $this->showNotification(__('Launching'), __('Starting application...'));
     }
 
     public function registerAppImage($path, $targetDir = null)
@@ -735,18 +729,18 @@ new class extends Component
         $success = $service->registerAppImage($path, $targetDir);
         
         if ($success) {
-            $this->showNotification("Success", "AppImage integrated into your menu.");
+            $this->showNotification(__('Success'), __('AppImage integrated into your menu.'));
             $this->loadAppImages();
         } else {
-            $this->showNotification("Error", "Failed to integrate AppImage.", "error");
+            $this->showNotification(__('Error'), __('Failed to integrate AppImage.'), 'error');
         }
     }
 
     public function selectAppImage()
     {
         $path = Dialog::new()
-            ->title('Select AppImage')
-            ->button('Select')
+            ->title(__('Select AppImage'))
+            ->button(__('Select'))
             ->filter('AppImage', ['AppImage', 'appimage'])
             ->open();
 
@@ -758,8 +752,8 @@ new class extends Component
     public function selectAppImagePath()
     {
         $path = Dialog::new()
-            ->title('Select Directory for AppImages')
-            ->button('Select')
+            ->title(__('Select Directory for AppImages'))
+            ->button(__('Select'))
             ->folders()
             ->open();
 
@@ -786,10 +780,10 @@ new class extends Component
 
         $service = new AppImageService();
         if ($service->removeAppImage($path)) {
-            $this->showNotification("Removed", "AppImage and menu entry removed.");
+            $this->showNotification(__('Removed'), __('AppImage and menu entry removed.'));
             $this->loadAppImages();
         } else {
-            $this->showNotification("Error", "Failed to remove AppImage.", "error");
+            $this->showNotification(__('Error'), __('Failed to remove AppImage.'), 'error');
         }
     }
 
@@ -843,7 +837,7 @@ new class extends Component
                 <div class="dot"></div>
             </div>
             <p class="text-xs font-black tracking-[0.4em] uppercase text-bamboo animate-pulse">
-                Syncing Store
+                {{ __('Syncing Store') }}
             </p>
         </div>
     </div>
@@ -962,16 +956,15 @@ new class extends Component
                         </svg>
                     </div>
                     
-                    <h3 class="text-2xl font-black tracking-tight mb-3">Remove AppImage?</h3>
+                    <h3 class="text-2xl font-black tracking-tight mb-3">{{ __('Confirm AppImage Deletion') }}</h3>
                     <p class="text-muted-foreground leading-relaxed">
-                        Are you sure you want to delete <span class="text-foreground font-bold">{{ basename($confirmingAppImageDeletion) }}</span>? 
-                        This will remove the file from your disk and delete its menu entry.
+                        {{ __('Are you sure you want to delete this AppImage? This will permanently remove the file from your system.') }}
                     </p>
                 </div>
                 
                 <div class="p-6 bg-muted/30 flex items-center gap-3">
-                    <button wire:click="cancelAppImageDeletion" class="flex-1 h-12 text-sm font-bold rounded-xl hover:bg-accent transition-colors">Keep it</button>
-                    <button wire:click="deleteAppImageConfirmed" class="flex-1 h-12 bg-destructive text-destructive-foreground text-sm font-black rounded-xl hover:bg-destructive/90 shadow-lg shadow-destructive/20 transition-all">Delete Now</button>
+                    <button wire:click="cancelAppImageDeletion" class="flex-1 h-12 text-sm font-bold rounded-xl hover:bg-accent transition-colors">{{ __('Cancel') }}</button>
+                    <button wire:click="deleteAppImageConfirmed" class="flex-1 h-12 bg-destructive text-destructive-foreground text-sm font-black rounded-xl hover:bg-destructive/90 shadow-lg shadow-destructive/20 transition-all">{{ __('Delete File') }}</button>
                 </div>
             </div>
         </div>
@@ -988,15 +981,14 @@ new class extends Component
                         </svg>
                     </div>
                     
-                    <h3 class="text-2xl font-black tracking-tight mb-3">Uninstall Package?</h3>
+                    <h3 class="text-2xl font-black tracking-tight mb-3">{{ __('Confirm Package Removal') }}</h3>
                     <p class="text-muted-foreground leading-relaxed">
-                        Are you sure you want to uninstall <span class="text-foreground font-bold">{{ $confirmingPackageRemoval }}</span>? 
-                        This will remove the package and its dependencies from your system.
+                        {{ __('Are you sure you want to uninstall this package?') }}
                     </p>
                 </div>
                 
                 <div class="p-6 bg-muted/30 flex items-center gap-3">
-                    <button wire:click="cancelPackageRemoval" wire:loading.attr="disabled" class="flex-1 h-12 text-sm font-bold rounded-xl hover:bg-accent transition-colors disabled:opacity-50">Cancel</button>
+                    <button wire:click="cancelPackageRemoval" wire:loading.attr="disabled" class="flex-1 h-12 text-sm font-bold rounded-xl hover:bg-accent transition-colors disabled:opacity-50">{{ __('Cancel') }}</button>
                     <button 
                         wire:click="deletePackageConfirmed" 
                         wire:loading.attr="disabled"
@@ -1006,8 +998,8 @@ new class extends Component
                             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
                         </svg>
-                        <span wire:loading.remove wire:target="deletePackageConfirmed">Uninstall</span>
-                        <span wire:loading wire:target="deletePackageConfirmed">Processando...</span>
+                        <span wire:loading.remove wire:target="deletePackageConfirmed">{{ __('Uninstall') }}</span>
+                        <span wire:loading wire:target="deletePackageConfirmed">{{ __('Wait...') }}</span>
                     </button>
                 </div>
             </div>
@@ -1058,7 +1050,7 @@ new class extends Component
                     <div class="w-3 h-3 rounded-full bg-yellow-500/50"></div>
                     <div class="w-3 h-3 rounded-full bg-green-500/50"></div>
                 </div>
-                <span class="text-[11px] font-black uppercase tracking-widest text-muted-foreground ml-2">Integrated Console — {{ $activePackageName }}</span>
+                <span class="text-[11px] font-black uppercase tracking-widest text-muted-foreground ml-2">{{ __('Integrated Console') }} — {{ $activePackageName }}</span>
             </div>
             <div class="flex items-center gap-4">
                 @if(!$activeTerminalPid)
@@ -1079,14 +1071,14 @@ new class extends Component
                             wire:click="closeTerminal" 
                             @click="cancelCountdown()"
                             class="relative text-[10px] font-black uppercase tracking-widest bg-bamboo px-4 py-1.5 rounded hover:bg-bamboo/90 transition-all">
-                            <span x-show="countdown <= 0">Close Console</span>
-                            <span x-show="countdown > 0" x-text="'Close (' + countdown + 's)'"></span>
+                            <span x-show="countdown <= 0">{{ __('Close') }}</span>
+                            <span x-show="countdown > 0" x-text="'{{ __('Close') }} (' + countdown + 's)'"></span>
                         </button>
                     </div>
                 @else
                     <div class="flex items-center gap-2">
                         <div class="w-2 h-2 bg-bamboo rounded-full animate-pulse"></div>
-                        <span class="text-[10px] font-black uppercase tracking-widest text-bamboo">Process Running</span>
+                        <span class="text-[10px] font-black uppercase tracking-widest text-bamboo">{{ __('Process Running') }}</span>
                     </div>
                 @endif
             </div>

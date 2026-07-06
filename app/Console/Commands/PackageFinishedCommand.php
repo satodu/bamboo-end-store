@@ -21,6 +21,17 @@ class PackageFinishedCommand extends Command
     {
         $name = $this->argument('name');
         $action = $this->argument('action');
+
+        if ($name === 'System Update') {
+            Cache::forget("pkg_installed_list");
+            Notification::new()
+                ->title(__('Sistema Atualizado'))
+                ->message(__('A atualização do sistema foi concluída com sucesso!'))
+                ->show();
+
+            $this->info("Notificação de atualização enviada.");
+            return;
+        }
         
         // Limpa apenas o cache necessário em vez de explodir tudo
         Cache::forget("pkg_search_" . md5($name));
@@ -30,10 +41,10 @@ class PackageFinishedCommand extends Command
         // Remove a flag de "instalando"
         Cache::forget("installing_{$name}");
 
-        $title = $action === 'installed' ? 'Operação Concluída' : 'Remoção Concluída';
+        $title = $action === 'installed' ? __('Operação Concluída') : __('Remoção Concluída');
         $msg = $action === 'installed' 
-            ? "O pacote {$name} foi instalado com sucesso!" 
-            : "O pacote {$name} foi removido do sistema.";
+            ? sprintf(__('O pacote %s foi instalado com sucesso!'), $name) 
+            : sprintf(__('O pacote %s foi removido do sistema.'), $name);
 
         // Dispara a notificação oficial do sistema
         Notification::new()

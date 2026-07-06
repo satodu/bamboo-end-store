@@ -6,10 +6,10 @@
             <img src="/logo-without-background.png" class="w-12 h-12 object-contain group-hover:-translate-y-1 group-hover:scale-110 transition-all duration-300 ease-out" alt="Logo">
             <div>
                 <h1 class="text-xl font-black tracking-tighter leading-none">Bamboo End Store</h1>
-                <span class="text-[9px] font-black uppercase text-bamboo/70 tracking-widest">Community Edition</span>
+                <span class="text-[9px] font-black uppercase text-bamboo/70 tracking-widest">{{ __('Community Edition') }}</span>
             </div>
         </button>
-        <p class="px-2 mb-10 text-[10px] text-muted-foreground font-medium italic">Unofficial fan project</p>
+        <p class="px-2 mb-10 text-[10px] text-muted-foreground font-medium italic">{{ __('Unofficial fan project') }}</p>
 
         <nav class="space-y-1.5">
             <button 
@@ -17,28 +17,28 @@
                 class="w-full flex items-center gap-4 px-4 py-3 rounded-md text-[15px] transition-all {{ $tab === 'explore' ? 'bg-accent text-accent-foreground font-bold' : 'text-muted-foreground hover:bg-accent/40 hover:text-foreground' }}"
             >
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
-                <span>Explore</span>
+                <span>{{ __('Explore') }}</span>
             </button>
             <button 
                 wire:click="setTab('installed')"
                 class="w-full flex items-center gap-4 px-4 py-3 rounded-md text-[15px] transition-all {{ $tab === 'installed' ? 'bg-accent text-accent-foreground font-bold' : 'text-muted-foreground hover:bg-accent/40 hover:text-foreground' }}"
             >
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-                <span>Installed</span>
+                <span>{{ __('Installed') }}</span>
             </button>
             <button 
                 wire:click="setTab('appimages')"
                 class="w-full flex items-center gap-4 px-4 py-3 rounded-md text-[15px] transition-all {{ $tab === 'appimages' ? 'bg-accent text-accent-foreground font-bold' : 'text-muted-foreground hover:bg-accent/40 hover:text-foreground' }}"
             >
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"></path></svg>
-                <span>AppImages</span>
+                <span>{{ __('AppImages') }}</span>
             </button>
             <button 
                 wire:click="runSystemUpdate"
                 class="w-full flex items-center gap-4 px-4 py-3 rounded-md text-[15px] transition-all text-muted-foreground hover:bg-bamboo/10 hover:text-bamboo"
             >
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
-                <span>Update System</span>
+                <span>{{ __('Update System') }}</span>
             </button>
 
             <button 
@@ -46,7 +46,7 @@
                 class="w-full flex items-center gap-4 px-4 py-3 rounded-md text-[15px] transition-all {{ $tab === 'settings' ? 'bg-accent text-accent-foreground font-bold' : 'text-muted-foreground hover:bg-accent/40 hover:text-foreground' }}"
             >
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                <span>Settings</span>
+                <span>{{ __('Settings') }}</span>
             </button>
         </nav>
     </div>

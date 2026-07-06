@@ -773,4 +773,23 @@ class PackageService
 
         return $details ?: null;
     }
+
+    /**
+     * Updates the system packages.
+     */
+    public function updateSystem(): int|false
+    {
+        $helper = $this->getHelper();
+        $command = match ($helper) {
+            'paru' => 'paru -Syu',
+            'yay' => 'yay -Syu',
+            default => 'sudo pacman -Syu'
+        };
+
+        $artisan = base_path('artisan');
+        $php = PHP_BINARY;
+        $callbackCmd = "{$php} {$artisan} package:finished 'System Update'";
+
+        return $this->openTerminal($command, $callbackCmd);
+    }
 }
