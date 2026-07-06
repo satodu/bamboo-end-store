@@ -20,7 +20,9 @@
   <b>🌐 Check the official website: <a href="https://satodu.github.io/panda-bamboo-store/">satodu.github.io/panda-bamboo-store/</a></b>
 </p>
 
-A modern, high-performance, and beautiful community-driven store for **Bamboo OS/Arch Linux**, built with **Laravel**, **Livewire (Volt)**, and **NativePHP**.
+A modern, high-performance, and beautiful community-driven store for **Bamboo OS/Arch Linux**, built with **Laravel**, **Livewire (Volt)**, and **NativePHP**. 
+
+Designed and crafted specifically for **EndeavourOS** users, this project is created by a passionate daily fan of the system as a tribute and tool to enhance the desktop experience.
 
 > [!IMPORTANT]
 > **UNOFFICIAL FAN PROJECT**: This application is not an official product of any Linux distribution team. It is a fan-made project created by **Panda** to enhance the software management experience on Arch Linux and derivatives.
@@ -127,3 +129,5 @@ This project is open-source and available under the [MIT License](LICENSE).
 Created with ❤️ by **Panda**.
 Inspired by the strength and versatility of **Bamboo**.
 Special thanks to the **NativePHP** and **Laravel** communities.
+
+Heartfelt thanks to the **EndeavourOS** team and community for providing such an amazing Linux distribution. This application was built and designed specifically for EndeavourOS users by a devoted fan who uses this OS daily!
