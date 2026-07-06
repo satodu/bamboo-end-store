@@ -779,17 +779,8 @@ class PackageService
      */
     public function updateSystem(): int|false
     {
-        $helper = $this->getHelper();
-        $command = match ($helper) {
-            'paru' => 'paru -Syu',
-            'yay' => 'yay -Syu',
-            default => 'sudo pacman -Syu'
-        };
-
-        $artisan = base_path('artisan');
-        $php = PHP_BINARY;
-        $callbackCmd = "{$php} {$artisan} package:finished 'System Update'";
-
-        return $this->openTerminal($command, $callbackCmd);
+        // Delegates to runBambooUpdate() so the tray action is identical to the in-app update button.
+        return $this->runBambooUpdate() ? 1 : false;
     }
 }
+

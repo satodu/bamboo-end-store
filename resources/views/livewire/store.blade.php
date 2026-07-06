@@ -162,6 +162,21 @@ new class extends Component
         if (Storage::exists('settings.json')) {
             $this->settings = array_merge($this->settings, json_decode(Storage::get('settings.json'), true));
         }
+
+        // Re-apply locale on every mount so it survives within the long-running NativePHP process
+        $locale = $this->settings['locale'] ?? 'system';
+        if ($locale === 'system') {
+            $lang   = getenv('LANG') ?: getenv('LANGUAGE') ?: 'en';
+            $locale = 'en';
+            if (str_starts_with($lang, 'pt')) {
+                $locale = 'pt';
+            } elseif (str_starts_with($lang, 'es')) {
+                $locale = 'es';
+            } elseif (str_starts_with($lang, 'ru')) {
+                $locale = 'ru';
+            }
+        }
+        app()->setLocale($locale);
     }
 
     public function saveSettings()
