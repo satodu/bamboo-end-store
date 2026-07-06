@@ -3,7 +3,7 @@
 <aside {{ $attributes->merge(['class' => 'w-72 bg-card shadow-xl flex flex-col shrink-0 relative z-50']) }}>
     <div class="p-8 flex-1">
         <button wire:click="setTab('explore')" class="w-full flex items-center gap-4 mb-2 px-2 hover:bg-accent/10 rounded-xl transition-all group active:scale-95 text-left">
-            <img src="/logo.png" class="w-12 h-12 object-contain group-hover:-translate-y-1 group-hover:scale-110 transition-all duration-300 ease-out" alt="Logo">
+            <img src="/logo-without-background.png" class="w-12 h-12 object-contain group-hover:-translate-y-1 group-hover:scale-110 transition-all duration-300 ease-out" alt="Logo">
             <div>
                 <h1 class="text-xl font-black tracking-tighter leading-none">Bamboo End Store</h1>
                 <span class="text-[9px] font-black uppercase text-bamboo/70 tracking-widest">Community Edition</span>

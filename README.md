@@ -1,7 +1,7 @@
 # 🐼 Bamboo End Store (Community Edition)
 
 <p align="center">
-  <img src="public/logo.png" width="350" alt="Bamboo End Store Logo">
+  <img src="public/logo-without-background.png" width="350" alt="Bamboo End Store Logo">
 </p>
 
 <p align="center">
