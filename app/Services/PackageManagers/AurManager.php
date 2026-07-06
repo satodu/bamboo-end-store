@@ -158,6 +158,7 @@ class AurManager extends BaseManager
 
     public function runInBackground(string $packageName, string $logFile): int
     {
+        $installFailed = __('console_install_failed');
         $helper = $this->getHelper();
         if ($helper === 'paru') {
             $confPath = $this->getParuConfPath();
@@ -166,7 +167,7 @@ class AurManager extends BaseManager
             $cmd = "echo \"1\" | yay --sudo pkexec --noedit --noconfirm -S " . escapeshellarg($packageName);
         }
         $fullCommand = "( $cmd >> " . escapeshellarg($logFile) . " 2>&1"
-            . " || echo 'Instalação falhou ou foi cancelada.' >> " . escapeshellarg($logFile)
+            . " || echo " . escapeshellarg($installFailed) . " >> " . escapeshellarg($logFile)
             . " ; echo '__PROCESS_DONE__' >> " . escapeshellarg($logFile)
             . " ) &";
 

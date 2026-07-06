@@ -264,14 +264,16 @@ class FlatpakManager extends BaseManager
 
     public function runInBackground(string $packageName, string $logFile): int
     {
+        $authFailed = __('console_auth_failed');
         $cmd = "flatpak install -y flathub " . escapeshellarg($packageName);
         $inner = $cmd . " >> " . escapeshellarg($logFile) . " 2>&1";
         $fullCommand = "( pkexec sh -c " . escapeshellarg($inner)
-            . " || echo 'Autenticação cancelada ou falhou.' >> " . escapeshellarg($logFile)
+            . " || echo " . escapeshellarg($authFailed) . " >> " . escapeshellarg($logFile)
             . " ; echo '__PROCESS_DONE__' >> " . escapeshellarg($logFile)
-            . " ) &";
+            . " ) & echo $!";
 
-        shell_exec($fullCommand);
-        return 1;
+        // Detach from PHP lifecycle: shell_exec with & lets process survive past HTTP request
+        $pid = (int) shell_exec($fullCommand);
+        return $pid ?: 1;
     }
 }

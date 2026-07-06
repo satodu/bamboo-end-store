@@ -160,6 +160,15 @@ new class extends Component
             // Ignora silenciosamente
         }
         
+        // Reset state machine in case of failures/closes
+        app(\App\Services\UserStateMachine::class)->reset();
+
+        // Clear active search cache to force a fresh result check
+        if (!empty($this->search)) {
+            \Illuminate\Support\Facades\Cache::forget("pkg_search_" . md5($this->search));
+            \Illuminate\Support\Facades\Cache::forget("pkg_search_" . md5($this->search . '_flat'));
+        }
+
         $this->syncUserState();
         $this->loadData();
         
@@ -706,28 +715,32 @@ new class extends Component
 
     protected function runRemoveInBackground($name, $isFlatpak, $logFile)
     {
-        file_put_contents($logFile, "Iniciando remoção de {$name}...\n");
+        $initiatingMsg = str_replace('{name}', $name, __('console_initiating_removal'));
+        $authFailed    = __('console_auth_failed');
+
+        file_put_contents($logFile, $initiatingMsg . "\n");
         app(\App\Services\UserStateMachine::class)->transitionTo(\App\Enums\UserState::UNINSTALLING, $name);
         
         if ($isFlatpak) {
             $scope = $this->getFlatpakInstallation($name);
             if ($scope === 'user') {
                 $cmd = "flatpak uninstall -y --user " . escapeshellarg($name);
-                // Apps de usuário: sem pkexec, sentinela no wrapper externo
-                $fullCmd = "( $cmd >> " . escapeshellarg($logFile) . " 2>&1 ; echo '__PROCESS_DONE__' >> " . escapeshellarg($logFile) . " ) &";
+                // User-scope: no pkexec needed, sentinel written by the wrapper
+                $fullCmd = "( $cmd >> " . escapeshellarg($logFile) . " 2>&1 ; echo '__PROCESS_DONE__' >> " . escapeshellarg($logFile) . " ) & echo $!";
             } else {
                 $cmd = "flatpak uninstall -y --system " . escapeshellarg($name);
-                // Sentinela FORA do pkexec: escrito mesmo se o usuário cancelar
-                $fullCmd = "( pkexec sh -c " . escapeshellarg($cmd . " >> " . escapeshellarg($logFile) . " 2>&1") . " || echo 'Autenticação cancelada ou falhou.' >> " . escapeshellarg($logFile) . " ; echo '__PROCESS_DONE__' >> " . escapeshellarg($logFile) . " ) &";
+                // Sentinel written OUTSIDE pkexec so it fires even on auth cancel
+                $fullCmd = "( pkexec sh -c " . escapeshellarg($cmd . " >> " . escapeshellarg($logFile) . " 2>&1") . " || echo " . escapeshellarg($authFailed) . " >> " . escapeshellarg($logFile) . " ; echo '__PROCESS_DONE__' >> " . escapeshellarg($logFile) . " ) & echo $!";
             }
         } else {
             $cmd = "pacman -Rs --noconfirm " . escapeshellarg($name);
-            // Sentinela FORA do pkexec
-            $fullCmd = "( pkexec sh -c " . escapeshellarg($cmd . " >> " . escapeshellarg($logFile) . " 2>&1") . " || echo 'Autenticação cancelada ou falhou.' >> " . escapeshellarg($logFile) . " ; echo '__PROCESS_DONE__' >> " . escapeshellarg($logFile) . " ) &";
+            // Sentinel written OUTSIDE pkexec so it fires even on auth cancel
+            $fullCmd = "( pkexec sh -c " . escapeshellarg($cmd . " >> " . escapeshellarg($logFile) . " 2>&1") . " || echo " . escapeshellarg($authFailed) . " >> " . escapeshellarg($logFile) . " ; echo '__PROCESS_DONE__' >> " . escapeshellarg($logFile) . " ) & echo $!";
         }
 
-        shell_exec($fullCmd);
-        return 1;
+        // Detach from PHP lifecycle: shell_exec with & lets process survive past HTTP request
+        $pid = (int) shell_exec($fullCmd);
+        return $pid ?: 1;
     }
 
     public function showNotification($title, $message, $type = 'success')

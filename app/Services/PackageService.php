@@ -10,7 +10,7 @@ use App\Services\PackageManagers\PackageManagerFactory;
 class PackageService
 {
     /**
-     * Detecta qual AUR helper está disponível (paru ou yay)
+     * Detects which AUR helper is available (paru or yay)
      */
     public function getHelper(): string
     {
@@ -18,7 +18,7 @@ class PackageService
     }
 
     /**
-     * Verifica se um comando existe no sistema
+     * Checks if a command exists on the system
      */
     public function commandExists(string $command): bool
     {
@@ -26,7 +26,7 @@ class PackageService
     }
 
     /**
-     * Roda a atualização do sistema (eos-update ou yay/paru)
+     * Runs a full system update (eos-update or yay/paru)
      */
     public function runBambooUpdate(): bool
     {
@@ -46,27 +46,35 @@ class PackageService
             $php = PHP_BINARY;
             $callback = "{$php} {$artisan} package:finished 'System Update'";
 
-            // Script inteligente para o terminal
+            // Build the terminal update script
+            // Resolve translatable console messages in PHP before embedding in shell
+            $msgEosUpdate   = __('console_starting_eos_update');
+            $msgAurUpdate   = str_replace('{helper}', $helper, __('console_updating_aur'));
+            $msgSysUpdate   = str_replace('{helper}', $helper, __('console_starting_update'));
+            $msgFlatpak     = __('console_updating_flatpak');
+            $msgOrphans     = __('console_removing_orphans');
+            $msgNoOrphans   = __('console_no_orphans');
+
             $script = "if command -v eos-update > /dev/null; then " .
-                      "  echo 'Starting EndeavourOS System Update...'; eos-update; " .
+                      "  echo " . escapeshellarg($msgEosUpdate) . "; eos-update; " .
                       "  if [ \"{$helper}\" != \"pacman\" ]; then " .
-                      "    echo 'Updating AUR packages via {$helper}...'; " .
+                      "    echo " . escapeshellarg($msgAurUpdate) . "; " .
                       "    {$helper} -Sua; " .
                       "  fi; " .
                       "else " .
-                      "  echo 'Starting System Update via {$helper}...'; " .
+                      "  echo " . escapeshellarg($msgSysUpdate) . "; " .
                       "  {$helper} -Syu; " .
                       "fi; " .
                       "if command -v flatpak > /dev/null; then " .
-                      "  echo 'Updating Flatpak applications...'; " .
+                      "  echo " . escapeshellarg($msgFlatpak) . "; " .
                       "  flatpak update; " .
                       "fi; " .
                       "orphans=\$(pacman -Qtdq); " .
                       "if [ -n \"\$orphans\" ]; then " .
-                      "  echo 'Removing orphan packages...'; " .
+                      "  echo " . escapeshellarg($msgOrphans) . "; " .
                       "  sudo pacman -Rns \$orphans; " .
                       "else " .
-                      "  echo 'No orphan packages to remove.'; " .
+                      "  echo " . escapeshellarg($msgNoOrphans) . "; " .
                       "fi; " .
                       "$callback";
 
@@ -75,9 +83,11 @@ class PackageService
             $delay = $settings['terminal_close_delay'] ?? 10;
 
             if ($autoClose) {
-                $postScript = "echo ''; echo 'Closing terminal in {$delay} seconds...'; sleep {$delay}";
+                $closingMsg = str_replace('{delay}', $delay, __('console_closing_terminal'));
+                $postScript = "echo ''; echo " . escapeshellarg($closingMsg) . "; sleep {$delay}";
             } else {
-                $postScript = "echo ''; read -p 'Press Enter to close...'";
+                $pressEnter = __('console_press_enter');
+                $postScript = "echo ''; read -p " . escapeshellarg($pressEnter);
             }
 
             $terminalCmd = match ($foundTerminal) {
@@ -95,7 +105,7 @@ class PackageService
     }
 
     /**
-     * Busca pacotes usando o melhor helper disponível e opcionalmente flatpak
+     * Searches packages using the best available helper and optionally Flatpak
      */
     public function search(string $query, bool $includeFlatpak = false): array
     {
@@ -122,7 +132,7 @@ class PackageService
     }
 
     /**
-     * Busca pacotes no Flathub
+     * Searches packages on Flathub
      */
     public function searchFlatpak(string $query): array
     {
@@ -130,7 +140,7 @@ class PackageService
     }
 
     /**
-     * Lista todos os pacotes instalados
+     * Lists all installed packages
      */
     public function getInstalledPackages(): array
     {
@@ -163,7 +173,7 @@ class PackageService
                 }
             }
 
-            // Adiciona Flatpaks instalados
+            // Append installed Flatpaks
             if ($this->commandExists('flatpak')) {
                 $installed = array_merge($installed, $this->getInstalledFlatpaks());
             }
@@ -215,7 +225,7 @@ class PackageService
     }
 
     /**
-     * Busca ícone
+     * Fetches the icon URL for a package
      */
     public function getIcon(string $name, bool $isFlatpak = false): string
     {

@@ -72,10 +72,11 @@ abstract class BaseManager implements PackageManagerInterface
             default => "$foundTerminal -e bash -c " . escapeshellarg("$command; $callbackCmd; $postScript")
         };
 
-        shell_exec($terminalCmd . " > /dev/null 2>&1 &");
+        // Detach from PHP's lifecycle with & and capture the real PID via `echo $!`
+        // Symfony\Process would kill the child process on __destruct when the request ends
+        $pid = (int) shell_exec($terminalCmd . " > /dev/null 2>&1 & echo $!");
         
-        // Return dummy process PID or true representation
-        return 9999; 
+        return $pid ?: 9999;
     }
 
     public function getIcon(string $name, bool $isFlatpak = false): string
