@@ -120,5 +120,18 @@
   "Select Directory for AppImages": "Seleccionar directorio para AppImages",
   "Removed": "Eliminado",
   "AppImage and menu entry removed.": "AppImage y entrada del menú eliminadas.",
-  "Failed to remove AppImage.": "Error al eliminar la AppImage."
+  "Failed to remove AppImage.": "Error al eliminar la AppImage.",
+  "Source / Repository": "Origen / Repositorio",
+  "Process Finished": "Proceso Finalizado",
+  "Arch User Repository (AUR)": "Arch User Repository (AUR)",
+  "Official Repositories": "Repositorios Oficiales",
+  "Auto-close": "Auto-cerrar",
+  "Official": "Oficial",
+  "Terminal Auto-close": "Auto-cerrar Terminal",
+  "Automatically close terminal window after process completion.": "Cierra automáticamente la ventana de la terminal tras finalizar el proceso.",
+  "Close Delay": "Tiempo para Cerrar",
+  "Set countdown duration before the terminal window closes.": "Define el tiempo de cuenta regresiva antes de cerrar la ventana de la terminal.",
+  "seconds": "segundos",
+  "Delay": "Tiempo",
+  "Restart the app to update the tray menu.": "Reinicie la aplicación para actualizar la bandeja."
 }

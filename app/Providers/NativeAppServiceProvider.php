@@ -33,20 +33,24 @@ class NativeAppServiceProvider implements ProvidesPhpIni
             ->title('Bamboo End Store - v' . config('nativephp.version'))
             ->rememberState();
 
+        \Illuminate\Support\Facades\Log::info("NativeAppServiceProvider booting. Locale: " . app()->getLocale() . ", Open Store: " . __('Open Store'));
+
         // Create System Tray / Menu Bar Icon
-        MenuBar::create()
-            ->showDockIcon()
-            ->icon(public_path('logo-without-background.png'))
-            ->onlyShowContextMenu()
-            ->withContextMenu(
-                Menu::make(
-                    Menu::label(__('Open Store'))->event(OpenStoreEvent::class),
-                    Menu::separator(),
-                    Menu::label(__('Update System'))->event(UpdateSystemEvent::class),
-                    Menu::separator(),
-                    Menu::quit()
-                )
-            );
+        $menuBar = MenuBar::create();
+        if ($menuBar) {
+            $menuBar->showDockIcon()
+                ->icon(public_path('logo-without-background.png'))
+                ->onlyShowContextMenu()
+                ->withContextMenu(
+                    Menu::make(
+                        Menu::label(__('Open Store'))->event(OpenStoreEvent::class),
+                        Menu::separator(),
+                        Menu::label(__('Update System'))->event(UpdateSystemEvent::class),
+                        Menu::separator(),
+                        Menu::quit()
+                    )
+                );
+        }
     }
 
     /**

@@ -107,7 +107,7 @@
   "results": "результатов",
   "Search Results": "Результаты Поиска",
   "Integrated Console": "Встроенная Консоль",
-  "Process Running": "Process Running",
+  "Process Running": "Процесс выполняется",
   "Installing Flatpak...": "Установка Flatpak...",
   "Configuring Flathub remote...": "Настройка репозитория Flathub...",
   "Launching": "Запуск",
@@ -120,5 +120,18 @@
   "Select Directory for AppImages": "Выбрать директорию для AppImages",
   "Removed": "Удалено",
   "AppImage and menu entry removed.": "AppImage и пункт меню удалены.",
-  "Failed to remove AppImage.": "Не удалось удалить AppImage."
+  "Failed to remove AppImage.": "Не удалось удалить AppImage.",
+  "Source / Repository": "Источник / Репозиторий",
+  "Process Finished": "Процесс завершен",
+  "Arch User Repository (AUR)": "Пользовательский репозиторий Arch (AUR)",
+  "Official Repositories": "Официальные репозитории",
+  "Auto-close": "Автозакрытие",
+  "Official": "Официальный",
+  "Terminal Auto-close": "Автозакрытие терминала",
+  "Automatically close terminal window after process completion.": "Автоматически закрывать окно терминала после завершения процесса.",
+  "Close Delay": "Задержка закрытия",
+  "Set countdown duration before the terminal window closes.": "Задает длительность обратного отсчета перед закрытием окна терминала.",
+  "seconds": "сек.",
+  "Delay": "Задержка",
+  "Restart the app to update the tray menu.": "Перезапустите приложение, чтобы обновить трей."
 }

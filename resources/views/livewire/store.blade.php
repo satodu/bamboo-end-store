@@ -34,13 +34,14 @@ new class extends Component
     public $page = 1;
     public $totalResults = 0;
     
-    // Configurações
     public $settings = [
         'enable_aur' => true,
         'enable_flatpak' => false,
         'search_limit' => 50,
         'appimage_path' => '',
-        'locale' => 'system'
+        'locale' => 'system',
+        'auto_close_terminal' => true,
+        'terminal_close_delay' => 10
     ];
 
     public $sysInfo = [
@@ -197,17 +198,22 @@ new class extends Component
         }
         app()->setLocale($newLocale);
 
-        $this->showNotification($this->t('saved'), $this->t('settings_saved'));
+        $this->showNotification($this->t('saved'), $this->t('settings_saved') . ' (' . __('Restart the app to update the tray menu.') . ')');
         $this->loadData();
+    }
+
+    public function saveTerminalAutoClose()
+    {
+        Storage::put('settings.json', json_encode($this->settings));
     }
 
     public function installFlatpak()
     {
         $logFile = storage_path('logs/flatpak_setup.log');
-        file_put_contents($logFile, "Instalando flatpak...\n");
+        file_put_contents($logFile, "Installing flatpak...\n");
         $inner = "pacman -S --noconfirm flatpak >> " . escapeshellarg($logFile) . " 2>&1";
         $cmd = "( pkexec sh -c " . escapeshellarg($inner)
-            . " || echo 'Autenticação cancelada.' >> " . escapeshellarg($logFile)
+            . " || echo 'Authentication cancelled.' >> " . escapeshellarg($logFile)
             . " ; echo '__PROCESS_DONE__' >> " . escapeshellarg($logFile) . " ) &";
         shell_exec($cmd);
         $this->activeTerminalLog = $logFile;
@@ -220,7 +226,7 @@ new class extends Component
     public function addFlathubRemote()
     {
         $logFile = storage_path('logs/flatpak_setup.log');
-        file_put_contents($logFile, "Adicionando Flathub...\n");
+        file_put_contents($logFile, "Adding Flathub remote...\n");
         $inner = "flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo >> " . escapeshellarg($logFile) . " 2>&1";
         $cmd = "( " . $inner . " ; echo '__PROCESS_DONE__' >> " . escapeshellarg($logFile) . " ) &";
         shell_exec($cmd);
@@ -572,7 +578,7 @@ new class extends Component
             if (str_contains($rawOutput, $sentinel)) {
                 // Remover a linha do sentinel da saida visível
                 $cleanOutput = str_replace("\n" . $sentinel, '', $rawOutput);
-                $this->terminalOutput = $cleanOutput . "\n\n[✅ Processo finalizado]"; 
+                $this->terminalOutput = $cleanOutput . "\n\n[✅ " . __('Process Finished') . "]"; 
                 
                 // Capturar dados ANTES de qualquer limpeza
                 $pendingData = $this->pendingInstallations[$this->activePackageName] ?? null;
@@ -1027,9 +1033,12 @@ new class extends Component
             show: @entangle('isTerminalOpen'),
             countdown: 0,
             countdownTimer: null,
+            autoClose: @entangle('settings.auto_close_terminal'),
+            closeDelay: @entangle('settings.terminal_close_delay'),
             startCountdown() {
+                if (!this.autoClose) return;
                 if (this.countdown > 0) return; // já está rodando
-                this.countdown = 5;
+                this.countdown = this.closeDelay;
                 clearInterval(this.countdownTimer);
                 this.countdownTimer = setInterval(() => {
                     this.countdown--;
@@ -1042,11 +1051,19 @@ new class extends Component
             cancelCountdown() {
                 clearInterval(this.countdownTimer);
                 this.countdown = 0;
+            },
+            toggleAutoClose() {
+                if (!this.autoClose) {
+                    this.cancelCountdown();
+                } else if (@js($terminalDone)) {
+                    this.startCountdown();
+                }
             }
         }"
         x-init="
             if (@js($terminalDone)) startCountdown();
             $wire.$watch('terminalDone', val => { if(val) startCountdown(); });
+            $watch('autoClose', () => toggleAutoClose());
         "
         x-show="show"
         x-transition:enter="transition ease-out duration-300"
@@ -1067,7 +1084,13 @@ new class extends Component
                 </div>
                 <span class="text-[11px] font-black uppercase tracking-widest text-muted-foreground ml-2">{{ __('Integrated Console') }} — {{ $activePackageName }}</span>
             </div>
-            <div class="flex items-center gap-4">
+            <div class="flex items-center gap-6">
+                <!-- Auto-close toggle switch -->
+                <label class="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-muted-foreground cursor-pointer select-none">
+                    <input type="checkbox" x-model="autoClose" @change="$wire.saveTerminalAutoClose()" class="w-3.5 h-3.5 rounded border-white/10 bg-white/5 text-bamboo focus:ring-0 focus:ring-offset-0">
+                    <span>{{ __('Auto-close') }}</span>
+                </label>
+
                 @if(!$activeTerminalPid)
                     {{-- Close button com countdown --}}
                     <div class="relative flex items-center justify-center">
@@ -1078,7 +1101,7 @@ new class extends Component
                                 cx="18" cy="18" r="15" fill="none" 
                                 stroke="var(--bamboo)" stroke-width="2"
                                 stroke-dasharray="94.25"
-                                :stroke-dashoffset="94.25 - (94.25 * countdown / 5)"
+                                :stroke-dashoffset="94.25 - (94.25 * countdown / closeDelay)"
                                 style="transition: stroke-dashoffset 1s linear;"
                             />
                         </svg>

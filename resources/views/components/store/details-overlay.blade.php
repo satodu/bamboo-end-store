@@ -54,7 +54,26 @@
                 </div>
                 <div>
                     <h2 class="text-2xl font-black tracking-tight leading-tight mb-1">{{ $selectedPackage['display_name'] ?? $selectedPackage['Name'] ?? $selectedPackage['ID'] ?? $selectedPackage['Application'] ?? 'Unknown' }}</h2>
-                    <p class="text-sm text-muted-foreground font-medium">{{ $selectedPackage['Version'] ?? '---' }}</p>
+                    <div class="flex items-center gap-3 mt-1">
+                        <span class="text-sm text-muted-foreground font-medium">{{ $selectedPackage['Version'] ?? '---' }}</span>
+                        <span class="text-[9px] px-2 py-0.5 rounded font-black uppercase tracking-wider
+                            @if($selectedPackage['is_flatpak'] ?? false)
+                                bg-bamboo/10 text-bamboo
+                            @elseif($selectedPackage['is_aur'] ?? false)
+                                bg-purple-400/10 text-purple-400
+                            @else
+                                bg-blue-500/10 text-blue-400
+                            @endif
+                        ">
+                            @if($selectedPackage['is_flatpak'] ?? false)
+                                Flatpak
+                            @elseif($selectedPackage['is_aur'] ?? false)
+                                AUR
+                            @else
+                                {{ __('Official') }}
+                            @endif
+                        </span>
+                    </div>
                 </div>
             </div>
             <button wire:click="closeDetails" class="p-3 hover:bg-accent rounded-full transition-colors"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
@@ -101,6 +120,18 @@
             <div class="bg-card p-8 rounded-xl shadow-sm space-y-4">
                 <h3 class="text-[11px] font-black uppercase tracking-[0.2em] text-muted-foreground mb-4">{{ __('Package Metadata') }}</h3>
                 <div class="space-y-4">
+                    <div class="flex justify-between items-center text-sm">
+                        <span class="text-muted-foreground font-bold">{{ __('Source / Repository') }}</span>
+                        <span class="font-black truncate max-w-[240px]">
+                            @if($selectedPackage['is_flatpak'] ?? false)
+                                Flathub (Flatpak)
+                            @elseif($selectedPackage['is_aur'] ?? false)
+                                Arch User Repository (AUR)
+                            @else
+                                {{ $selectedPackage['Repository'] ?? __('Official Repositories') }}
+                            @endif
+                        </span>
+                    </div>
                     <div class="flex justify-between items-center text-sm"><span class="text-muted-foreground font-bold">{{ __('Build Date') }}</span><span class="font-black">{{ $selectedPackage['Build Date'] ?? '---' }}</span></div>
                     <div class="flex justify-between items-center text-sm"><span class="text-muted-foreground font-bold">{{ __('Groups') }}</span><span class="font-black">{{ $selectedPackage['Groups'] ?? 'None' }}</span></div>
                     <div class="flex justify-between items-center text-sm"><span class="text-muted-foreground font-bold">{{ __('Architecture') }}</span><span class="font-black">{{ $selectedPackage['Architecture'] ?? 'x86_64' }}</span></div>

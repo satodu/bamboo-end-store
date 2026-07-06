@@ -172,6 +172,58 @@
                     </div>
                 </div>
 
+                <!-- Terminal Auto-Close -->
+                <div class="bg-card rounded-xl p-10 space-y-8 shadow-md">
+                    <div class="flex items-center justify-between">
+                        <div class="space-y-1">
+                            <h4 class="text-[17px] font-black tracking-tight">{{ __('Terminal Auto-close') }}</h4>
+                            <p class="text-sm text-muted-foreground leading-relaxed">{{ __('Automatically close terminal window after process completion.') }}</p>
+                        </div>
+                        <button 
+                            wire:click="$set('settings.auto_close_terminal', {{ !$settings['auto_close_terminal'] ? 'true' : 'false' }})"
+                            class="w-12 h-6 rounded-full transition-all relative {{ $settings['auto_close_terminal'] ? 'bg-bamboo shadow-lg shadow-bamboo/20' : 'bg-muted' }}"
+                        >
+                            <div class="absolute top-1 left-1 bg-white w-4 h-4 rounded-full transition-transform {{ $settings['auto_close_terminal'] ? 'translate-x-6' : '' }}"></div>
+                        </button>
+                    </div>
+
+                    @if($settings['auto_close_terminal'] ?? true)
+                        <div class="pt-8 flex items-center justify-between border-t border-border">
+                            <div class="space-y-1">
+                                <h4 class="text-[17px] font-black tracking-tight">{{ __('Close Delay') }}</h4>
+                                <p class="text-sm text-muted-foreground leading-relaxed">{{ __('Set countdown duration before the terminal window closes.') }}</p>
+                            </div>
+                            <div x-data="{ open: false, selected: @entangle('settings.terminal_close_delay') }" class="relative">
+                                <button 
+                                    @click="open = !open" 
+                                    @click.away="open = false"
+                                    class="h-10 w-40 flex items-center justify-between rounded-md border border-input bg-background px-4 py-2 text-sm font-medium hover:bg-accent/50 transition-colors"
+                                >
+                                    <span x-text="selected + ' {{ __('seconds') }}'"></span>
+                                    <svg class="h-4 w-4 opacity-50" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                                </button>
+
+                                <div 
+                                    x-show="open" 
+                                    x-transition:enter="transition ease-out duration-100"
+                                    x-transition:enter-start="opacity-0 scale-95"
+                                    x-transition:enter-end="opacity-100 scale-100"
+                                    x-transition:leave="transition ease-in duration-75"
+                                    x-transition:leave-start="opacity-100 scale-100"
+                                    x-transition:leave-end="opacity-0 scale-95"
+                                    class="absolute right-0 top-12 z-50 min-w-[10rem] overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-md no-drag"
+                                >
+                                    <div class="px-2 py-1.5 text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-70">{{ __('Delay') }}</div>
+                                    <button @click="selected = 5; open = false" class="relative flex w-full cursor-default select-none items-center rounded-sm px-2 py-1.5 text-xs outline-none hover:bg-accent hover:text-accent-foreground transition-colors">5 {{ __('seconds') }}</button>
+                                    <button @click="selected = 10; open = false" class="relative flex w-full cursor-default select-none items-center rounded-sm px-2 py-1.5 text-xs outline-none hover:bg-accent hover:text-accent-foreground transition-colors">10 {{ __('seconds') }}</button>
+                                    <button @click="selected = 15; open = false" class="relative flex w-full cursor-default select-none items-center rounded-sm px-2 py-1.5 text-xs outline-none hover:bg-accent hover:text-accent-foreground transition-colors">15 {{ __('seconds') }}</button>
+                                    <button @click="selected = 30; open = false" class="relative flex w-full cursor-default select-none items-center rounded-sm px-2 py-1.5 text-xs outline-none hover:bg-accent hover:text-accent-foreground transition-colors">30 {{ __('seconds') }}</button>
+                                </div>
+                            </div>
+                        </div>
+                    @endif
+                </div>
+
                 <!-- Storage Directory -->
                 <div class="bg-card rounded-xl p-10 flex items-center justify-between shadow-md">
                     <div class="space-y-1">

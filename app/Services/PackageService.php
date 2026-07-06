@@ -83,10 +83,20 @@ class PackageService
                       "fi; " .
                       "$callback";
 
+            $settings = $this->getSettings();
+            $autoClose = $settings['auto_close_terminal'] ?? true;
+            $delay = $settings['terminal_close_delay'] ?? 10;
+
+            if ($autoClose) {
+                $postScript = "echo ''; echo 'Closing terminal in {$delay} seconds...'; sleep {$delay}";
+            } else {
+                $postScript = "echo ''; read -p 'Press Enter to close...'";
+            }
+
             $terminalCmd = match ($foundTerminal) {
-                'konsole' => "konsole -e bash -c " . escapeshellarg("$script; sleep 5"),
-                'gnome-terminal' => "gnome-terminal -- bash -c " . escapeshellarg("$script; sleep 5"),
-                default => "$foundTerminal -e bash -c " . escapeshellarg("$script; sleep 5")
+                'konsole' => "konsole -e bash -c " . escapeshellarg("$script; $postScript"),
+                'gnome-terminal' => "gnome-terminal -- bash -c " . escapeshellarg("$script; $postScript"),
+                default => "$foundTerminal -e bash -c " . escapeshellarg("$script; $postScript")
             };
 
             shell_exec($terminalCmd . " > /dev/null 2>&1 &");
@@ -279,6 +289,18 @@ class PackageService
         return $installed;
     }
 
+    private function getSettings(): array
+    {
+        $path = storage_path('app/private/settings.json');
+        if (!file_exists($path)) {
+            $path = storage_path('app/settings.json');
+        }
+        if (file_exists($path)) {
+            return json_decode(file_get_contents($path), true) ?? [];
+        }
+        return [];
+    }
+
     /**
      * Helper para abrir terminal e retornar o PID do processo
      */
@@ -296,10 +318,20 @@ class PackageService
 
         if (!$foundTerminal) return false;
 
+        $settings = $this->getSettings();
+        $autoClose = $settings['auto_close_terminal'] ?? true;
+        $delay = $settings['terminal_close_delay'] ?? 10;
+
+        if ($autoClose) {
+            $postCommand = "echo ''; echo 'Closing terminal in {$delay} seconds...'; sleep {$delay}";
+        } else {
+            $postCommand = "echo ''; read -p 'Press Enter to close...'";
+        }
+
         $terminalCmd = match ($foundTerminal) {
-            'konsole' => "konsole -e bash -c \"$command; $callbackCmd; sleep 5\"",
-            'gnome-terminal' => "gnome-terminal -- bash -c \"$command; $callbackCmd; sleep 5\"",
-            default => "$foundTerminal -e bash -c \"$command; $callbackCmd; sleep 5\""
+            'konsole' => "konsole -e bash -c \"$command; $callbackCmd; $postCommand\"",
+            'gnome-terminal' => "gnome-terminal -- bash -c \"$command; $callbackCmd; $postCommand\"",
+            default => "$foundTerminal -e bash -c \"$command; $callbackCmd; $postCommand\""
         };
 
         // Executa em background e captura o PID do terminal
@@ -344,8 +376,8 @@ class PackageService
 
         if ($isAur || $helper !== 'pacman') {
             $innerCommand = ($helper === 'paru') 
-                ? "echo \"1\" | paru --skipreview --noconfirm -S " . escapeshellarg($packageName)
-                : "echo \"1\" | yay --noedit --noconfirm -S " . escapeshellarg($packageName);
+                ? "paru -S " . escapeshellarg($packageName)
+                : "yay -S " . escapeshellarg($packageName);
             
             return $this->openTerminal($innerCommand, $callbackCmd);
         }

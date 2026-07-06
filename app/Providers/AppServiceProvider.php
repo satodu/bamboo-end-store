@@ -6,9 +6,6 @@ use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
-    /**
-     * Register any application services.
-     */
     public function register(): void
     {
         //
@@ -21,7 +18,31 @@ class AppServiceProvider extends ServiceProvider
     {
         // Set app locale based on settings
         $locale = 'system';
-        $settingsPath = storage_path('app/settings.json');
+        $settingsPath = storage_path('app/private/settings.json');
+        if (!file_exists($settingsPath)) {
+            $settingsPath = storage_path('app/settings.json');
+        }
+
+        // Fallback para CLI Artisan/Background commands que rodam fora do context do Electron:
+        if (!file_exists($settingsPath)) {
+            $home = getenv('HOME');
+            if ($home) {
+                // Tenta caminhos de desenvolvimento e produção
+                $paths = [
+                    "{$home}/.config/bamboo-end-store-dev/storage/app/private/settings.json",
+                    "{$home}/.config/bamboo-end-store/storage/app/private/settings.json",
+                    "{$home}/.config/bamboo-end-store-dev/storage/app/settings.json",
+                    "{$home}/.config/bamboo-end-store/storage/app/settings.json",
+                ];
+                foreach ($paths as $p) {
+                    if (file_exists($p)) {
+                        $settingsPath = $p;
+                        break;
+                    }
+                }
+            }
+        }
+        
         if (file_exists($settingsPath)) {
             $settings = json_decode(file_get_contents($settingsPath), true);
             $locale = $settings['locale'] ?? 'system';
