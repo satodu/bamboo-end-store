@@ -132,12 +132,19 @@
                             @endif
                         </span>
                     </div>
-                    <div class="flex justify-between items-center text-sm"><span class="text-muted-foreground font-bold">{{ __('Build Date') }}</span><span class="font-black">{{ $selectedPackage['Build Date'] ?? '---' }}</span></div>
+                    <div class="flex justify-between items-center text-sm"><span class="text-muted-foreground font-bold">{{ ($selectedPackage['is_aur'] ?? false) ? __('Last Updated') : __('Build Date') }}</span><span class="font-black">{{ $selectedPackage['Build Date'] ?? '---' }}</span></div>
                     <div class="flex justify-between items-center text-sm"><span class="text-muted-foreground font-bold">{{ __('Groups') }}</span><span class="font-black">{{ $selectedPackage['Groups'] ?? 'None' }}</span></div>
                     <div class="flex justify-between items-center text-sm"><span class="text-muted-foreground font-bold">{{ __('Architecture') }}</span><span class="font-black">{{ $selectedPackage['Architecture'] ?? 'x86_64' }}</span></div>
                     <div class="flex justify-between items-center text-sm"><span class="text-muted-foreground font-bold">{{ __('Maintainer') }}</span><span class="font-black truncate max-w-[200px]">{{ $selectedPackage['Maintainer'] ?? 'Unknown' }}</span></div>
                 </div>
             </div>
+
+            @if($selectedPackage['is_aur'] ?? false)
+                <livewire:aur-comments
+                    :package-name="$selectedPackage['Name']"
+                    :key="'aur-comments-' . ($selectedPackage['Name'] ?? '')"
+                />
+            @endif
         </div>
 
         <div class="p-8 flex gap-4 mt-auto">

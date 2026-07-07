@@ -100,6 +100,28 @@ class FlatpakManager extends BaseManager
             }
         }
 
+        // Supplement missing sizes (uninstalled packages) via remote-info
+        if ((empty($installedSize) || empty($downloadSize)) && $this->commandExists('flatpak')) {
+            $remoteResult = Process::run("LC_ALL=C flatpak remote-info flathub " . escapeshellarg($packageName));
+            if ($remoteResult->successful()) {
+                foreach (explode("\n", $remoteResult->output()) as $line) {
+                    $trimmed = trim($line);
+                    if (str_contains($trimmed, ':')) {
+                        $parts = explode(':', $trimmed, 2);
+                        $key = trim($parts[0]);
+                        $val = trim($parts[1]);
+
+                        if ($key === 'Installed' || $key === 'Tamanho instalado' || $key === 'Installed size' || $key === 'Installed Size') {
+                            $installedSize = $val;
+                        }
+                        if ($key === 'Download' || $key === 'Tamanho do download' || $key === 'Download size' || $key === 'Download Size') {
+                            $downloadSize = $val;
+                        }
+                    }
+                }
+            }
+        }
+
         if (!$apiDetails) {
             $remoteResult = Process::run("LC_ALL=C flatpak remote-info flathub " . escapeshellarg($packageName));
             if ($remoteResult->failed()) return null;
@@ -116,19 +138,21 @@ class FlatpakManager extends BaseManager
                     $parts = explode(':', $line, 2);
                     $key = trim($parts[0]);
                     $val = trim($parts[1]);
-                    if ($key === 'Version') $details['Version'] = $val;
-                    if ($key === 'License') $details['Licenses'] = $val;
-                    if ($key === 'Installed') $details['Installed Size'] = $val;
-                    if ($key === 'Arch') $details['Architecture'] = $val;
+                    if ($key === 'Version' || $key === 'Versão') $details['Version'] = $val;
+                    if ($key === 'License' || $key === 'Licença') $details['Licenses'] = $val;
+                    if ($key === 'Installed' || $key === 'Tamanho instalado' || $key === 'Installed Size') $details['Installed Size'] = $val;
+                    if ($key === 'Arch' || $key === 'Arq.') $details['Architecture'] = $val;
+                    if ($key === 'Date' || $key === 'Data') $details['Build Date'] = $val;
                     $details[$key] = $val;
                 }
             }
             $details['screenshots'] = $this->getScreenshots($packageName, true);
         } else {
             $details = $apiDetails;
-            if ($installedSize) $details['Installed Size'] = $installedSize;
-            if (isset($downloadSize)) $details['Download Size'] = $downloadSize;
         }
+
+        if ($installedSize) $details['Installed Size'] = $installedSize;
+        if ($downloadSize)  $details['Download Size'] = $downloadSize;
 
         $details['icon_url'] = $this->getIcon($packageName, true);
         $details['screenshots'] = $this->getScreenshots($packageName, true);
@@ -203,8 +227,15 @@ class FlatpakManager extends BaseManager
                 }
 
                 $version = 'Unknown';
-                if (!empty($data['releases'][0]['version'])) {
-                    $version = $data['releases'][0]['version'];
+                $releaseDate = '---';
+                if (!empty($data['releases'][0])) {
+                    $release = $data['releases'][0];
+                    if (!empty($release['version'])) {
+                        $version = $release['version'];
+                    }
+                    if (!empty($release['timestamp'])) {
+                        $releaseDate = date('Y-m-d H:i', $release['timestamp']) . ' UTC';
+                    }
                 }
 
                 return [
@@ -215,6 +246,7 @@ class FlatpakManager extends BaseManager
                     'Licenses'      => $data['project_license'] ?? 'Unknown',
                     'Architecture'  => 'x86_64',
                     'Repository'    => 'Flathub',
+                    'Build Date'    => $releaseDate,
                     'Maintainer'    => $data['developer_name'] ?? $data['project_group'] ?? 'Unknown',
                     'screenshots'   => $screenshots,
                     'is_flatpak'    => true,

@@ -3,6 +3,7 @@
 namespace Tests\Unit;
 
 use Tests\TestCase;
+use App\Enums\PackageSource;
 use App\Services\PackageManagers\PackageManagerFactory;
 use App\Services\PackageManagers\PacmanManager;
 use App\Services\PackageManagers\AurManager;
@@ -15,13 +16,13 @@ class PackageManagerTest extends TestCase
      */
     public function test_factory_resolves_correct_managers(): void
     {
-        $pacman = PackageManagerFactory::make(false, false);
+        $pacman  = PackageManagerFactory::make(PackageSource::PACMAN);
         $this->assertInstanceOf(PacmanManager::class, $pacman);
 
-        $aur = PackageManagerFactory::make(true, false);
+        $aur     = PackageManagerFactory::make(PackageSource::AUR);
         $this->assertInstanceOf(AurManager::class, $aur);
 
-        $flatpak = PackageManagerFactory::make(false, true);
+        $flatpak = PackageManagerFactory::make(PackageSource::FLATPAK);
         $this->assertInstanceOf(FlatpakManager::class, $flatpak);
     }
 

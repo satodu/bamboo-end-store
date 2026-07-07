@@ -2,10 +2,12 @@
 
 namespace App\Services;
 
-use Illuminate\Support\Facades\Process;
+use App\Enums\PackageSource;
+use App\Services\PackageManagers\FlatpakManager;
+use App\Services\PackageManagers\PackageManagerFactory;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
-use App\Services\PackageManagers\PackageManagerFactory;
+use Illuminate\Support\Facades\Process;
 
 class PackageService
 {
@@ -14,7 +16,7 @@ class PackageService
      */
     public function getHelper(): string
     {
-        return PackageManagerFactory::make(true, false)->getHelper();
+        return PackageManagerFactory::make(PackageSource::AUR)->getHelper();
     }
 
     /**
@@ -114,17 +116,16 @@ class PackageService
         }
 
         return Cache::remember("pkg_search_" . md5($query . ($includeFlatpak ? '_flat' : '')), 300, function () use ($query, $includeFlatpak) {
-            $pacman = PackageManagerFactory::make(false, false);
-            $aur = PackageManagerFactory::make(true, false);
-
             $packages = array_merge(
-                $pacman->search($query),
-                $aur->search($query)
+                PackageManagerFactory::make(PackageSource::PACMAN)->search($query),
+                PackageManagerFactory::make(PackageSource::AUR)->search($query)
             );
 
             if ($includeFlatpak && $this->commandExists('flatpak')) {
-                $flatpak = PackageManagerFactory::make(false, true);
-                $packages = array_merge($packages, $flatpak->search($query));
+                $packages = array_merge(
+                    $packages,
+                    PackageManagerFactory::make(PackageSource::FLATPAK)->search($query)
+                );
             }
 
             return $packages;
@@ -136,7 +137,7 @@ class PackageService
      */
     public function searchFlatpak(string $query): array
     {
-        return PackageManagerFactory::make(false, true)->search($query);
+        return PackageManagerFactory::make(PackageSource::FLATPAK)->search($query);
     }
 
     /**
@@ -165,9 +166,9 @@ class PackageService
                 if (count($parts) >= 2) {
                     $name = $parts[0];
                     $installed[] = [
-                        'name' => $name,
-                        'version' => $parts[1],
-                        'is_aur' => in_array($name, $foreignNames),
+                        'name'       => $name,
+                        'version'    => $parts[1],
+                        'is_aur'     => in_array($name, $foreignNames),
                         'is_flatpak' => false,
                     ];
                 }
@@ -187,7 +188,7 @@ class PackageService
      */
     public function getInstalledFlatpaks(): array
     {
-        return (new PackageManagers\FlatpakManager())->getInstalledFlatpaks();
+        return (new FlatpakManager())->getInstalledFlatpaks();
     }
 
     /**
@@ -197,7 +198,7 @@ class PackageService
     {
         Cache::put("installing_{$packageName}", true, 1800);
         app(\App\Services\UserStateMachine::class)->transitionTo(\App\Enums\UserState::INSTALLING, $packageName);
-        return PackageManagerFactory::make($isAur, $isFlatpak)->install($packageName);
+        return PackageManagerFactory::make(PackageSource::fromFlags($isAur, $isFlatpak))->install($packageName);
     }
 
     /**
@@ -207,8 +208,8 @@ class PackageService
     {
         Cache::put("installing_{$packageName}", true, 600);
         app(\App\Services\UserStateMachine::class)->transitionTo(\App\Enums\UserState::UNINSTALLING, $packageName);
-        
-        $manager = PackageManagerFactory::make(false, $isFlatpak);
+
+        $manager = PackageManagerFactory::make(PackageSource::fromFlags(false, $isFlatpak));
         $pid = $manager->remove($packageName);
         if ($pid) {
             $this->clearCache();
@@ -229,7 +230,7 @@ class PackageService
      */
     public function getIcon(string $name, bool $isFlatpak = false): string
     {
-        return PackageManagerFactory::make(false, $isFlatpak)->getIcon($name, $isFlatpak);
+        return PackageManagerFactory::make(PackageSource::fromFlags(false, $isFlatpak))->getIcon($name, $isFlatpak);
     }
 
     /**
@@ -237,7 +238,7 @@ class PackageService
      */
     public function getScreenshots(string $name, bool $isFlatpak = false): array
     {
-        return PackageManagerFactory::make(false, $isFlatpak)->getScreenshots($name, $isFlatpak);
+        return PackageManagerFactory::make(PackageSource::fromFlags(false, $isFlatpak))->getScreenshots($name, $isFlatpak);
     }
 
     /**
@@ -245,7 +246,7 @@ class PackageService
      */
     public function searchFlathubApi(string $query): array
     {
-        return (new PackageManagers\FlatpakManager())->searchFlathubApi($query);
+        return (new FlatpakManager())->searchFlathubApi($query);
     }
 
     /**
@@ -254,7 +255,7 @@ class PackageService
     public function runInBackground(string $name, bool $isAur = false, bool $isFlatpak = false, string $logFile): int
     {
         app(\App\Services\UserStateMachine::class)->transitionTo(\App\Enums\UserState::INSTALLING, $name);
-        return PackageManagerFactory::make($isAur, $isFlatpak)->runInBackground($name, $logFile);
+        return PackageManagerFactory::make(PackageSource::fromFlags($isAur, $isFlatpak))->runInBackground($name, $logFile);
     }
 
     /**
@@ -270,7 +271,7 @@ class PackageService
             Cache::forget($cacheKey);
         }
 
-        $details = PackageManagerFactory::make($isAur, $isFlatpak)->getDetails($packageName);
+        $details = PackageManagerFactory::make(PackageSource::fromFlags($isAur, $isFlatpak))->getDetails($packageName);
 
         if (!empty($details)) {
             Cache::put($cacheKey, $details, 600);

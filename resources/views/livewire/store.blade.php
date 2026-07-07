@@ -4,6 +4,7 @@ use Livewire\Volt\Component;
 use App\Services\PackageService;
 use App\Services\AppImageService;
 use Native\Laravel\Facades\Notification;
+use App\Services\NotificationService;
 use Native\Laravel\Facades\Alert;
 use Native\Laravel\Dialog;
 use Illuminate\Support\Facades\Storage;
@@ -746,21 +747,20 @@ new class extends Component
     public function showNotification($title, $message, $type = 'success')
     {
         $this->toast = [
-            'show' => true,
+            'show'    => true,
             'message' => $message,
-            'type' => $type
+            'type'    => $type
         ];
-        
+
         $this->dispatch('notify');
 
-        // Notificação do sistema via NativePHP
+        // Notificação do sistema via NotificationService (inclui ícone)
         try {
-            \Native\Laravel\Facades\Notification::title($title)
-                ->message($message)
-                ->show();
+            app(NotificationService::class)->send($title, $message);
         } catch (\Throwable $e) {
-            // NativePHP pode não estar disponível
+            \Illuminate\Support\Facades\Log::error('NotificationService failed: ' . $e->getMessage());
         }
+
     }
 
     public function loadAppImages()

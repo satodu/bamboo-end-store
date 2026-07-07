@@ -118,6 +118,10 @@ class AurManager extends BaseManager
                             'Description'  => $item['Description'] ?? '',
                             'URL'          => $item['URL'] ?? '',
                             'Licenses'     => implode(', ', $item['License'] ?? ['GPL']),
+                            'Build Date'   => isset($item['LastModified'])
+                                ? date('Y-m-d H:i', $item['LastModified']) . ' UTC'
+                                : '---',
+                            'Maintainer'   => $item['Maintainer'] ?? 'Unknown',
                             'is_installed' => $this->isInstalled($packageName),
                             'icon_url'     => $this->getIcon($packageName, false),
                             'screenshots'  => $this->getScreenshots($packageName, false),
@@ -143,9 +147,40 @@ class AurManager extends BaseManager
             }
         }
 
-        $details['icon_url'] = $this->getIcon($packageName, false);
+        // Map local language keys (like Portuguese) to standard English template keys
+        $keyMap = [
+            'Repositório'        => 'Repository',
+            'Nome'               => 'Name',
+            'Versão'             => 'Version',
+            'Descrição'          => 'Description',
+            'Grupos'             => 'Groups',
+            'Licenças'           => 'Licenses',
+            'Mantenedor'         => 'Maintainer',
+            'Última modificação' => 'Build Date',
+            'Last Modified'      => 'Build Date',
+        ];
+
+        foreach ($keyMap as $localKey => $standardKey) {
+            if (isset($details[$localKey]) && !isset($details[$standardKey])) {
+                $details[$standardKey] = $details[$localKey];
+            }
+        }
+
+        $details['icon_url']    = $this->getIcon($packageName, false);
         $details['screenshots'] = $this->getScreenshots($packageName, false);
         $details['is_installed'] = $this->isInstalled($packageName);
+
+        // Still empty? Supplement from AUR API LastModified timestamp
+        if (empty($details['Build Date'])) {
+            $res = Process::run("curl -s --max-time 10 \"https://aur.archlinux.org/rpc/?v=5&type=info&arg[]=" . urlencode($packageName) . "\"");
+            if ($res->successful()) {
+                $json = json_decode($res->output(), true);
+                $lastModified = $json['results'][0]['LastModified'] ?? null;
+                if ($lastModified) {
+                    $details['Build Date'] = date('Y-m-d H:i', $lastModified) . ' UTC';
+                }
+            }
+        }
 
         return $details ?: null;
     }
@@ -192,5 +227,56 @@ class AurManager extends BaseManager
     {
         $installedResult = Process::run("pacman -Qq");
         return $installedResult->successful() ? explode("\n", trim($installedResult->output())) : [];
+    }
+
+    public function getComments(string $packageName, int $limit = 50): array
+    {
+        return \Illuminate\Support\Facades\Cache::remember("aur_comments_{$packageName}", 1800, function () use ($packageName, $limit) {
+            $res = Process::run("curl -s --max-time 15 'https://aur.archlinux.org/packages/" . urlencode($packageName) . "'");
+            if ($res->failed()) return [];
+
+            $html = $res->output();
+            $comments = [];
+
+            // Match comment headers: extract id, author, date
+            preg_match_all(
+                '/<h4\s+id="comment-(\d+)"\s+class="comment-header">\s*(.*?)\s+commented on\s+<a[^>]+class="date">([^<]+)<\/a>/s',
+                $html,
+                $headers,
+                PREG_SET_ORDER
+            );
+
+            foreach (array_slice($headers, 0, $limit) as $header) {
+                $id     = $header[1];
+                $author = trim(strip_tags($header[2]));
+                $date   = trim($header[3]);
+
+                // Get matching content div for this comment id
+                preg_match(
+                    '/<div\s+id="comment-' . $id . '-content"[^>]*>(.*?)<\/div>\s*<\/div>/s',
+                    $html,
+                    $contentMatch
+                );
+
+                $content = '';
+                if (!empty($contentMatch[1])) {
+                    $content = trim(strip_tags($contentMatch[1]));
+                    $content = preg_replace('/\s+/', ' ', $content);
+                    $content = mb_substr($content, 0, 500);
+                }
+
+                if ($author && $content) {
+                    $comments[] = [
+                        'id'      => $id,
+                        'author'  => $author,
+                        'date'    => $date,
+                        'content' => $content,
+                        'url'     => "https://aur.archlinux.org/packages/{$packageName}#comment-{$id}",
+                    ];
+                }
+            }
+
+            return $comments;
+        });
     }
 }

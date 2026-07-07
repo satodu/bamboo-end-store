@@ -3,19 +3,16 @@
 namespace App\Services\PackageManagers;
 
 use App\Contracts\PackageManagerInterface;
+use App\Enums\PackageSource;
 
 class PackageManagerFactory
 {
-    public static function make(bool $isAur = false, bool $isFlatpak = false): PackageManagerInterface
+    public static function make(PackageSource $source): PackageManagerInterface
     {
-        if ($isFlatpak) {
-            return new FlatpakManager();
-        }
-
-        if ($isAur) {
-            return new AurManager();
-        }
-
-        return new PacmanManager();
+        return match ($source) {
+            PackageSource::AUR     => new AurManager(),
+            PackageSource::FLATPAK => new FlatpakManager(),
+            PackageSource::PACMAN  => new PacmanManager(),
+        };
     }
 }
