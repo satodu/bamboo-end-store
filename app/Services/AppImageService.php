@@ -118,22 +118,92 @@ class AppImageService
      */
     public function createDesktopEntry(string $fileName, string $execPath): bool
     {
-        $name = str_replace(['.AppImage', '.appimage'], '', $fileName);
         $id = md5($fileName);
         $desktopPath = getenv('HOME') . '/.local/share/applications/appimage-' . $id . '.desktop';
 
         $iconPath = $this->extractIcon($execPath, $id) ?: 'system-run';
 
+        // Extract properties from the AppImage's internal .desktop file
+        $properties = $this->extractDesktopProperties($execPath, $id);
+
+        $name = $properties['Name'] ?: str_replace(['.AppImage', '.appimage'], '', $fileName);
+        if (!str_contains(strtolower($name), 'appimage')) {
+            $name .= ' (AppImage)';
+        }
+
         $content = "[Desktop Entry]\n";
         $content .= "Type=Application\n";
-        $content .= "Name=" . $name . " (AppImage)\n";
+        $content .= "Name=" . $name . "\n";
         $content .= "Exec=\"" . $execPath . "\"\n";
         $content .= "Icon=" . $iconPath . "\n";
-        $content .= "Categories=Utility;\n";
+        $content .= "Categories=" . $properties['Categories'] . "\n";
         $content .= "Terminal=false\n";
-        $content .= "Comment=Installed via Bamboo End Store\n";
+        $content .= "Comment=" . $properties['Comment'] . "\n";
+
+        if (!empty($properties['StartupWMClass'])) {
+            $content .= "StartupWMClass=" . $properties['StartupWMClass'] . "\n";
+        }
 
         return File::put($desktopPath, $content) !== false;
+    }
+
+    /**
+     * Extract properties from the AppImage's internal .desktop file.
+     */
+    protected function extractDesktopProperties(string $execPath, string $id): array
+    {
+        $properties = [
+            'Name' => null,
+            'StartupWMClass' => null,
+            'Categories' => 'Utility;',
+            'Comment' => 'Installed via Bamboo End Store',
+        ];
+
+        $tempDir = storage_path('app/temp_desktop_' . $id);
+        if (empty($tempDir)) return $properties;
+        if (File::exists($tempDir)) File::deleteDirectory($tempDir);
+        File::makeDirectory($tempDir, 0755, true);
+
+        try {
+            chmod($execPath, 0755);
+            $command = "cd " . escapeshellarg($tempDir) . " && " . escapeshellarg($execPath) . " --appimage-extract \"*.desktop\" > /dev/null 2>&1";
+            shell_exec($command);
+
+            if (File::exists($tempDir . '/squashfs-root')) {
+                $files = File::files($tempDir . '/squashfs-root');
+                foreach ($files as $file) {
+                    if (strtolower($file->getExtension()) === 'desktop') {
+                        $content = File::get($file->getRealPath());
+
+                        // Parse [Desktop Entry] section specifically to avoid [Desktop Action ...] keys
+                        $entrySection = $content;
+                        if (preg_match('/\[Desktop Entry\](.*?)(?=\n\s*\[|$)/s', $content, $secMatches)) {
+                            $entrySection = $secMatches[1];
+                        }
+
+                        if (preg_match('/^Name=(.+)$/m', $entrySection, $matches)) {
+                            $properties['Name'] = trim($matches[1]);
+                        }
+                        if (preg_match('/^StartupWMClass=(.+)$/m', $entrySection, $matches)) {
+                            $properties['StartupWMClass'] = trim($matches[1]);
+                        }
+                        if (preg_match('/^Categories=(.+)$/m', $entrySection, $matches)) {
+                            $properties['Categories'] = trim($matches[1]);
+                        }
+                        if (preg_match('/^Comment=(.+)$/m', $entrySection, $matches)) {
+                            $properties['Comment'] = trim($matches[1]);
+                        }
+
+                        break;
+                    }
+                }
+            }
+        } catch (\Exception $e) {
+            Log::error("Failed to extract desktop properties: " . $e->getMessage());
+        }
+
+        if (File::exists($tempDir)) File::deleteDirectory($tempDir);
+        return $properties;
     }
 
     /**

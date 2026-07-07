@@ -71,5 +71,19 @@ class AppServiceProvider extends ServiceProvider
             \Illuminate\Support\Facades\Log::info("UpdateSystemEvent received, triggering updateSystem()");
             app(\App\Services\PackageService::class)->updateSystem();
         });
+
+        // Register custom Package Operation finished event and its listeners
+        \Illuminate\Support\Facades\Event::listen(
+            \App\Events\PackageOperationFinishedEvent::class,
+            \App\Listeners\ResetUserStateMachineListener::class
+        );
+        \Illuminate\Support\Facades\Event::listen(
+            \App\Events\PackageOperationFinishedEvent::class,
+            \App\Listeners\ClearPackageCacheListener::class
+        );
+        \Illuminate\Support\Facades\Event::listen(
+            \App\Events\PackageOperationFinishedEvent::class,
+            \App\Listeners\SendOperationNotificationListener::class
+        );
     }
 }

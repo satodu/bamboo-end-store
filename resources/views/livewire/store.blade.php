@@ -227,6 +227,12 @@ new class extends Component
         $this->loadData();
     }
 
+    public function clearCache()
+    {
+        \Illuminate\Support\Facades\Cache::flush();
+        $this->showNotification(__('Cache Cleared'), __('All cached store data has been successfully cleared.'));
+    }
+
     public function saveTerminalAutoClose()
     {
         Storage::put('settings.json', json_encode($this->settings));

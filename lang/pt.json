@@ -144,5 +144,9 @@
   "console_no_orphans": "Nenhum pacote órfão para remover.",
   "console_closing_terminal": "Fechando terminal em {delay} segundos...",
   "console_press_enter": "Pressione Enter para fechar...",
-  "console_initiating_removal": "Iniciando remoção de {name}..."
+  "console_initiating_removal": "Iniciando remoção de {name}...",
+  "Clear Cache": "Limpar Cache",
+  "Clear all cached package details, searches, and comments.": "Limpa todos os detalhes de pacotes, buscas e comentários em cache.",
+  "Cache Cleared": "Cache Limpo",
+  "All cached store data has been successfully cleared.": "Todos os dados em cache da loja foram limpos com sucesso."
 }

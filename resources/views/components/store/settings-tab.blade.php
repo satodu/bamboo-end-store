@@ -243,6 +243,23 @@
                     </div>
                 </div>
 
+                <!-- Cache Management -->
+                <div class="bg-card rounded-xl p-10 flex items-center justify-between shadow-md">
+                    <div class="space-y-1">
+                        <h4 class="text-[17px] font-black tracking-tight">{{ __('Clear Cache') }}</h4>
+                        <p class="text-sm text-muted-foreground leading-relaxed">{{ __('Clear all cached package details, searches, and comments.') }}</p>
+                    </div>
+                    <div>
+                        <button 
+                            wire:click="clearCache"
+                            class="h-10 px-6 bg-destructive/10 hover:bg-destructive text-destructive hover:text-destructive-foreground text-xs font-black rounded-md transition-all uppercase tracking-widest"
+                        >
+                            {{ __('Clear Cache') }}
+                        </button>
+                    </div>
+                </div>
+
+
                 <!-- Save Changes -->
                 <div class="flex justify-end pt-4">
                     <button wire:click="saveSettings" class="h-12 px-10 bg-primary text-primary-foreground text-xs font-black rounded-md hover:bg-primary/90 transition-all uppercase tracking-[0.2em] shadow-xl">{{ __('Save Changes') }}</button>
