@@ -23,6 +23,8 @@ new class extends Component
     public $pendingInstallations = []; 
     public $confirmingAppImageDeletion = null; 
     public $confirmingPackageRemoval = null; 
+    public $viewMode = 'grid';
+    public $appImageViewMode = 'grid';
     
     // User State Machine
     public string $userState = 'idle';
@@ -46,7 +48,10 @@ new class extends Component
         'appimage_path' => '',
         'locale' => 'system',
         'auto_close_terminal' => true,
-        'terminal_close_delay' => 10
+        'terminal_close_delay' => 10,
+        'view_mode' => 'grid',
+        'appimages_view_mode' => 'grid',
+        'theme' => 'theme-bamboo'
     ];
 
     public $sysInfo = [
@@ -73,6 +78,10 @@ new class extends Component
         }
 
         $this->loadData();
+        
+        // Reset state machine on boot to prevent stale locks from previous crashes/restarts
+        app(\App\Services\UserStateMachine::class)->reset();
+        
         $this->checkPendingInstallations();
         $this->syncUserState();
     }
@@ -189,6 +198,9 @@ new class extends Component
             $this->settings = array_merge($this->settings, json_decode(Storage::get('settings.json'), true));
         }
 
+        $this->viewMode = $this->settings['view_mode'] ?? 'grid';
+        $this->appImageViewMode = $this->settings['appimages_view_mode'] ?? 'grid';
+
         // Re-apply locale on every mount so it survives within the long-running NativePHP process
         $locale = $this->settings['locale'] ?? 'system';
         if ($locale === 'system') {
@@ -203,6 +215,18 @@ new class extends Component
             }
         }
         app()->setLocale($locale);
+    }
+
+    public function updatedViewMode($value)
+    {
+        $this->settings['view_mode'] = $value;
+        Storage::put('settings.json', json_encode($this->settings));
+    }
+
+    public function updatedAppImageViewMode($value)
+    {
+        $this->settings['appimages_view_mode'] = $value;
+        Storage::put('settings.json', json_encode($this->settings));
     }
 
     public function saveSettings()
@@ -657,6 +681,29 @@ new class extends Component
         $this->confirmingPackageIsFlatpak = $isFlatpak;
     }
 
+    public function launchPackage(string $name, bool $isFlatpak = false)
+    {
+        if ($isFlatpak) {
+            // Flatpak apps use their app ID
+            $mapping = [
+                'discord'                => 'com.discordapp.Discord',
+                'spotify'                => 'com.spotify.Client',
+                'steam'                  => 'com.valvesoftware.Steam',
+                'visual-studio-code-bin' => 'com.visualstudio.code',
+                'brave-bin'              => 'com.brave.Browser',
+                'brave'                  => 'com.brave.Browser',
+                'vlc'                    => 'org.videolan.VLC',
+                'obs-studio'             => 'com.obsproject.Studio',
+            ];
+            $appId = $mapping[strtolower($name)] ?? $name;
+            shell_exec("flatpak run " . escapeshellarg($appId) . " > /dev/null 2>&1 &");
+        } else {
+            // For native packages just launch the binary name
+            shell_exec(escapeshellarg($name) . " > /dev/null 2>&1 &");
+        }
+        $this->showNotification(__('Launching'), __('Starting application...'));
+    }
+
     public function cancelPackageRemoval()
     {
         $this->confirmingPackageRemoval = null;
@@ -854,11 +901,14 @@ new class extends Component
 ?>
 
 <div 
-    class="flex h-screen bg-background text-foreground overflow-hidden relative font-sans" 
+    class="flex h-screen bg-background text-foreground overflow-hidden relative font-sans {{ $settings['theme'] ?? 'theme-bamboo' }}" 
     x-data="{ show: false, timeout: null }" 
     x-on:notify.window="show = true; clearTimeout(timeout); timeout = setTimeout(() => show = false, 4000)"
     @if(count($pendingInstallations) > 0 || $userState !== 'idle') wire:poll.2s="checkPendingInstallations" @endif
 >
+    <!-- Ambient Glow Background Bubbles for Glassmorphism -->
+    <div class="absolute -top-40 -left-40 w-96 h-96 bg-bamboo/15 rounded-full blur-[120px] pointer-events-none z-0"></div>
+    <div class="absolute bottom-10 left-10 w-80 h-80 bg-blue-500/10 rounded-full blur-[100px] pointer-events-none z-0"></div>
     
     <!-- Toast Notification -->
     <div 
@@ -906,7 +956,7 @@ new class extends Component
     <!-- Main Content -->
     <main class="flex-1 flex flex-col min-w-0 bg-background overflow-hidden">
         @if($tab === 'explore' || $tab === 'installed')
-            <x-store.header :$search :$tab :$filterRepo :$settings />
+            <x-store.header :$search :$tab :$filterRepo :$settings :$viewMode />
 
             <!-- Content Area -->
             <div class="flex-1 overflow-y-auto">
@@ -923,6 +973,7 @@ new class extends Component
                             :$pendingInstallations
                             :$userState
                             :$activePackage
+                            :$viewMode
                         />
 
                     {{-- === SEARCH RESULTS (explore com busca ativa) === --}}
@@ -936,6 +987,7 @@ new class extends Component
                             :$settings
                             :$userState
                             :$activePackage
+                            :$viewMode
                         />
 
                     {{-- === INSTALLED === --}}
@@ -950,32 +1002,69 @@ new class extends Component
                             wire:loading.class.remove="hidden"
                             wire:target="setTab"
                         >
-                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                                @for($s = 0; $s < 8; $s++)
-                                    <div class="bg-card rounded-lg overflow-hidden animate-pulse">
-                                        <div class="p-6 space-y-4">
-                                            <div class="w-14 h-14 bg-muted/60 rounded-lg"></div>
-                                            <div class="h-4 bg-muted/60 rounded w-3/4"></div>
-                                            <div class="h-3 bg-muted/40 rounded w-full"></div>
-                                            <div class="h-10 bg-muted/30 rounded mt-4"></div>
+                            @if($viewMode === 'grid')
+                                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                                    @for($s = 0; $s < 8; $s++)
+                                        <div class="bg-card rounded-lg overflow-hidden animate-pulse">
+                                            <div class="p-6 space-y-4">
+                                                <div class="w-14 h-14 bg-muted/60 rounded-lg"></div>
+                                                <div class="h-4 bg-muted/60 rounded w-3/4"></div>
+                                                <div class="h-3 bg-muted/40 rounded w-full"></div>
+                                                <div class="h-10 bg-muted/30 rounded mt-4"></div>
+                                            </div>
                                         </div>
-                                    </div>
-                                @endfor
-                            </div>
+                                    @endfor
+                                </div>
+                            @else
+                                <div class="flex flex-col gap-4">
+                                    @for($s = 0; $s < 6; $s++)
+                                        <div class="bg-card rounded-lg p-4 flex items-center gap-5 animate-pulse">
+                                            <div class="w-24 h-24 bg-muted/60 rounded-lg shrink-0"></div>
+                                            <div class="flex-1 space-y-2.5">
+                                                <div class="flex items-center gap-2">
+                                                    <div class="h-4.5 bg-muted/60 rounded w-1/4"></div>
+                                                    <div class="h-3.5 bg-muted/40 rounded w-16"></div>
+                                                </div>
+                                                <div class="h-3.5 bg-muted/40 rounded w-3/4"></div>
+                                                <div class="h-3 bg-muted/30 rounded w-1/2"></div>
+                                            </div>
+                                            <div class="flex items-center gap-3 shrink-0">
+                                                <div class="h-10 w-28 bg-muted/40 rounded-lg"></div>
+                                                <div class="h-10 w-10 bg-muted/30 rounded-lg"></div>
+                                            </div>
+                                        </div>
+                                    @endfor
+                                </div>
+                            @endif
                         </div>
 
-                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
-                            wire:loading.class="hidden"
-                            wire:target="setTab"
-                        >
-                            @forelse($packages as $pkg)
-                                <x-store.package-card :$pkg :$pendingInstallations wire:key="inst-{{ $pkg['name'] }}-{{ $loop->index }}" />
-                            @empty
-                                <div class="col-span-full py-32 text-center">
-                                    <h3 class="text-xl font-bold text-muted-foreground">No installed packages found.</h3>
-                                </div>
-                            @endforelse
-                        </div>
+                        @if($viewMode === 'grid')
+                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+                                wire:loading.class="hidden"
+                                wire:target="setTab"
+                            >
+                                @forelse($packages as $pkg)
+                                    <x-store.package-card :$pkg :$pendingInstallations wire:key="inst-{{ $pkg['name'] }}-{{ $loop->index }}" />
+                                @empty
+                                    <div class="col-span-full py-32 text-center">
+                                        <h3 class="text-xl font-bold text-muted-foreground">No installed packages found.</h3>
+                                    </div>
+                                @endforelse
+                            </div>
+                        @else
+                            <div class="flex flex-col gap-4"
+                                wire:loading.class="hidden"
+                                wire:target="setTab"
+                            >
+                                @forelse($packages as $pkg)
+                                    <x-store.package-list-card :$pkg :$pendingInstallations wire:key="inst-{{ $pkg['name'] }}-{{ $loop->index }}" />
+                                @empty
+                                    <div class="col-span-full py-32 text-center">
+                                        <h3 class="text-xl font-bold text-muted-foreground">No installed packages found.</h3>
+                                    </div>
+                                @endforelse
+                            </div>
+                        @endif
 
                         {{-- Pagination para installed --}}
                         @if($totalResults > $settings['search_limit'])
@@ -997,7 +1086,7 @@ new class extends Component
                 </div>
             </div>
         @elseif($tab === 'appimages')
-            <x-store.appimages-tab :$appImages />
+            <x-store.appimages-tab :$appImages :$appImageViewMode />
         @elseif($tab === 'settings')
             <x-store.settings-tab :$settings />
         @endif
@@ -1013,13 +1102,14 @@ new class extends Component
         <div class="fixed inset-0 z-[10001] flex items-center justify-center p-6 bg-background/80 backdrop-blur-sm animate-in fade-in duration-200">
             <div class="bg-card border border-border w-full max-w-md rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
                 <div class="p-8">
-                    <div class="w-16 h-16 bg-destructive/10 text-destructive rounded-2xl flex items-center justify-center mb-6">
-                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                        </svg>
+                    <div class="flex items-center gap-4 mb-6">
+                        <div class="w-12 h-12 bg-destructive/10 text-destructive rounded-xl flex items-center justify-center shrink-0">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-2xl font-black tracking-tight leading-tight">{{ __('Confirm AppImage Deletion') }}</h3>
                     </div>
-                    
-                    <h3 class="text-2xl font-black tracking-tight mb-3">{{ __('Confirm AppImage Deletion') }}</h3>
                     <p class="text-muted-foreground leading-relaxed">
                         {{ __('Are you sure you want to delete this AppImage? This will permanently remove the file from your system.') }}
                     </p>
@@ -1038,13 +1128,14 @@ new class extends Component
         <div class="fixed inset-0 z-[10001] flex items-center justify-center p-6 bg-background/80 backdrop-blur-sm animate-in fade-in duration-200">
             <div class="bg-card border border-border w-full max-w-md rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
                 <div class="p-8">
-                    <div class="w-16 h-16 bg-destructive/10 text-destructive rounded-2xl flex items-center justify-center mb-6">
-                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                        </svg>
+                    <div class="flex items-center gap-4 mb-6">
+                        <div class="w-12 h-12 bg-destructive/10 text-destructive rounded-xl flex items-center justify-center shrink-0">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-2xl font-black tracking-tight leading-tight">{{ __('Confirm Package Removal') }}</h3>
                     </div>
-                    
-                    <h3 class="text-2xl font-black tracking-tight mb-3">{{ __('Confirm Package Removal') }}</h3>
                     <p class="text-muted-foreground leading-relaxed">
                         {{ __('Are you sure you want to uninstall this package?') }}
                     </p>

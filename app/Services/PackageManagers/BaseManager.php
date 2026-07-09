@@ -82,6 +82,20 @@ abstract class BaseManager implements PackageManagerInterface
     public function getIcon(string $name, bool $isFlatpak = false): string
     {
         if ($isFlatpak) {
+            $nameLower = strtolower($name);
+            $isRuntime = str_contains($nameLower, 'platform') 
+                || str_contains($nameLower, 'sdk') 
+                || str_contains($nameLower, 'theme') 
+                || str_contains($nameLower, 'extension') 
+                || str_contains($nameLower, 'plugin')
+                || str_contains($nameLower, 'driver')
+                || str_contains($nameLower, 'codecs')
+                || str_contains($nameLower, 'baseapp');
+
+            if ($isRuntime) {
+                return '';
+            }
+
             return "https://dl.flathub.org/repo/appstream/x86_64/icons/128x128/{$name}.png";
         }
 

@@ -1,4 +1,4 @@
-@props(['search', 'tab', 'filterRepo', 'settings'])
+@props(['search', 'tab', 'filterRepo', 'settings', 'viewMode'])
 
 <header {{ $attributes->merge(['class' => 'h-16 shadow-md flex items-center px-8 gap-6 bg-background/95 backdrop-blur-xl sticky top-0 z-40']) }}>
     <div class="relative flex-1 group">
@@ -61,8 +61,41 @@
             </div>
         </div>
 
-        <button wire:click="refresh" wire:loading.attr="disabled" class="h-10 w-10 border border-input rounded-md flex items-center justify-center hover:bg-accent transition-all group">
+        {{-- Botão de Atualizar --}}
+        <button wire:click="refresh" wire:loading.attr="disabled" class="h-10 w-10 border border-input rounded-md flex items-center justify-center hover:bg-accent transition-all group" title="{{ __('Refresh') }}">
             <svg wire:loading.class="animate-spin" wire:target="refresh" class="w-5 h-5 text-muted-foreground group-hover:text-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
         </button>
+
+        {{-- Alternador de Layout (Grade / Lista) --}}
+        @if(in_array($tab, ['explore', 'installed']))
+            <div class="flex items-center border border-input rounded-md overflow-hidden p-0.5 bg-background select-none">
+                <button 
+                    wire:click="$set('viewMode', 'grid')" 
+                    class="h-9 w-9 flex items-center justify-center rounded-sm transition-all {{ $viewMode === 'grid' ? 'bg-accent text-foreground shadow-sm' : 'text-muted-foreground hover:bg-accent/50 hover:text-foreground' }}"
+                    title="{{ __('Grid View') }}"
+                >
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <rect x="3" y="3" width="7" height="7" rx="1"></rect>
+                        <rect x="14" y="3" width="7" height="7" rx="1"></rect>
+                        <rect x="14" y="14" width="7" height="7" rx="1"></rect>
+                        <rect x="3" y="14" width="7" height="7" rx="1"></rect>
+                    </svg>
+                </button>
+                <button 
+                    wire:click="$set('viewMode', 'list')" 
+                    class="h-9 w-9 flex items-center justify-center rounded-sm transition-all {{ $viewMode === 'list' ? 'bg-accent text-foreground shadow-sm' : 'text-muted-foreground hover:bg-accent/50 hover:text-foreground' }}"
+                    title="{{ __('List View') }}"
+                >
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <line x1="8" y1="6" x2="21" y2="6"></line>
+                        <line x1="8" y1="12" x2="21" y2="12"></line>
+                        <line x1="8" y1="18" x2="21" y2="18"></line>
+                        <rect x="3" y="5" width="2" height="2" rx="0.5"></rect>
+                        <rect x="3" y="11" width="2" height="2" rx="0.5"></rect>
+                        <rect x="3" y="17" width="2" height="2" rx="0.5"></rect>
+                    </svg>
+                </button>
+            </div>
+        @endif
     </div>
 </header>

@@ -148,5 +148,11 @@
   "Clear Cache": "Limpar Cache",
   "Clear all cached package details, searches, and comments.": "Limpa todos os detalhes de pacotes, buscas e comentários em cache.",
   "Cache Cleared": "Cache Limpo",
-  "All cached store data has been successfully cleared.": "Todos os dados em cache da loja foram limpos com sucesso."
+  "All cached store data has been successfully cleared.": "Todos os dados em cache da loja foram limpos com sucesso.",
+  "Grid View": "Visualização em Grade",
+  "List View": "Visualização em Lista",
+  "Appearance": "Aparência",
+  "Color Palette": "Paleta de Cores",
+  "Choose an accent color theme for the store.": "Escolha um tema de cor de destaque para a loja.",
+  "Customize application language, theme colors, and layout.": "Personalize o idioma do aplicativo, cores do tema e layout."
 }

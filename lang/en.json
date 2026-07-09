@@ -143,5 +143,11 @@
   "console_no_orphans": "No orphan packages to remove.",
   "console_closing_terminal": "Closing terminal in {delay} seconds...",
   "console_press_enter": "Press Enter to close...",
-  "console_initiating_removal": "Initiating removal of {name}..."
+  "console_initiating_removal": "Initiating removal of {name}...",
+  "Grid View": "Grid View",
+  "List View": "List View",
+  "Appearance": "Appearance",
+  "Color Palette": "Color Palette",
+  "Choose an accent color theme for the store.": "Choose an accent color theme for the store.",
+  "Customize application language, theme colors, and layout.": "Customize application language, theme colors, and layout."
 }

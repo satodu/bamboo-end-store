@@ -99,6 +99,47 @@
   --sidebar-ring: oklch(0.5413 0.2466 293.01);
 }
 
+/* Theme color overrides */
+.theme-catppuccin {
+  --primary: #cba6f7;
+  --ring: #cba6f7;
+  --bamboo: #cba6f7;
+}
+
+:root:not(.dark) .theme-catppuccin,
+:root:not(.dark).theme-catppuccin {
+  --primary: #8839ef;
+  --ring: #8839ef;
+  --bamboo: #8839ef;
+}
+
+.theme-nord {
+  --primary: #88c0d0;
+  --ring: #88c0d0;
+  --bamboo: #88c0d0;
+}
+
+:root:not(.dark) .theme-nord,
+:root:not(.dark).theme-nord {
+  --primary: #5e81ac;
+  --ring: #5e81ac;
+  --bamboo: #5e81ac;
+}
+
+.theme-gruvbox {
+  --primary: #fe8019;
+  --ring: #fe8019;
+  --bamboo: #fe8019;
+}
+
+:root:not(.dark) .theme-gruvbox,
+:root:not(.dark).theme-gruvbox {
+  --primary: #d65d0e;
+  --ring: #d65d0e;
+  --bamboo: #d65d0e;
+}
+
+
 @theme {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -165,8 +206,37 @@
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
     letter-spacing: var(--tracking-normal);
   }
+}
+
+/* Global Scrollbar Customization - Transparent Track */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent !important;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15) !important;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3) !important;
+}
+
+/* Hide scrollbar completely when requested */
+.no-scrollbar::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  background: transparent !important;
+}
+.no-scrollbar {
+  -ms-overflow-style: none !important;  /* IE and Edge */
+  scrollbar-width: none !important;  /* Firefox */
 }

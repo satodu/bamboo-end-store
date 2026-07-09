@@ -143,5 +143,11 @@
   "console_no_orphans": "No hay paquetes huérfanos que eliminar.",
   "console_closing_terminal": "Cerrando terminal en {delay} segundos...",
   "console_press_enter": "Presione Enter para cerrar...",
-  "console_initiating_removal": "Iniciando eliminación de {name}..."
+  "console_initiating_removal": "Iniciando eliminación de {name}...",
+  "Grid View": "Vista de Cuadrícula",
+  "List View": "Vista de Lista",
+  "Appearance": "Apariencia",
+  "Color Palette": "Paleta de Colores",
+  "Choose an accent color theme for the store.": "Elija un tema de color de acento para la tienda.",
+  "Customize application language, theme colors, and layout.": "Personalice el idioma de la aplicación, los colores del tema y el diseño."
 }

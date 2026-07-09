@@ -4,16 +4,6 @@
     $isPending = isset($pendingInstallations[$pkg['name']]);
     $isAurVal = (isset($pkg['is_aur']) && $pkg['is_aur']) ? 'true' : 'false';
     $isFlatpakVal = (isset($pkg['is_flatpak']) && $pkg['is_flatpak']) ? 'true' : 'false';
-    $emoji = match(true) { 
-        str_contains(strtolower($pkg['name']), 'steam') => '🎮', 
-        str_contains(strtolower($pkg['name']), 'discord') => '💬', 
-        str_contains(strtolower($pkg['name']), 'brave') => '🦁', 
-        str_contains(strtolower($pkg['name']), 'code') => '💻', 
-        str_contains(strtolower($pkg['name']), 'vlc') => '🎬', 
-        str_contains(strtolower($pkg['name']), 'obs') => '🎥', 
-        str_contains(strtolower($pkg['name']), 'spotify') => '🎧', 
-        default => '📦' 
-    };
     $firstScreenshot = !empty($pkg['screenshots'][0]) ? $pkg['screenshots'][0] : null;
 @endphp
 
@@ -26,16 +16,14 @@
                 src="{{ $firstScreenshot }}" 
                 class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 alt="Screenshot"
-                onerror="this.parentElement.style.display='none'"
+                onerror="this.style.display='none'"
             >
             {{-- Gradient overlay --}}
             <div class="absolute inset-0 bg-gradient-to-t from-card via-card/20 to-transparent"></div>
-            {{-- Logo do software (somente icon_url, sem emoji) --}}
-            @if(!empty($pkg['icon_url']))
-                <div class="absolute bottom-3 left-4 w-10 h-10 bg-card/80 backdrop-blur-sm rounded-xl overflow-hidden shadow-lg ring-1 ring-white/10">
-                    <img src="{{ $pkg['icon_url'] }}" class="w-full h-full object-contain p-1" alt="icon" onerror="this.parentElement.style.display='none'">
-                </div>
-            @endif
+            {{-- Logo do software --}}
+            <div class="absolute bottom-3 left-4 w-10 h-10 bg-card/80 backdrop-blur-sm rounded-xl overflow-hidden shadow-lg ring-1 ring-white/10">
+                <x-store.package-icon :name="$pkg['name']" :iconUrl="!empty($pkg['icon_url']) ? $pkg['icon_url'] : null" :isFlatpak="$pkg['is_flatpak'] ?? false" />
+            </div>
             {{-- Badges --}}
             <div class="absolute top-2 right-2 flex flex-col items-end gap-1">
                 @if($pkg['installed']) <span class="text-[9px] font-black bg-bamboo/80 backdrop-blur-sm text-white px-2.5 py-0.5 rounded uppercase">{{ __('Installed') }}</span> @endif
@@ -58,6 +46,17 @@
                             @endif
                         </span>
                         <span wire:loading wire:target="remove('{{ $pkg['name'] }}', {{ $isFlatpakVal }})">{{ __('Wait...') }}</span>
+                    </button>
+                    {{-- Launch button --}}
+                    <button
+                        wire:click="launchPackage('{{ $pkg['name'] }}', {{ $isFlatpakVal }})"
+                        title="{{ __('Launch') }}"
+                        class="h-10 w-10 bg-bamboo/10 hover:bg-bamboo text-bamboo hover:text-white rounded flex items-center justify-center transition-all duration-200 shrink-0"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M4 13a8 8 0 0 1 7 7a6 6 0 0 0 3-5a9 9 0 0 0 6-8a3 3 0 0 0-3-3a9 9 0 0 0-8 6a6 6 0 0 0-5 3" />
+                            <path d="M7 14a6 6 0 0 0-3 6a6 6 0 0 0 6-3m4-8a1 1 0 1 0 2 0a1 1 0 1 0-2 0" />
+                        </svg>
                     </button>
                 @elseif($isPending)
                     <button disabled class="flex-1 h-10 bg-bamboo/20 text-bamboo text-[11px] font-black rounded transition-all uppercase tracking-widest animate-pulse">{{ __('Finalizing...') }}</button>
@@ -89,11 +88,8 @@
     @else
         <div class="p-6 flex flex-col h-full">
             <div class="flex items-start justify-between mb-5">
-                <div class="w-14 h-14 bg-muted rounded-lg flex items-center justify-center text-3xl group-hover:scale-105 transition-transform overflow-hidden">
-                    @if(!empty($pkg['icon_url']))
-                        <img src="{{ $pkg['icon_url'] }}" class="w-full h-full object-cover" alt="icon" onerror="this.style.display='none'">
-                    @endif
-                    <span class="group-hover:scale-110 transition-transform">{{ $emoji }}</span>
+                <div class="w-14 h-14 bg-muted rounded-lg flex items-center justify-center text-3xl group-hover:scale-105 transition-transform overflow-hidden relative">
+                    <x-store.package-icon :name="$pkg['name']" :iconUrl="!empty($pkg['icon_url']) ? $pkg['icon_url'] : null" :isFlatpak="$pkg['is_flatpak'] ?? false" />
                 </div>
                 <div class="flex flex-col items-end gap-1.5">
                     @if($pkg['installed']) <span class="text-[9px] font-black bg-bamboo/10 text-bamboo px-2.5 py-0.5 rounded uppercase">{{ __('Installed') }}</span> @endif
@@ -116,6 +112,17 @@
                             @endif
                         </span>
                         <span wire:loading wire:target="remove('{{ $pkg['name'] }}', {{ $isFlatpakVal }})">{{ __('Wait...') }}</span>
+                    </button>
+                    {{-- Launch button --}}
+                    <button
+                        wire:click="launchPackage('{{ $pkg['name'] }}', {{ $isFlatpakVal }})"
+                        title="{{ __('Launch') }}"
+                        class="h-10 w-10 bg-bamboo/10 hover:bg-bamboo text-bamboo hover:text-white rounded flex items-center justify-center transition-all duration-200 shrink-0"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M4 13a8 8 0 0 1 7 7a6 6 0 0 0 3-5a9 9 0 0 0 6-8a3 3 0 0 0-3-3a9 9 0 0 0-8 6a6 6 0 0 0-5 3" />
+                            <path d="M7 14a6 6 0 0 0-3 6a6 6 0 0 0 6-3m4-8a1 1 0 1 0 2 0a1 1 0 1 0-2 0" />
+                        </svg>
                     </button>
                 @elseif($isPending)
                     <button disabled class="flex-1 h-10 bg-bamboo/20 text-bamboo text-[11px] font-black rounded transition-all uppercase tracking-widest animate-pulse">{{ __('Finalizing...') }}</button>

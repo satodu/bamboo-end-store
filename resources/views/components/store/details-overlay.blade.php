@@ -41,16 +41,12 @@
         x-transition:leave="transition ease-in duration-300"
         x-transition:leave-start="translate-x-0"
         x-transition:leave-end="translate-x-full"
-        class="relative w-full max-w-xl h-full bg-background shadow-[-20px_0_60px_-15px_rgba(0,0,0,0.5)] flex flex-col"
+        class="relative w-full max-w-xl h-full bg-background/95 backdrop-blur-xl border-l border-white/5 shadow-[-20px_0_60px_-15px_rgba(0,0,0,0.5)] flex flex-col"
     >
         <div class="p-8 flex items-center justify-between">
             <div class="flex items-center gap-6">
-                <div class="w-16 h-16 bg-card rounded-xl flex items-center justify-center text-4xl shadow-sm overflow-hidden">
-                    @if(!empty($selectedPackage['icon_url']))
-                        <img src="{{ $selectedPackage['icon_url'] }}" class="w-full h-full object-cover" alt="icon">
-                    @else
-                        📦
-                    @endif
+                <div class="w-16 h-16 bg-card rounded-xl flex items-center justify-center text-4xl shadow-sm overflow-hidden shrink-0">
+                    <x-store.package-icon :name="$selectedPackage['display_name'] ?? $selectedPackage['Name'] ?? $selectedPackage['ID'] ?? $selectedPackage['Application'] ?? ''" :iconUrl="$selectedPackage['icon_url'] ?? null" :isFlatpak="$selectedPackage['is_flatpak'] ?? false" />
                 </div>
                 <div>
                     <h2 class="text-2xl font-black tracking-tight leading-tight mb-1">{{ $selectedPackage['display_name'] ?? $selectedPackage['Name'] ?? $selectedPackage['ID'] ?? $selectedPackage['Application'] ?? 'Unknown' }}</h2>
@@ -102,22 +98,22 @@
             </div>
 
             <div class="grid grid-cols-3 gap-4">
-                <div class="p-5 rounded-xl bg-card shadow-sm">
+                <div class="p-5 rounded-xl bg-card/90 backdrop-blur-sm border border-white/5 shadow-sm">
                     <p class="text-[10px] font-black uppercase text-muted-foreground tracking-widest mb-2">{{ __('Size') }}</p>
                     <p class="text-base font-black">{{ $selectedPackage['Installed Size'] ?? 'N/A' }}</p>
                 </div>
-                <div class="p-5 rounded-xl bg-card shadow-sm">
+                <div class="p-5 rounded-xl bg-card/90 backdrop-blur-sm border border-white/5 shadow-sm">
                     <p class="text-[10px] font-black uppercase text-muted-foreground tracking-widest mb-2">{{ __('Download') }}</p>
                     <p class="text-base font-black">{{ $selectedPackage['Download Size'] ?? $selectedPackage['Download Siz'] ?? 'N/A' }}</p>
                 </div>
-                <div class="p-5 rounded-xl bg-card shadow-sm overflow-hidden">
+                <div class="p-5 rounded-xl bg-card/90 backdrop-blur-sm border border-white/5 shadow-sm overflow-hidden">
                     <p class="text-[10px] font-black uppercase text-muted-foreground tracking-widest mb-2">{{ __('License') }}</p>
                     @php $license = $selectedPackage['Licenses'] ?? $selectedPackage['License'] ?? 'Unknown'; @endphp
                     <p class="text-sm font-black truncate" title="{{ $license }}">{{ $license }}</p>
                 </div>
             </div>
 
-            <div class="bg-card p-8 rounded-xl shadow-sm space-y-4">
+            <div class="bg-card/90 backdrop-blur-sm border border-white/5 p-8 rounded-xl shadow-sm space-y-4">
                 <h3 class="text-[11px] font-black uppercase tracking-[0.2em] text-muted-foreground mb-4">{{ __('Package Metadata') }}</h3>
                 <div class="space-y-4">
                     <div class="flex justify-between items-center text-sm">

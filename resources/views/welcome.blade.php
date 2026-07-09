@@ -108,6 +108,100 @@
                 --input: oklch(0.2852 0.0226 290);
                 --ring: oklch(0.5413 0.2466 293.01);
             }
+
+            /* Theme color overrides */
+            .theme-catppuccin {
+                --background: #181825;
+                --foreground: #cdd6f4;
+                --card: #1e1e2e;
+                --card-foreground: #cdd6f4;
+                --popover: #181825;
+                --popover-foreground: #cdd6f4;
+                --border: #313244;
+                --input: #313244;
+                --muted-foreground: #bac2de;
+                --accent: #313244;
+                --primary: #cba6f7;
+                --ring: #cba6f7;
+                --bamboo: #cba6f7;
+            }
+            :root:not(.dark) .theme-catppuccin, :root:not(.dark).theme-catppuccin {
+                --background: #e6e9ef;
+                --foreground: #4c4f69;
+                --card: #eff1f5;
+                --card-foreground: #4c4f69;
+                --popover: #e6e9ef;
+                --popover-foreground: #4c4f69;
+                --border: #ccd0da;
+                --input: #ccd0da;
+                --muted-foreground: #6c6f85;
+                --accent: #ccd0da;
+                --primary: #8839ef;
+                --ring: #8839ef;
+                --bamboo: #8839ef;
+            }
+
+            .theme-nord {
+                --background: #2e3440;
+                --foreground: #d8dee9;
+                --card: #3b4252;
+                --card-foreground: #d8dee9;
+                --popover: #2e3440;
+                --popover-foreground: #d8dee9;
+                --border: #4c566a;
+                --input: #4c566a;
+                --muted-foreground: #81a1c1;
+                --accent: #434c5e;
+                --primary: #88c0d0;
+                --ring: #88c0d0;
+                --bamboo: #88c0d0;
+            }
+            :root:not(.dark) .theme-nord, :root:not(.dark).theme-nord {
+                --background: #e5e9f0;
+                --foreground: #2e3440;
+                --card: #eceff4;
+                --card-foreground: #2e3440;
+                --popover: #e5e9f0;
+                --popover-foreground: #2e3440;
+                --border: #d8dee9;
+                --input: #d8dee9;
+                --muted-foreground: #4c566a;
+                --accent: #d8dee9;
+                --primary: #5e81ac;
+                --ring: #5e81ac;
+                --bamboo: #5e81ac;
+            }
+
+            .theme-gruvbox {
+                --background: #1d2021;
+                --foreground: #ebdbb2;
+                --card: #282828;
+                --card-foreground: #ebdbb2;
+                --popover: #1d2021;
+                --popover-foreground: #ebdbb2;
+                --border: #3c3836;
+                --input: #3c3836;
+                --muted-foreground: #a89984;
+                --accent: #504945;
+                --primary: #fe8019;
+                --ring: #fe8019;
+                --bamboo: #fe8019;
+            }
+            :root:not(.dark) .theme-gruvbox, :root:not(.dark).theme-gruvbox {
+                --background: #f9f5d7;
+                --foreground: #282828;
+                --card: #fbf1c7;
+                --card-foreground: #282828;
+                --popover: #f9f5d7;
+                --popover-foreground: #282828;
+                --border: #d5c4a1;
+                --input: #d5c4a1;
+                --muted-foreground: #7c6f64;
+                --accent: #ebdbb2;
+                --primary: #d65d0e;
+                --ring: #d65d0e;
+                --bamboo: #d65d0e;
+            }
             ::-webkit-scrollbar {
                 width: 6px;
             }
