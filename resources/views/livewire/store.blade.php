@@ -807,13 +807,14 @@ new class extends Component
 
         $this->dispatch('notify');
 
-        // Notificação do sistema via NotificationService (inclui ícone)
+        // Notificação do sistema via NotificationService desativada (mantida apenas dentro do app como Toast)
+        /*
         try {
             app(NotificationService::class)->send($title, $message);
         } catch (\Throwable $e) {
             \Illuminate\Support\Facades\Log::error('NotificationService failed: ' . $e->getMessage());
         }
-
+        */
     }
 
     public function loadAppImages()

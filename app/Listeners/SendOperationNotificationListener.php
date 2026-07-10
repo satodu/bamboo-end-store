@@ -16,9 +16,12 @@ class SendOperationNotificationListener
             return;
         }
 
+        // Notificações de instalação/remoção de pacotes desativadas no sistema (mantidas apenas dentro do app)
+        /*
         match ($event->action) {
             'removed' => $this->notifications->packageRemoved($event->name),
             default   => $this->notifications->packageInstalled($event->name),
         };
+        */
     }
 }
