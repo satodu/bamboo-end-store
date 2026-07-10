@@ -1,254 +1,811 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en" class="dark" data-theme="bamboo">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bamboo End Store | The Modern App Store for Arch Linux</title>
+    <title>Bamboo End Store | The Modern App Store for EndeavourOS</title>
+    
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Mulish', 'sans-serif'],
+                        outfit: ['Geist', 'sans-serif'],
+                        mono: ['Geist Mono', 'monospace'],
+                    },
+                    colors: {
+                        theme: {
+                            bg: 'var(--theme-bg)',
+                            card: 'var(--theme-card-bg)',
+                            border: 'var(--theme-card-border)',
+                            accent: 'var(--theme-accent)',
+                            accentHover: 'var(--theme-accent-hover)',
+                            text: 'var(--theme-text)',
+                            textMuted: 'var(--theme-text-muted)',
+                            accentText: 'var(--theme-accent-text)',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Google Fonts & Lucide Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Mulish:ital,wght@0,200..900;1,200..900&family=Geist:wght@100..900&family=Geist+Mono:wght@100..900&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@0.344.0/dist/umd/lucide.min.js"></script>
+
     <style>
-        :root {
-            --endeavour: #7f3f98;
-            --endeavour-dark: #502b79;
+        /* Theme Variables */
+        :root, [data-theme="bamboo"] {
+            --theme-bg: #09090b;
+            --theme-bg-gradient: linear-gradient(180deg, #09090b 0%, #0d0b16 100%);
+            --theme-card-bg: rgba(24, 24, 27, 0.7);
+            --theme-card-border: rgba(63, 63, 70, 0.4);
+            --theme-accent: #7f3f98;
+            --theme-accent-hover: #9a59b5;
+            --theme-accent-glow: rgba(127, 63, 152, 0.25);
+            --theme-accent-gradient: linear-gradient(135deg, #7f3f98 0%, #9a59b5 100%);
+            --theme-text: #fafafa;
+            --theme-text-muted: #a1a1aa;
+            --theme-accent-text: #f3e8ff;
         }
+
+        [data-theme="catputtin"] {
+            --theme-bg: #11111b;
+            --theme-bg-gradient: linear-gradient(180deg, #11111b 0%, #1e1e2e 100%);
+            --theme-card-bg: rgba(30, 30, 46, 0.75);
+            --theme-card-border: rgba(88, 91, 112, 0.4);
+            --theme-accent: #b4befe;
+            --theme-accent-hover: #cba6f7;
+            --theme-accent-glow: rgba(180, 190, 254, 0.25);
+            --theme-accent-gradient: linear-gradient(135deg, #b4befe 0%, #cba6f7 100%);
+            --theme-text: #cdd6f4;
+            --theme-text-muted: #bac2de;
+            --theme-accent-text: #cba6f7;
+        }
+
+        [data-theme="gruvbox"] {
+            --theme-bg: #1d2021;
+            --theme-bg-gradient: linear-gradient(180deg, #1d2021 0%, #282828 100%);
+            --theme-card-bg: rgba(40, 40, 40, 0.75);
+            --theme-card-border: rgba(102, 92, 84, 0.4);
+            --theme-accent: #fe8019;
+            --theme-accent-hover: #fabd2f;
+            --theme-accent-glow: rgba(254, 128, 25, 0.25);
+            --theme-accent-gradient: linear-gradient(135deg, #fe8019 0%, #fabd2f 100%);
+            --theme-text: #ebdbb2;
+            --theme-text-muted: #a89984;
+            --theme-accent-text: #fabd2f;
+        }
+
+        [data-theme="nordic"] {
+            --theme-bg: #2e3440;
+            --theme-bg-gradient: linear-gradient(180deg, #2e3440 0%, #242933 100%);
+            --theme-card-bg: rgba(43, 48, 59, 0.75);
+            --theme-card-border: rgba(76, 86, 106, 0.4);
+            --theme-accent: #88c0d0;
+            --theme-accent-hover: #8fbcbb;
+            --theme-accent-glow: rgba(136, 192, 208, 0.25);
+            --theme-accent-gradient: linear-gradient(135deg, #88c0d0 0%, #8fbcbb 100%);
+            --theme-text: #d8dee9;
+            --theme-text-muted: #d8dee9;
+            --theme-accent-text: #8fbcbb;
+        }
+
         body {
-            font-family: 'Inter', sans-serif;
-            background-color: #09090b;
-            color: #fafafa;
+            font-family: 'Mulish', sans-serif;
+            background-color: var(--theme-bg);
+            background-image: var(--theme-bg-gradient);
+            color: var(--theme-text);
             scroll-behavior: smooth;
+            overflow-x: hidden;
         }
-        .font-outfit { font-family: 'Outfit', sans-serif; }
+
+        /* Fluid global transitions */
+        body, nav, div, a, button, h1, h2, h3, p, span, img, border {
+            transition: background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+                        border-color 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+                        color 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+                        box-shadow 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+                        transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
         .glass {
-            background: rgba(24, 24, 27, 0.7);
+            background: var(--theme-card-bg);
             backdrop-filter: blur(12px);
-            border: 1px solid rgba(39, 39, 42, 0.5);
+            border: 1px solid var(--theme-card-border);
         }
-        .endeavour-gradient {
-            background: linear-gradient(135deg, var(--endeavour) 0%, #7c3aed 100%);
+
+        .accent-gradient {
+            background: var(--theme-accent-gradient);
         }
+
         .text-gradient {
-            background: linear-gradient(to bottom right, #fff 30%, #a1a1aa 100%);
+            background: linear-gradient(to bottom right, #ffffff 40%, var(--theme-text-muted) 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
-        .glow {
-            box-shadow: 0 0 40px -10px var(--endeavour);
+
+        .glow-glow {
+            box-shadow: 0 0 50px -10px var(--theme-accent-glow);
         }
+
         @keyframes float {
             0% { transform: translateY(0px); }
             50% { transform: translateY(-10px); }
             100% { transform: translateY(0px); }
         }
+
         .float-animation {
             animation: float 6s ease-in-out infinite;
         }
+
+        /* Scrollbar styles */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--theme-bg);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--theme-card-border);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--theme-accent);
+        }
     </style>
 </head>
-<body class="selection:bg-purple-500/30">
+<body class="selection:bg-theme-accent/30 selection:text-theme-text min-h-screen relative">
 
     <!-- Navbar -->
     <nav class="fixed top-0 w-full z-[100] glass border-b border-white/5">
         <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
             <div class="flex items-center gap-3">
-                <img src="logo-without-background.png" class="w-8 h-8 object-contain" alt="Logo">
-                <span class="font-outfit font-black text-lg tracking-tighter uppercase">Bamboo End Store</span>
+                <img id="navbar-logo" src="imgs/logo-without-background.png" class="w-8 h-8 object-contain" alt="Logo">
+                <span class="font-outfit font-black text-lg tracking-tighter uppercase text-theme-text">Bamboo End Store</span>
             </div>
-            <div class="hidden md:flex items-center gap-8 text-sm font-medium text-zinc-400">
-                <a href="#features" class="hover:text-purple-400 transition-colors">Features</a>
-                <a href="#screenshots" class="hover:text-purple-400 transition-colors">Showcase</a>
-                <a href="#install" class="hover:text-purple-400 transition-colors">Installation</a>
-                <a href="https://github.com/satodu/bamboo-end-store" class="flex items-center gap-2 bg-white/5 hover:bg-white/10 px-4 py-2 rounded-full border border-white/10 transition-all">
-                    <i data-lucide="github" class="w-4 h-4 text-white"></i>
-                    <span class="text-white">Star on GitHub</span>
+            
+            <div class="hidden lg:flex items-center gap-8 text-sm font-medium text-theme-textMuted">
+                <a href="#features" class="hover:text-theme-accent transition-colors">Features</a>
+                <a href="#themes" class="hover:text-theme-accent transition-colors">Themes</a>
+                <a href="#showcase" class="hover:text-theme-accent transition-colors">Showcase</a>
+                <a href="#install" class="hover:text-theme-accent transition-colors">Installation</a>
+                
+                <!-- Quick Theme Selector Pill -->
+                <div class="flex items-center gap-1.5 bg-black/30 border border-theme-border p-1 rounded-full text-xs">
+                    <button onclick="setTheme('bamboo')" class="theme-pill px-3 py-1.5 rounded-full transition-all text-white font-bold bg-theme-accent flex items-center gap-1.5" data-pill-theme="bamboo">
+                        <span class="w-2.5 h-2.5 rounded-full bg-[#7f3f98]"></span>
+                        <span>Bamboo</span>
+                    </button>
+                    <button onclick="setTheme('catputtin')" class="theme-pill px-3 py-1.5 rounded-full transition-all text-zinc-400 hover:text-white flex items-center gap-1.5" data-pill-theme="catputtin">
+                        <span class="w-2.5 h-2.5 rounded-full bg-[#b4befe]"></span>
+                        <span>Catppuccin</span>
+                    </button>
+                    <button onclick="setTheme('gruvbox')" class="theme-pill px-3 py-1.5 rounded-full transition-all text-zinc-400 hover:text-white flex items-center gap-1.5" data-pill-theme="gruvbox">
+                        <span class="w-2.5 h-2.5 rounded-full bg-[#fe8019]"></span>
+                        <span>Gruvbox</span>
+                    </button>
+                    <button onclick="setTheme('nordic')" class="theme-pill px-3 py-1.5 rounded-full transition-all text-zinc-400 hover:text-white flex items-center gap-1.5" data-pill-theme="nordic">
+                        <span class="w-2.5 h-2.5 rounded-full bg-[#88c0d0]"></span>
+                        <span>Nordic</span>
+                    </button>
+                </div>
+
+                <a href="https://github.com/satodu/bamboo-end-store" target="_blank" class="flex items-center gap-2 bg-white/5 hover:bg-white/10 px-4 py-2 rounded-full border border-white/10 transition-all text-theme-text">
+                    <i data-lucide="github" class="w-4 h-4"></i>
+                    <span>GitHub</span>
                 </a>
             </div>
         </div>
     </nav>
 
     <!-- Hero Section -->
-    <section class="relative pt-40 pb-20 overflow-hidden">
-        <div class="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[500px] bg-purple-500/10 blur-[120px] rounded-full pointer-events-none"></div>
+    <section class="relative pt-36 pb-20 overflow-hidden">
+        <!-- Radial dynamic glowing background behind hero -->
+        <div id="dynamic-glow" class="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-[600px] bg-theme-accent/15 blur-[130px] rounded-full pointer-events-none transition-all duration-700"></div>
         
         <div class="max-w-7xl mx-auto px-6 text-center relative z-10">
-            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-400 text-xs font-black uppercase tracking-widest mb-8">
-                🚀 Version 1.1.6 Released
+            <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-theme-accent/10 border border-theme-accent/20 text-theme-accent text-xs font-black uppercase tracking-widest mb-8 font-outfit">
+                🚀 Version 1.2.2 Released
             </div>
-            <h1 class="text-5xl md:text-8xl font-outfit font-black tracking-tight mb-6 text-gradient">
-                The App Store for <br> <span class="text-purple-500">Arch Linux</span> power users.
+            
+            <h1 class="text-5xl md:text-8xl font-outfit font-black tracking-tight mb-6 text-gradient leading-tight">
+                The App Store for <br> <span class="text-theme-accent select-none transition-colors">EndeavourOS</span> power users.
             </h1>
-            <p class="text-zinc-400 text-lg md:text-xl max-w-2xl mx-auto mb-12 leading-relaxed">
-                A high-performance, beautiful community store for EndeavourOS and Arch Linux. 
-                Built with NativePHP specifically for <strong>EndeavourOS</strong> users by a devoted daily fan of the system.
+            
+            <p class="text-theme-textMuted text-lg md:text-xl max-w-2xl mx-auto mb-12 leading-relaxed">
+                A high-performance, beautiful community store for EndeavourOS. 
+                Built with NativePHP specifically for <strong class="text-theme-text font-bold">EndeavourOS</strong> users by a devoted fan of the distro.
             </p>
             
-            <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
-                <a href="https://github.com/satodu/bamboo-end-store/releases/tag/1.1.6" class="w-full sm:w-auto px-8 py-4 endeavour-gradient text-white font-bold rounded-2xl glow hover:scale-105 transition-all flex items-center justify-center gap-3">
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
+                <a href="https://github.com/satodu/bamboo-end-store/releases/tag/1.2.2" target="_blank" class="w-full sm:w-auto px-8 py-4 accent-gradient text-white font-bold rounded-2xl glow-glow hover:scale-105 transition-all flex items-center justify-center gap-3 font-outfit">
                     <i data-lucide="download" class="w-5 h-5 text-white"></i>
                     Get Started
                 </a>
-                <a href="https://github.com/satodu/bamboo-end-store" class="w-full sm:w-auto px-8 py-4 bg-zinc-800/50 hover:bg-zinc-800 text-white font-bold rounded-2xl border border-zinc-700/50 transition-all flex items-center justify-center gap-3">
+                <a href="https://github.com/satodu/bamboo-end-store" target="_blank" class="w-full sm:w-auto px-8 py-4 bg-theme-card hover:bg-theme-card/85 text-theme-text font-bold rounded-2xl border border-theme-border transition-all flex items-center justify-center gap-3 font-outfit">
                     <i data-lucide="github" class="w-5 h-5"></i>
                     Source Code
                 </a>
             </div>
 
-            <!-- Hero Image (Home) -->
-            <div class="mt-24 relative group float-animation">
-                <div class="absolute inset-0 bg-purple-500/20 blur-[100px] group-hover:bg-purple-500/30 transition-all duration-700 pointer-events-none"></div>
-                <img src="https://raw.githubusercontent.com/satodu/bamboo-end-store/main/resources/prints/Home.png" class="w-full max-w-5xl mx-auto rounded-3xl border border-white/10 shadow-2xl relative z-10 hover:scale-[1.01] transition-transform duration-500" alt="Home Screen">
+            <!-- Dynamic Theme Selector Bar -->
+            <div id="themes" class="max-w-xl mx-auto mb-16 glass p-4 rounded-3xl glow-glow">
+                <p class="text-xs uppercase tracking-widest font-black text-theme-textMuted mb-4 pt-1 font-outfit">Select Theme to Customize Site & Preview Application</p>
+                <div class="grid grid-cols-4 gap-2.5">
+                    <button onclick="setTheme('bamboo')" class="theme-selector-btn flex flex-col items-center gap-2.5 p-4 rounded-2xl transition-all border border-theme-accent/20 bg-theme-accent/10" data-theme-btn="bamboo">
+                        <span class="w-5 h-5 rounded-full bg-[#7f3f98] shadow-[0_0_12px_rgba(127,63,152,0.6)] border border-white/10 block hover:scale-110 transition-transform"></span>
+                        <span class="text-xs font-bold text-theme-text font-outfit">Bamboo</span>
+                    </button>
+                    <button onclick="setTheme('catputtin')" class="theme-selector-btn flex flex-col items-center gap-2.5 p-4 rounded-2xl transition-all hover:bg-white/5 border border-transparent" data-theme-btn="catputtin">
+                        <span class="w-5 h-5 rounded-full bg-[#b4befe] shadow-[0_0_12px_rgba(180,190,254,0.6)] border border-white/10 block hover:scale-110 transition-transform"></span>
+                        <span class="text-xs font-bold text-theme-text font-outfit">Catppuccin</span>
+                    </button>
+                    <button onclick="setTheme('gruvbox')" class="theme-selector-btn flex flex-col items-center gap-2.5 p-4 rounded-2xl transition-all hover:bg-white/5 border border-transparent" data-theme-btn="gruvbox">
+                        <span class="w-5 h-5 rounded-full bg-[#fe8019] shadow-[0_0_12px_rgba(254,128,25,0.6)] border border-white/10 block hover:scale-110 transition-transform"></span>
+                        <span class="text-xs font-bold text-theme-text font-outfit">Gruvbox</span>
+                    </button>
+                    <button onclick="setTheme('nordic')" class="theme-selector-btn flex flex-col items-center gap-2.5 p-4 rounded-2xl transition-all hover:bg-white/5 border border-transparent" data-theme-btn="nordic">
+                        <span class="w-5 h-5 rounded-full bg-[#88c0d0] shadow-[0_0_12px_rgba(136,192,208,0.6)] border border-white/10 block hover:scale-110 transition-transform"></span>
+                        <span class="text-xs font-bold text-theme-text font-outfit">Nordic</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Interactive Hero Mockup (App Window Frame) -->
+            <div class="mt-8 relative group max-w-5xl mx-auto">
+                <div class="absolute inset-0 bg-theme-accent/10 blur-[100px] group-hover:bg-theme-accent/20 transition-all duration-700 pointer-events-none"></div>
+                
+                <!-- Mockup App Frame -->
+                <div class="glass rounded-3xl border border-theme-border/60 overflow-hidden shadow-2xl relative z-10 transition-transform duration-500 hover:scale-[1.005]">
+                    <!-- Window Header Bar -->
+                    <div class="h-11 bg-black/45 border-b border-theme-border/40 px-6 flex items-center justify-between">
+                        <!-- Dots -->
+                        <div class="flex gap-2">
+                            <span class="w-3.5 h-3.5 rounded-full bg-[#ff5f56] opacity-90 block"></span>
+                            <span class="w-3.5 h-3.5 rounded-full bg-[#ffbd2e] opacity-90 block"></span>
+                            <span class="w-3.5 h-3.5 rounded-full bg-[#27c93f] opacity-90 block"></span>
+                        </div>
+                        <!-- Window Title -->
+                        <div id="mockup-window-title" class="text-xs font-semibold text-theme-textMuted tracking-wider flex items-center gap-2 font-outfit">
+                            <i data-lucide="layout" class="w-3 h-3 text-theme-accent"></i>
+                            Bamboo End Store - Bamboo Theme Preview
+                        </div>
+                        <!-- View Mode Switcher -->
+                        <div class="flex items-center gap-1 bg-black/40 border border-theme-border/60 p-0.5 rounded-lg text-[10px] font-bold flex-shrink-0">
+                            <button id="view-mode-grid-btn" onclick="setViewMode('grid')" class="px-2 py-0.5 rounded bg-theme-accent text-white transition-all flex items-center justify-center" title="Grid View">
+                                <i data-lucide="layout-grid" class="w-3.5 h-3.5"></i>
+                            </button>
+                            <button id="view-mode-list-btn" onclick="setViewMode('list')" class="px-2 py-0.5 rounded text-theme-textMuted hover:text-theme-text transition-all flex items-center justify-center" title="List View">
+                                <i data-lucide="list" class="w-3.5 h-3.5"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Content Window Image -->
+                    <div class="relative overflow-hidden aspect-[16/10] bg-black/40 rounded-b-[22px] p-5">
+                        <img id="hero-mockup-img" src="imgs/theme/bamboo.png" class="w-full h-full object-cover transition-opacity duration-300 opacity-100 scale-[1.065] rounded-[32px]" alt="App Theme Showcase">
+                    </div>
+                </div>
             </div>
         </div>
     </section>
 
     <!-- Features Section -->
-    <section id="features" class="py-32 bg-zinc-950/50">
+    <section id="features" class="py-24 bg-black/35 relative">
         <div class="max-w-7xl mx-auto px-6">
-            <div class="mb-20">
-                <h2 class="text-4xl font-outfit font-black mb-4">Why Bamboo End Store?</h2>
-                <p class="text-zinc-400">Everything you need to manage your system, beautifully packaged.</p>
+            <div class="mb-20 text-center">
+                <h2 class="text-4xl font-outfit font-black mb-4 tracking-tight">System Management Reimagined</h2>
+                <p class="text-theme-textMuted max-w-lg mx-auto">Everything you need to handle packages, AppImages, AUR, and Flatpaks with peak elegance.</p>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
                 <!-- Feature 1 -->
-                <div class="glass p-8 rounded-3xl group hover:border-purple-500/50 transition-all">
-                    <div class="w-12 h-12 rounded-2xl bg-purple-500/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                        <i data-lucide="box" class="w-6 h-6 text-purple-500"></i>
+                <div class="glass p-8 rounded-3xl group hover:border-theme-accent/60 transition-all hover:-translate-y-1">
+                    <div class="w-12 h-12 rounded-2xl bg-theme-accent/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                        <i data-lucide="box" class="w-6 h-6 text-theme-accent"></i>
                     </div>
-                    <h3 class="text-xl font-bold mb-3">AppImage Manager</h3>
-                    <p class="text-zinc-400 text-sm leading-relaxed">
-                        The "Gear Lever" experience. Integrate, manage, launch, and uninstall AppImages with automatic icon extraction and menu entries.
+                    <h3 class="text-xl font-bold mb-3 text-theme-text font-outfit">AppImage Integration</h3>
+                    <p class="text-theme-textMuted text-sm leading-relaxed">
+                        A seamless experience. Easily download, integrate, update, and manage standalone AppImages with auto-extracted icons and launch menu links.
                     </p>
                 </div>
 
                 <!-- Feature 2 -->
-                <div class="glass p-8 rounded-3xl group hover:border-purple-500/50 transition-all">
-                    <div class="w-12 h-12 rounded-2xl bg-purple-500/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                        <i data-lucide="zap" class="w-6 h-6 text-purple-500"></i>
+                <div class="glass p-8 rounded-3xl group hover:border-theme-accent/60 transition-all hover:-translate-y-1">
+                    <div class="w-12 h-12 rounded-2xl bg-theme-accent/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                        <i data-lucide="zap" class="w-6 h-6 text-theme-accent"></i>
                     </div>
-                    <h3 class="text-xl font-bold mb-3">AUR Integration</h3>
-                    <p class="text-zinc-400 text-sm leading-relaxed">
-                        Native support for AUR via yay/paru. Search and install community packages directly from the AUR via a clean interface.
+                    <h3 class="text-xl font-bold mb-3 text-theme-text font-outfit">Native AUR Integration</h3>
+                    <p class="text-theme-textMuted text-sm leading-relaxed">
+                        Direct connection to AUR repositories via yay or paru. Read packaging guidelines, inspect build scripts, and see real user comments easily.
                     </p>
                 </div>
 
                 <!-- Feature 3 -->
-                <div class="glass p-8 rounded-3xl group hover:border-purple-500/50 transition-all">
-                    <div class="w-12 h-12 rounded-2xl bg-purple-500/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                        <i data-lucide="layout" class="w-6 h-6 text-purple-500"></i>
+                <div class="glass p-8 rounded-3xl group hover:border-theme-accent/60 transition-all hover:-translate-y-1">
+                    <div class="w-12 h-12 rounded-2xl bg-theme-accent/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                        <i data-lucide="layers" class="w-6 h-6 text-theme-accent"></i>
                     </div>
-                    <h3 class="text-xl font-bold mb-3">Shadcn Aesthetic</h3>
-                    <p class="text-zinc-400 text-sm leading-relaxed">
-                        Built with a deep focus on design. Clean layouts, smooth transitions, and a premium dark theme that fits EndeavourOS perfectly.
+                    <h3 class="text-xl font-bold mb-3 text-theme-text font-outfit">Flatpak Support</h3>
+                    <p class="text-theme-textMuted text-sm leading-relaxed">
+                        Configure Flathub natively. Browse categories, manage sandboxed applications, and edit flatpak permissions from a gorgeous interface.
                     </p>
                 </div>
 
-                <!-- Feature 4 — Flatpak -->
-                <div class="glass p-8 rounded-3xl group hover:border-blue-500/50 transition-all">
-                    <div class="w-12 h-12 rounded-2xl bg-blue-500/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                        <i data-lucide="layers" class="w-6 h-6 text-blue-400"></i>
+                <!-- Feature 4 -->
+                <div class="glass p-8 rounded-3xl group hover:border-theme-accent/60 transition-all hover:-translate-y-1">
+                    <div class="w-12 h-12 rounded-2xl bg-theme-accent/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                        <i data-lucide="terminal" class="w-6 h-6 text-theme-accent"></i>
                     </div>
-                    <h3 class="text-xl font-bold mb-3">Flatpak Support <span class="ml-2 text-[10px] font-black uppercase tracking-widest text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded-full">New</span></h3>
-                    <p class="text-zinc-400 text-sm leading-relaxed">
-                        Browse, install, update, and remove Flatpak applications. Configurable directly from Settings — no terminal required.
+                    <h3 class="text-xl font-bold mb-3 text-theme-text font-outfit">Terminal Log Viewer</h3>
+                    <p class="text-theme-textMuted text-sm leading-relaxed">
+                        No hidden scripts. Watch the terminal installation run live in a floating terminal console so you always know exactly what is changing.
                     </p>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Screenshots Section -->
-    <section id="screenshots" class="py-32">
+    <!-- One-Click System Update Section -->
+    <section class="py-16 relative">
         <div class="max-w-7xl mx-auto px-6">
-            <div class="text-center mb-20">
-                <h2 class="text-4xl font-outfit font-black mb-4">A Peek Inside</h2>
-                <p class="text-zinc-400">See the clean interface in action across different modules.</p>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div class="space-y-8">
-                    <!-- Installed Packages -->
-                    <div class="space-y-4">
-                        <p class="text-xs font-black uppercase tracking-widest text-purple-500">System Management</p>
-                        <img src="https://raw.githubusercontent.com/satodu/bamboo-end-store/main/resources/prints/Installed.png" class="rounded-2xl border border-white/5 hover:scale-[1.02] transition-transform duration-500 shadow-xl" alt="Installed Packages">
+            <div class="glass p-8 md:p-12 rounded-3xl border border-theme-border/60 overflow-hidden relative glow-glow flex flex-col md:flex-row items-center justify-between gap-8">
+                <!-- Glowing background -->
+                <div class="absolute -right-20 -bottom-20 w-80 h-80 bg-theme-accent/10 blur-[100px] rounded-full pointer-events-none"></div>
+                
+                <div class="flex-1 space-y-4">
+                    <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-theme-accent/15 text-theme-accent text-xs font-bold uppercase tracking-wider font-outfit">
+                        <i data-lucide="zap" class="w-3.5 h-3.5"></i>
+                        One-Click Update
                     </div>
-                    <!-- AppImages 1 -->
-                    <div class="space-y-4">
-                        <p class="text-xs font-black uppercase tracking-widest text-purple-500">AppImage Administration</p>
-                        <img src="https://raw.githubusercontent.com/satodu/bamboo-end-store/main/resources/prints/AppImages.png" class="rounded-2xl border border-white/5 hover:scale-[1.02] transition-transform duration-500 shadow-xl" alt="AppImages Manager">
-                    </div>
+                    <h2 class="text-3xl md:text-4xl font-outfit font-black tracking-tight text-theme-text leading-tight">
+                        Keep your system updated, <br>with just <span class="text-theme-accent select-none transition-colors">one click</span>.
+                    </h2>
+                    <p class="text-theme-textMuted max-w-xl leading-relaxed">
+                        No complex terminal commands or manual package checks needed. Bamboo End Store notifies you of available updates and lets you safely sync your entire EndeavourOS system in the background.
+                    </p>
                 </div>
-                <div class="space-y-8 mt-12">
-                    <!-- AppImages 2 -->
-                    <div class="space-y-4">
-                        <p class="text-xs font-black uppercase tracking-widest text-purple-500">Search and Filter</p>
-                        <img src="https://raw.githubusercontent.com/satodu/bamboo-end-store/main/resources/prints/Search.png" class="rounded-2xl border border-white/5 hover:scale-[1.02] transition-transform duration-500 shadow-xl" alt="Search Screen">
-                    </div>
-                    <!-- Settings -->
-                    <div class="space-y-4">
-                        <p class="text-xs font-black uppercase tracking-widest text-purple-500">Full Customization</p>
-                        <img src="https://raw.githubusercontent.com/satodu/bamboo-end-store/main/resources/prints/Settings.png" class="rounded-2xl border border-white/5 hover:scale-[1.02] transition-transform duration-500 shadow-xl" alt="Settings">
+                
+                <!-- Image/Graphic wrapper -->
+                <div class="flex-shrink-0 relative group">
+                    <div class="absolute inset-0 bg-theme-accent/10 blur-[40px] rounded-full pointer-events-none group-hover:bg-theme-accent/15 transition-all"></div>
+                    <div class="p-6 rounded-2xl bg-black/40 border border-theme-border/50 relative z-10 flex items-center justify-center">
+                        <img src="imgs/UpdateSystemOneClick.png" class="w-40 h-auto object-contain hover:scale-105 transition-transform duration-300 rounded-2xl" alt="One-click Update Notification Button">
                     </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Installation Section -->
-    <section id="install" class="py-32 bg-purple-600">
-        <div class="max-w-4xl mx-auto px-6 text-center">
-            <h2 class="text-4xl font-outfit font-black text-white mb-8">Ready to upgrade your store?</h2>
-            <p class="text-purple-100 mb-12 text-lg">Installing Bamboo End Store is as simple as running a single command.</p>
-            
-            <div class="glass !bg-black/20 border-white/20 p-8 rounded-3xl text-left font-mono relative overflow-hidden group">
-                <div class="flex items-center justify-between mb-4">
-                    <div class="flex gap-2">
-                        <div class="w-3 h-3 rounded-full bg-red-500/50"></div>
-                        <div class="w-3 h-3 rounded-full bg-yellow-500/50"></div>
-                        <div class="w-3 h-3 rounded-full bg-green-500/50"></div>
-                    </div>
-                    <span class="text-purple-200/50 text-xs tracking-widest uppercase">Terminal</span>
+    <!-- Interactive Showcase Dashboard (Deep Dive) -->
+    <section id="showcase" class="py-24 relative">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-outfit font-black mb-4 tracking-tight">Deep Dive into Features</h2>
+                <p class="text-theme-textMuted">Interactive modules designed with premium dark theme aesthetics.</p>
+            </div>
+
+            <!-- Dashboard Frame -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                
+                <!-- Left Nav Tabs (No borders) -->
+                <div class="lg:col-span-4 space-y-3">
+                    <button onclick="setActiveShowcase('home')" class="showcase-tab-btn w-full text-left p-5 rounded-2xl transition-all flex items-center gap-4 bg-theme-accent/15 text-theme-text" data-showcase-tab="home">
+                        <div class="tab-icon-container w-10 h-10 rounded-xl bg-theme-accent/15 flex items-center justify-center text-theme-accent">
+                            <i data-lucide="home" class="w-5 h-5"></i>
+                        </div>
+                        <div>
+                            <p class="font-bold text-sm font-outfit">Dashboard Overview</p>
+                            <p class="text-xs text-theme-textMuted">Search packages across all origins</p>
+                        </div>
+                    </button>
+
+                    <button onclick="setActiveShowcase('appimages')" class="showcase-tab-btn w-full text-left p-5 rounded-2xl transition-all flex items-center gap-4 bg-black/20 text-theme-textMuted hover:bg-black/40 hover:text-theme-text" data-showcase-tab="appimages">
+                        <div class="tab-icon-container w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center">
+                            <i data-lucide="package" class="w-5 h-5"></i>
+                        </div>
+                        <div>
+                            <p class="font-bold text-sm text-theme-text font-outfit">AppImage Workspace</p>
+                            <p class="text-xs text-theme-textMuted">Local directory indexing and links</p>
+                        </div>
+                    </button>
+
+                    <button onclick="setActiveShowcase('aur')" class="showcase-tab-btn w-full text-left p-5 rounded-2xl transition-all flex items-center gap-4 bg-black/20 text-theme-textMuted hover:bg-black/40 hover:text-theme-text" data-showcase-tab="aur">
+                        <div class="tab-icon-container w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center">
+                            <i data-lucide="zap" class="w-5 h-5"></i>
+                        </div>
+                        <div>
+                            <p class="font-bold text-sm text-theme-text font-outfit">AUR & Comments</p>
+                            <p class="text-xs text-theme-textMuted">Read community reviews and flags</p>
+                        </div>
+                    </button>
+
+                    <button onclick="setActiveShowcase('flatpak')" class="showcase-tab-btn w-full text-left p-5 rounded-2xl transition-all flex items-center gap-4 bg-black/20 text-theme-textMuted hover:bg-black/40 hover:text-theme-text" data-showcase-tab="flatpak">
+                        <div class="tab-icon-container w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center">
+                            <i data-lucide="layers" class="w-5 h-5"></i>
+                        </div>
+                        <div>
+                            <p class="font-bold text-sm text-theme-text font-outfit">Flatpak Sandboxing</p>
+                            <p class="text-xs text-theme-textMuted">Install sandbox systems without setup</p>
+                        </div>
+                    </button>
+
+                    <button onclick="setActiveShowcase('details')" class="showcase-tab-btn w-full text-left p-5 rounded-2xl transition-all flex items-center gap-4 bg-black/20 text-theme-textMuted hover:bg-black/40 hover:text-theme-text" data-showcase-tab="details">
+                        <div class="tab-icon-container w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center">
+                            <i data-lucide="info" class="w-5 h-5"></i>
+                        </div>
+                        <div>
+                            <p class="font-bold text-sm text-theme-text font-outfit">Package Details & Origins</p>
+                            <p class="text-xs text-theme-textMuted">Filter systems, dependencies and flags</p>
+                        </div>
+                    </button>
+
+                    <button onclick="setActiveShowcase('terminal')" class="showcase-tab-btn w-full text-left p-5 rounded-2xl transition-all flex items-center gap-4 bg-black/20 text-theme-textMuted hover:bg-black/40 hover:text-theme-text" data-showcase-tab="terminal">
+                        <div class="tab-icon-container w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center">
+                            <i data-lucide="terminal" class="w-5 h-5"></i>
+                        </div>
+                        <div>
+                            <p class="font-bold text-sm text-theme-text font-outfit">Live Terminal Updates</p>
+                            <p class="text-xs text-theme-textMuted">Transparent log viewer terminal</p>
+                        </div>
+                    </button>
                 </div>
-                <div class="space-y-2">
-                    <p class="text-purple-300"># Using Paru</p>
-                    <p class="text-white">paru -S bamboo-end-store-bin</p>
-                    <br>
-                    <p class="text-purple-300"># Or Using Yay</p>
-                    <p class="text-white">yay -S bamboo-end-store-bin</p>
+
+                <!-- Right Showcase Mockup Details -->
+                <div class="lg:col-span-8 glass p-6 rounded-3xl border border-theme-border/80 shadow-xl">
+                    <!-- Dynamic Title/Description inside Showcase -->
+                    <div class="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div>
+                            <h3 id="showcase-title" class="text-2xl font-outfit font-black text-theme-text">Dashboard Overview</h3>
+                            <p id="showcase-desc" class="text-sm text-theme-textMuted mt-1">A unified launchpad to inspect system logs, search community archives, and trigger bulk updates.</p>
+                        </div>
+                        
+                        <!-- Toggle AUR Comments context if in AUR tab -->
+                        <div id="aur-toggle-container" class="hidden flex items-center gap-2 bg-black/40 border border-theme-border px-3.5 py-1.5 rounded-full text-xs flex-shrink-0">
+                            <span class="text-theme-textMuted font-outfit">Show AUR Comments</span>
+                            <button onclick="toggleAurScreenshot()" id="aur-toggle-btn" class="w-10 h-6 bg-zinc-700 rounded-full relative transition-all duration-300 flex-shrink-0">
+                                <span id="aur-toggle-dot" class="w-5 h-5 bg-white rounded-full absolute top-0.5 left-0.5 transition-all duration-300"></span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- App Frame wrapper inside Showcase -->
+                    <div class="relative rounded-2xl overflow-hidden border border-theme-border bg-black/50 aspect-[16/10] glow-glow">
+                        <img id="showcase-img" src="imgs/Home.png" class="w-full h-full object-cover transition-opacity duration-300 scale-[1.065]" alt="Showcase Preview">
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- Installation & Terminal Command Section -->
+    <section id="install" class="py-24 bg-gradient-to-t from-theme-accent/5 to-transparent relative">
+        <div class="max-w-4xl mx-auto px-6 text-center">
+            <h2 class="text-4xl font-outfit font-black text-theme-text mb-6">Install Bamboo End Store</h2>
+            <p class="text-theme-textMuted mb-12 text-lg">Installing is as simple as running a single command via your favorite AUR helper.</p>
+            
+            <!-- Terminal Widget -->
+            <div class="glass !bg-black/60 border border-theme-border/80 p-8 rounded-3xl text-left font-mono relative overflow-hidden group shadow-2xl">
+                <!-- Terminal header -->
+                <div class="flex items-center justify-between mb-6 border-b border-theme-border/20 pb-4">
+                    <div class="flex gap-2">
+                        <div class="w-3 h-3 rounded-full bg-red-500/60"></div>
+                        <div class="w-3 h-3 rounded-full bg-yellow-500/60"></div>
+                        <div class="w-3 h-3 rounded-full bg-green-500/60"></div>
+                    </div>
+                    <span class="text-theme-accentText text-xs font-bold tracking-widest uppercase">Bash Terminal</span>
+                </div>
+                <!-- Terminal Command Lines -->
+                <div class="space-y-4 text-sm md:text-base">
+                    <div>
+                        <span class="text-zinc-500 font-normal"># Using Paru (Recommended)</span>
+                        <div class="flex items-center justify-between mt-1 text-theme-text">
+                            <span>$ paru -S bamboo-end-store-bin</span>
+                            <button onclick="copyCommand('paru -S bamboo-end-store-bin')" class="text-xs text-theme-accent hover:text-theme-accentHover bg-theme-accent/10 px-3 py-1 rounded-lg border border-theme-accent/25 transition-all">Copy</button>
+                        </div>
+                    </div>
+                    <div class="pt-2">
+                        <span class="text-zinc-500 font-normal"># Or Using Yay</span>
+                        <div class="flex items-center justify-between mt-1 text-theme-text">
+                            <span>$ yay -S bamboo-end-store-bin</span>
+                            <button onclick="copyCommand('yay -S bamboo-end-store-bin')" class="text-xs text-theme-accent hover:text-theme-accentHover bg-theme-accent/10 px-3 py-1 rounded-lg border border-theme-accent/25 transition-all">Copy</button>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <div class="mt-12 flex items-center justify-center gap-8">
+            <!-- Distro Grid info -->
+            <div class="mt-16 flex items-center justify-center gap-12">
                 <div class="text-center">
-                    <p class="text-white font-black text-2xl">AUR</p>
-                    <p class="text-purple-100 text-sm">Official Distro</p>
+                    <p class="text-theme-text font-black text-3xl font-outfit">AUR</p>
+                    <p class="text-theme-textMuted text-sm">Community Repo (AUR)</p>
                 </div>
-                <div class="w-px h-10 bg-white/20"></div>
+                <div class="w-px h-12 bg-theme-border/40"></div>
                 <div class="text-center">
-                    <p class="text-white font-black text-2xl">AppImage</p>
-                    <p class="text-purple-100 text-sm">Portable Version</p>
+                    <p class="text-theme-text font-black text-3xl font-outfit">AppImage</p>
+                    <p class="text-theme-textMuted text-sm">Portable release</p>
                 </div>
             </div>
         </div>
     </section>
 
     <!-- Footer -->
-    <footer class="py-20 border-t border-white/5">
+    <footer class="py-16 border-t border-theme-border/30 bg-black/40">
         <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-8">
             <div class="flex items-center gap-3">
-                <img src="logo-without-background.png" class="w-6 h-6 grayscale opacity-50" alt="Logo">
-                <span class="font-outfit font-bold text-zinc-500 tracking-tighter">BAMBOO END STORE</span>
+                <img id="footer-logo" src="imgs/logo-without-background.png" class="w-7 h-7 object-contain opacity-75" alt="Logo">
+                <span class="font-outfit font-black tracking-tighter text-theme-text/80 text-sm uppercase">BAMBOO END STORE</span>
             </div>
-            <p class="text-zinc-500 text-sm">Created with ❤️ by <a href="https://github.com/satodu" class="text-purple-500 hover:underline">Panda</a>. Dedicated to EndeavourOS users.</p>
+            
+            <p class="text-theme-textMuted text-sm text-center md:text-left">
+                Created with ❤️ by <a href="https://github.com/satodu" target="_blank" class="text-theme-accent hover:underline">Panda</a>. Dedicated to all EndeavourOS users.
+            </p>
+            
             <div class="flex items-center gap-6">
-                <a href="https://github.com/satodu/bamboo-end-store" class="text-zinc-500 hover:text-white transition-colors"><i data-lucide="github" class="w-5 h-5"></i></a>
+                <a href="https://github.com/satodu/bamboo-end-store" target="_blank" class="text-theme-textMuted hover:text-theme-accent transition-colors">
+                    <i data-lucide="github" class="w-5 h-5"></i>
+                </a>
             </div>
         </div>
     </footer>
 
+    <!-- Copy Notification Toast -->
+    <div id="copy-toast" class="fixed bottom-6 right-6 glass px-5 py-3 rounded-2xl text-sm font-semibold border-theme-accent/50 text-theme-accent shadow-2xl transition-all duration-300 opacity-0 translate-y-10 pointer-events-none flex items-center gap-2">
+        <i data-lucide="check" class="w-4 h-4 text-theme-accent"></i>
+        <span>Command copied to clipboard!</span>
+    </div>
+
+    <!-- Scripting & Interaction Logic -->
     <script>
+        // Set Default Theme State
+        let currentTheme = 'bamboo';
+        let isAurCommentsScreenshot = false;
+
+        // Theme Configuration Images Mapping
+        const themeImages = {
+            bamboo: 'imgs/theme/bamboo.png',
+            catputtin: 'imgs/theme/catputtin.png',
+            gruvbox: 'imgs/theme/gruvbox.png',
+            nordic: 'imgs/theme/nordic.png'
+        };
+
+        // Theme Names Mapping for Title Bar
+        const themeTitles = {
+            bamboo: 'Bamboo End Store - Bamboo Theme Preview',
+            catputtin: 'Bamboo End Store - Catppuccin Theme Preview',
+            gruvbox: 'Bamboo End Store - Gruvbox Theme Preview',
+            nordic: 'Bamboo End Store - Nordic Theme Preview'
+        };
+
+        // Theme Switcher Handler
+        function setTheme(themeName) {
+            currentTheme = themeName;
+            
+            // Set Attribute on HTML
+            document.documentElement.setAttribute('data-theme', themeName);
+
+            // Update UI selectors styling
+            document.querySelectorAll('.theme-selector-btn').forEach(btn => {
+                const isSelected = btn.getAttribute('data-theme-btn') === themeName;
+                if (isSelected) {
+                    btn.classList.add('border-theme-accent/20', 'bg-theme-accent/10');
+                    btn.classList.remove('border-transparent', 'hover:bg-white/5');
+                } else {
+                    btn.classList.remove('border-theme-accent/20', 'bg-theme-accent/10');
+                    btn.classList.add('border-transparent', 'hover:bg-white/5');
+                }
+            });
+
+            document.querySelectorAll('.theme-pill').forEach(btn => {
+                const isSelected = btn.getAttribute('data-pill-theme') === themeName;
+                if (isSelected) {
+                    btn.classList.add('bg-theme-accent', 'text-white', 'font-bold');
+                    btn.classList.remove('text-zinc-400', 'hover:text-white');
+                } else {
+                    btn.classList.remove('bg-theme-accent', 'text-white', 'font-bold');
+                    btn.classList.add('text-zinc-400', 'hover:text-white');
+                }
+            });
+
+            // Smooth transition for Mockup Screenshot
+            const mockupImg = document.getElementById('hero-mockup-img');
+            mockupImg.style.opacity = 0;
+            setTimeout(() => {
+                mockupImg.src = themeImages[themeName];
+                mockupImg.style.opacity = 1;
+            }, 150);
+
+            // Reset view mode button classes to grid
+            currentViewMode = 'grid';
+            const gridBtn = document.getElementById('view-mode-grid-btn');
+            const listBtn = document.getElementById('view-mode-list-btn');
+            if (gridBtn && listBtn) {
+                gridBtn.className = "px-2 py-0.5 rounded bg-theme-accent text-white transition-all flex items-center justify-center";
+                listBtn.className = "px-2 py-0.5 rounded text-theme-textMuted hover:text-theme-text transition-all flex items-center justify-center";
+            }
+
+            // Update Mockup Frame Title (if element exists)
+            const titleEl = document.getElementById('mockup-window-title');
+            if (titleEl) {
+                titleEl.innerHTML = `
+                    <i data-lucide="layout" class="w-3 h-3 text-theme-accent"></i>
+                    ${themeTitles[themeName]}
+                `;
+            }
+            
+            // Update Showcase Image if it is currently displaying the Home tab (or its theme variant)
+            const activeTab = document.querySelector('.showcase-tab-btn[data-showcase-tab]').getAttribute('data-showcase-tab');
+            if (activeTab === 'home') {
+                document.getElementById('showcase-img').src = themeImages[themeName];
+            }
+
+            // Recreate icons if title bar structure changed
+            lucide.createIcons();
+        }
+
+        // View Mode Management
+        let currentViewMode = 'grid';
+
+        function setViewMode(mode) {
+            currentViewMode = mode;
+            const gridBtn = document.getElementById('view-mode-grid-btn');
+            const listBtn = document.getElementById('view-mode-list-btn');
+            const mockupImg = document.getElementById('hero-mockup-img');
+            
+            if (mode === 'list') {
+                gridBtn.className = "px-2 py-0.5 rounded text-theme-textMuted hover:text-theme-text transition-all flex items-center justify-center";
+                listBtn.className = "px-2 py-0.5 rounded bg-theme-accent text-white transition-all flex items-center justify-center";
+                
+                mockupImg.style.opacity = 0;
+                setTimeout(() => {
+                    mockupImg.src = 'imgs/ListView.png';
+                    mockupImg.style.opacity = 1;
+                }, 150);
+            } else {
+                gridBtn.className = "px-2 py-0.5 rounded bg-theme-accent text-white transition-all flex items-center justify-center";
+                listBtn.className = "px-2 py-0.5 rounded text-theme-textMuted hover:text-theme-text transition-all flex items-center justify-center";
+                
+                mockupImg.style.opacity = 0;
+                setTimeout(() => {
+                    mockupImg.src = themeImages[currentTheme];
+                    mockupImg.style.opacity = 1;
+                }, 150);
+            }
+        }
+
+        // Showcase Management
+        const showcaseData = {
+            home: {
+                title: 'Dashboard Overview',
+                desc: 'A unified launchpad to inspect system logs, search community archives, and trigger bulk updates.',
+                img: 'imgs/Home.png' // will load dynamic theme image on active load
+            },
+            appimages: {
+                title: 'AppImage Workspace',
+                desc: 'An automated folder index manager. Register downloaded AppImages, auto-extract desktop icons, and integrate application menu entry links effortlessly.',
+                img: 'imgs/AppImages.png'
+            },
+            aur: {
+                title: 'AUR & Comments Integration',
+                desc: 'Direct integration with yay/paru helper systems. View real-time comments, trust index ratings, and build flag descriptions from users before loading packages.',
+                img: 'imgs/AurIntegration.png'
+            },
+            flatpak: {
+                title: 'Flatpak Sandboxing',
+                desc: 'Configure Flathub, inspect sandboxed directories, toggle application permissions, and install containers without terminal setup.',
+                img: 'imgs/flatpakintegration.png'
+            },
+            details: {
+                title: 'Package Details & Filters',
+                desc: 'Inspect detailed descriptions, repository sizes, maintainers, dependencies, and filter options by repository origin (AUR, Flatpak, Pacman, AppImage).',
+                img: 'imgs/PackageDetails.png'
+            },
+            terminal: {
+                title: 'Live Terminal Updates',
+                desc: 'Observe the installation processes running live. A fully transparent command output terminal logs everything as packages install or uninstall.',
+                img: 'imgs/TerminalFirst.png'
+            }
+        };
+
+        function setActiveShowcase(tabId) {
+            // Update active state in UI tabs (No borders, background differences)
+            document.querySelectorAll('.showcase-tab-btn').forEach(btn => {
+                const matches = btn.getAttribute('data-showcase-tab') === tabId;
+                const iconContainer = btn.querySelector('.tab-icon-container');
+                if (matches) {
+                    btn.classList.add('bg-theme-accent/15', 'text-theme-text');
+                    btn.classList.remove('bg-black/20', 'text-theme-textMuted', 'hover:bg-black/40', 'hover:text-theme-text');
+                    if (iconContainer) {
+                        iconContainer.className = "tab-icon-container w-10 h-10 rounded-xl bg-theme-accent/15 flex items-center justify-center text-theme-accent";
+                    }
+                } else {
+                    btn.classList.remove('bg-theme-accent/15', 'text-theme-text');
+                    btn.classList.add('bg-black/20', 'text-theme-textMuted', 'hover:bg-black/40', 'hover:text-theme-text');
+                    if (iconContainer) {
+                        iconContainer.className = "tab-icon-container w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center";
+                    }
+                }
+            });
+
+            // Update details
+            const data = showcaseData[tabId];
+            document.getElementById('showcase-title').innerText = data.title;
+            document.getElementById('showcase-desc').innerText = data.desc;
+
+            // Transition Image
+            const showcaseImg = document.getElementById('showcase-img');
+            showcaseImg.style.opacity = 0;
+            setTimeout(() => {
+                // If it is home, show the image corresponding to the active theme
+                if (tabId === 'home') {
+                    showcaseImg.src = themeImages[currentTheme];
+                } else if (tabId === 'aur' && isAurCommentsScreenshot) {
+                    showcaseImg.src = 'imgs/AurComments.png';
+                } else {
+                    showcaseImg.src = data.img;
+                }
+                showcaseImg.style.opacity = 1;
+            }, 150);
+
+            // Handle AUR comments toggle button visibility
+            const toggleContainer = document.getElementById('aur-toggle-container');
+            if (tabId === 'aur') {
+                toggleContainer.classList.remove('hidden');
+            } else {
+                toggleContainer.classList.add('hidden');
+            }
+        }
+
+        // Toggle AUR screenshots (Integration vs Comments)
+        function toggleAurScreenshot() {
+            isAurCommentsScreenshot = !isAurCommentsScreenshot;
+            const toggleDot = document.getElementById('aur-toggle-dot');
+            const toggleBtn = document.getElementById('aur-toggle-btn');
+            
+            if (isAurCommentsScreenshot) {
+                toggleDot.classList.remove('left-0.5');
+                toggleDot.classList.add('left-[18px]');
+                toggleBtn.classList.remove('bg-zinc-700');
+                toggleBtn.classList.add('bg-theme-accent');
+            } else {
+                toggleDot.classList.remove('left-[18px]');
+                toggleDot.classList.add('left-0.5');
+                toggleBtn.classList.remove('bg-theme-accent');
+                toggleBtn.classList.add('bg-zinc-700');
+            }
+
+            // Reload image
+            setActiveShowcase('aur');
+        }
+
+        // Copy Terminal command handler
+        function copyCommand(commandText) {
+            navigator.clipboard.writeText(commandText).then(() => {
+                const toast = document.getElementById('copy-toast');
+                toast.style.opacity = '1';
+                toast.style.transform = 'translateY(0)';
+                
+                setTimeout(() => {
+                    toast.style.opacity = '0';
+                    toast.style.transform = 'translateY(10px)';
+                }, 3000);
+            });
+        }
+
+        // Initialize script loader
         window.addEventListener('load', function() {
             lucide.createIcons();
+            // Start on Bamboo theme preview
+            setTheme('bamboo');
         });
     </script>
 </body>

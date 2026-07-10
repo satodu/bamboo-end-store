@@ -39,7 +39,7 @@ class NativeAppServiceProvider implements ProvidesPhpIni
         $menuBar = MenuBar::create();
         if ($menuBar) {
             $menuBar->showDockIcon()
-                ->icon(public_path('logo-without-background.png'))
+                ->icon(public_path('icon.png'))
                 ->onlyShowContextMenu()
                 ->withContextMenu(
                     Menu::make(
