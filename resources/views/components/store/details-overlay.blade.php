@@ -92,6 +92,51 @@
                 </div>
             @endif
 
+            @php
+                $packageName = $selectedPackage['Name'] ?? $selectedPackage['ID'] ?? $selectedPackage['Application'] ?? '';
+                $command = '';
+                if ($selectedPackage['is_flatpak'] ?? false) {
+                    $command = "flatpak install flathub " . $packageName;
+                } elseif ($selectedPackage['is_aur'] ?? false) {
+                    $helper = 'yay';
+                    try {
+                        $helper = (new \App\Services\PackageManagers\AurManager())->getHelper();
+                    } catch (\Throwable $e) {}
+                    $command = $helper . " -S " . $packageName;
+                } else {
+                    $command = "sudo pacman -S " . $packageName;
+                }
+            @endphp
+
+            <div x-data="{ copied: false, command: '{{ $command }}' }" class="space-y-4">
+                <h3 class="text-[11px] font-black uppercase tracking-[0.2em] text-muted-foreground">{{ __('Terminal Command') }}</h3>
+                <div class="relative flex items-center justify-between bg-black/40 border border-white/5 rounded-xl p-4 font-mono text-sm group transition-all hover:bg-black/50 hover:border-white/10">
+                    <div class="flex items-center gap-3 overflow-x-auto no-scrollbar pr-12 text-slate-300">
+                        <span class="text-bamboo select-none font-bold">$</span>
+                        <span class="select-all whitespace-nowrap">{{ $command }}</span>
+                    </div>
+                    <button 
+                        @click="navigator.clipboard.writeText(command); copied = true; setTimeout(() => copied = false, 2000)"
+                        class="absolute right-3 p-2 bg-white/5 hover:bg-white/10 rounded-lg text-muted-foreground hover:text-foreground transition-all flex items-center gap-1.5 active:scale-95 no-drag"
+                        title="{{ __('Copy Command') }}"
+                    >
+                        <span x-show="!copied" x-transition.duration.200ms>
+                            <!-- Clipboard Icon -->
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+                            </svg>
+                        </span>
+                        <span x-show="copied" x-transition.duration.200ms class="text-emerald-400 flex items-center gap-1 text-[11px] font-sans font-bold" style="display: none;">
+                            <!-- Checkmark Icon -->
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                            {{ __('Copied!') }}
+                        </span>
+                    </button>
+                </div>
+            </div>
+
             <div>
                 <h3 class="text-[11px] font-black uppercase tracking-[0.2em] text-muted-foreground mb-4">{{ __('Description') }}</h3>
                 <p class="text-[17px] leading-relaxed font-medium text-slate-200">{{ $selectedPackage['Description'] ?? __('No description available.') }}</p>

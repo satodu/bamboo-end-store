@@ -1,7 +1,7 @@
 # 🐼 Bamboo End Store (Community Edition)
 
 <p align="center">
-  <img src="public/logo-without-background.png" width="350" alt="Bamboo End Store Logo">
+  <img src="docs/imgs/logo-without-background.png" width="350" alt="Bamboo End Store Logo">
 </p>
 
 <p align="center">
@@ -16,12 +16,11 @@
     </a>
 </p>
 
-
 <p align="center">
   <b>🌐 Check the official website: <a href="https://satodu.github.io/bamboo-end-store/">satodu.github.io/bamboo-end-store/</a></b>
 </p>
 
-A modern, high-performance, and beautiful community-driven store for **EndeavourOS/Arch Linux**, built with **Laravel**, **Livewire (Volt)**, and **NativePHP**. 
+A high-performance, beautiful community store for **EndeavourOS / Arch Linux**, built with **Laravel**, **Livewire (Volt)**, and **NativePHP**. 
 
 Designed and crafted specifically for **EndeavourOS** users, this project is created by a passionate daily fan of the system as a tribute and tool to enhance the desktop experience.
 
@@ -30,33 +29,53 @@ Designed and crafted specifically for **EndeavourOS** users, this project is cre
 
 ---
 
-## 📸 Visual Preview
+## 🎨 Theme Showcases
 
+Bamboo End Store offers custom accent themes tailored for your desktop aesthetic:
+
+| **Bamboo Theme (Default)** | **Catppuccin Theme** |
+|:---:|:---:|
+| <img src="docs/imgs/theme/bamboo.png" width="100%" alt="Bamboo Theme"> | <img src="docs/imgs/theme/catputtin.png" width="100%" alt="Catppuccin Theme"> |
+| **Gruvbox Theme** | **Nordic Theme** |
+| <img src="docs/imgs/theme/gruvbox.png" width="100%" alt="Gruvbox Theme"> | <img src="docs/imgs/theme/nordic.png" width="100%" alt="Nordic Theme"> |
+
+---
+
+## 📸 Visual Previews
+
+### Dashboard & List Layouts
 <p align="center">
-  <img src="resources/prints/Home.png" width="800" alt="Home Screen">
+  <img src="docs/imgs/Home.png" width="49%" alt="Dashboard Overview">
+  <img src="docs/imgs/ListView.png" width="49%" alt="List View Layout">
 </p>
 
-<div align="center">
-  <img src="resources/prints/Installed.png" width="48%" alt="Installed Packages">
-  <img src="resources/prints/Search.png" width="48%" alt="Search Results">
-</div>
+### Package Details & Live Terminal Logs
+<p align="center">
+  <img src="docs/imgs/PackageDetails.png" width="49%" alt="Package Details & Terminal Copy Command">
+  <img src="docs/imgs/TerminalFirst.png" width="49%" alt="Live Command Terminal Logs">
+</p>
 
-<br>
+### AUR Comments & Flatpak Integration
+<p align="center">
+  <img src="docs/imgs/AurComments.png" width="49%" alt="AUR Community Comments">
+  <img src="docs/imgs/flatpakintegration.png" width="49%" alt="Flatpak Setup & Permissions">
+</p>
 
-<div align="center">
-  <img src="resources/prints/AppImages.png" width="48%" alt="AppImages Manager">
-  <img src="resources/prints/Settings.png" width="48%" alt="Settings Menu">
-</div>
+### AppImage Workspace & One-Click System Updates
+<p align="center">
+  <img src="docs/imgs/AppImages.png" width="49%" alt="AppImage Manager Workspace">
+  <img src="docs/imgs/UpdateSystemOneClick.png" width="49%" alt="One-Click System Update">
+</p>
 
 ---
 
 ## ✨ Features
 
-- **⚙️ AppImage Management (Gear Lever Style)**: Integrated manager to integrate, launch, and uninstall AppImages. Automatically handles icon extraction and desktop menu entries.
-- **📦 Flatpak Support** *(New in v1.1.1)*: Browse, install, update, and remove Flatpak applications directly from the store. Enable or disable Flatpak integration at any time from Settings.
+- **⚙️ AppImage Management (Gear Lever Style)**: Integrated workspace to integrate, launch, and uninstall AppImages. Automatically handles icon extraction and desktop menu entries.
+- **📦 Flatpak Support**: Configure Flathub natively. Browse categories, manage sandboxed applications, and edit flatpak permissions from a gorgeous interface.
 - **🚀 Performance-First**: Intelligent caching system for lightning-fast search results.
-- **💎 Shadcn UI Aesthetic**: Clean, professional, and minimalist design based on the Zinc theme.
-- **📦 AUR Integration**: Search and install community packages directly from the AUR via `yay`.
+- **💎 Custom Accent Themes**: Toggle between premium dark themes tailored for EndeavourOS power users (Bamboo, Catppuccin, Gruvbox, Nordic) to fit your desktop aesthetic.
+- **⚡ Native AUR & Pacman Integration**: Direct connection to official and community repositories. Read packaging guidelines, inspect build scripts, see real user comments, and copy terminal installation commands.
 - **📑 Real Pagination**: Navigate through thousands of packages easily with a robust pagination system.
 - **⚙️ Configurable**: Toggle repositories, set search limits, and manage your preferences in a dedicated settings menu.
 - **🖥️ Native Experience**: Runs as a native Linux desktop application thanks to **NativePHP (Electron)**.
