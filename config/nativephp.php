@@ -59,6 +59,8 @@ return [
      * You may use wildcards to match multiple keys.
      */
     'cleanup_env_keys' => [
+        'APP_ENV',
+        'APP_DEBUG',
         'AWS_*',
         'AZURE_*',
         'GITHUB_*',
