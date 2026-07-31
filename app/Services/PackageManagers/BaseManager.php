@@ -66,6 +66,24 @@ abstract class BaseManager implements PackageManagerInterface
             $postScript = "echo ''; read -p 'Press Enter to close...'";
         }
 
+        // Pass NativePHP env vars to the callback command so it can write to user local storage
+        $envVars = [
+            'NATIVEPHP_RUNNING' => env('NATIVEPHP_RUNNING') ? 'true' : 'false',
+            'NATIVEPHP_STORAGE_PATH' => env('NATIVEPHP_STORAGE_PATH'),
+            'NATIVEPHP_DATABASE_PATH' => env('NATIVEPHP_DATABASE_PATH'),
+            'NATIVEPHP_SECRET' => env('NATIVEPHP_SECRET'),
+            'NATIVEPHP_API_URL' => env('NATIVEPHP_API_URL'),
+        ];
+        $envPrefix = '';
+        foreach ($envVars as $key => $val) {
+            if ($val !== null && $val !== '' && $val !== 'false') {
+                $envPrefix .= "{$key}=" . escapeshellarg($val) . " ";
+            }
+        }
+        if (!empty($envPrefix) && str_contains($callbackCmd, 'artisan')) {
+            $callbackCmd = $envPrefix . $callbackCmd;
+        }
+
         $terminalCmd = match ($foundTerminal) {
             'konsole' => "konsole -e bash -c " . escapeshellarg("$command; $callbackCmd; $postScript"),
             'gnome-terminal' => "gnome-terminal -- bash -c " . escapeshellarg("$command; $callbackCmd; $postScript"),

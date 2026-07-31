@@ -46,7 +46,23 @@ class PackageService
             $helper = $this->getHelper();
             $artisan = base_path('artisan');
             $php = PHP_BINARY;
-            $callback = "{$php} {$artisan} package:finished 'System Update'";
+
+            // Pass NativePHP env vars to the callback command so it can write to user local storage
+            $envVars = [
+                'NATIVEPHP_RUNNING' => env('NATIVEPHP_RUNNING') ? 'true' : 'false',
+                'NATIVEPHP_STORAGE_PATH' => env('NATIVEPHP_STORAGE_PATH'),
+                'NATIVEPHP_DATABASE_PATH' => env('NATIVEPHP_DATABASE_PATH'),
+                'NATIVEPHP_SECRET' => env('NATIVEPHP_SECRET'),
+                'NATIVEPHP_API_URL' => env('NATIVEPHP_API_URL'),
+            ];
+            $envPrefix = '';
+            foreach ($envVars as $key => $val) {
+                if ($val !== null && $val !== '' && $val !== 'false') {
+                    $envPrefix .= "{$key}=" . escapeshellarg($val) . " ";
+                }
+            }
+
+            $callback = "{$envPrefix}{$php} {$artisan} package:finished 'System Update'";
 
             // Build the terminal update script
             // Resolve translatable console messages in PHP before embedding in shell
