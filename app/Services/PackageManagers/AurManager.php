@@ -37,10 +37,14 @@ class AurManager extends BaseManager
                             'is_flatpak'  => false,
                             'installed'   => in_array($name, $installedNames),
                             'description' => isset($lines[$i+1]) ? trim($lines[$i+1]) : '',
-                            'icon_url'    => $this->getIcon($name, false),
-                            'screenshots' => $this->getScreenshots($name, false),
+                            'icon_url'    => $this->getIcon($name, false, false),
+                            'screenshots' => [],
                         ];
                         $i++;
+
+                        if (count($packages) >= 50) {
+                            break;
+                        }
                     }
                 }
                 return $packages;
@@ -63,8 +67,8 @@ class AurManager extends BaseManager
                         'is_flatpak'  => false,
                         'installed'   => in_array($name, $installedNames),
                         'description' => $item['Description'] ?? '',
-                        'icon_url'    => $this->getIcon($name, false),
-                        'screenshots' => $this->getScreenshots($name, false),
+                        'icon_url'    => $this->getIcon($name, false, false),
+                        'screenshots' => [],
                     ];
                 }
             }
@@ -123,8 +127,8 @@ class AurManager extends BaseManager
                                 : '---',
                             'Maintainer'   => $item['Maintainer'] ?? 'Unknown',
                             'is_installed' => $this->isInstalled($packageName),
-                            'icon_url'     => $this->getIcon($packageName, false),
-                            'screenshots'  => $this->getScreenshots($packageName, false),
+                            'icon_url'     => $this->getIcon($packageName, false, true),
+                            'screenshots'  => $this->getScreenshots($packageName, false, true),
                         ];
                     }
                 }
@@ -166,8 +170,8 @@ class AurManager extends BaseManager
             }
         }
 
-        $details['icon_url']    = $this->getIcon($packageName, false);
-        $details['screenshots'] = $this->getScreenshots($packageName, false);
+        $details['icon_url']    = $this->getIcon($packageName, false, true);
+        $details['screenshots'] = $this->getScreenshots($packageName, false, true);
         $details['is_installed'] = $this->isInstalled($packageName);
 
         // Still empty? Supplement from AUR API LastModified timestamp

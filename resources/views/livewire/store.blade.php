@@ -293,9 +293,9 @@ new class extends Component
                 'Name'         => $name,
                 'Description'  => 'No additional details available for this package.',
                 'Version'      => 'Unknown',
-                'icon_url'     => $service->getIcon($name, $isFlatpak),
+                'icon_url'     => $service->getIcon($name, $isFlatpak, true),
                 // Para flatpaks, busca screenshots mesmo sem os detalhes completos
-                'screenshots'  => $service->getScreenshots($name, $isFlatpak),
+                'screenshots'  => $service->getScreenshots($name, $isFlatpak, true),
                 'is_installed' => false,
             ];
         }
@@ -566,8 +566,8 @@ new class extends Component
                 'is_flatpak'   => $isFlatpak,
                 'installed'    => true,
                 'description'  => $pkg['description'] ?? 'Package installed on your system.',
-                'icon_url'     => $service->getIcon($name, $isFlatpak),
-                'screenshots'  => $service->getScreenshots($name, $isFlatpak),
+                'icon_url'     => $service->getIcon($name, $isFlatpak, false),
+                'screenshots'  => [],
             ];
         }, $allInstalled);
     }

@@ -31,7 +31,10 @@ class NativeAppServiceProvider implements ProvidesPhpIni
             ->minWidth(800)
             ->minHeight(600)
             ->title('Bamboo End Store - v' . config('nativephp.version'))
+            ->hideMenu()
             ->rememberState();
+
+        Menu::create();
 
         \Illuminate\Support\Facades\Log::info("NativeAppServiceProvider booting. Locale: " . app()->getLocale() . ", Open Store: " . __('Open Store'));
 

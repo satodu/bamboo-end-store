@@ -97,7 +97,7 @@ abstract class BaseManager implements PackageManagerInterface
         return $pid ?: 9999;
     }
 
-    public function getIcon(string $name, bool $isFlatpak = false): string
+    public function getIcon(string $name, bool $isFlatpak = false, bool $allowRemote = false): string
     {
         if ($isFlatpak) {
             $nameLower = strtolower($name);
@@ -117,7 +117,7 @@ abstract class BaseManager implements PackageManagerInterface
             return "https://dl.flathub.org/repo/appstream/x86_64/icons/128x128/{$name}.png";
         }
 
-        $id = $this->getAppId($name);
+        $id = $this->getAppId($name, $allowRemote);
         if ($id) {
             return "https://dl.flathub.org/repo/appstream/x86_64/icons/128x128/{$id}.png";
         }
@@ -125,10 +125,14 @@ abstract class BaseManager implements PackageManagerInterface
         return '';
     }
 
-    public function getScreenshots(string $name, bool $isFlatpak = false): array
+    public function getScreenshots(string $name, bool $isFlatpak = false, bool $allowRemote = true): array
     {
-        $id = $isFlatpak ? $name : $this->getAppId($name);
+        $id = $isFlatpak ? $name : $this->getAppId($name, $allowRemote);
         if (!$id) return [];
+
+        if (!$allowRemote) {
+            return \Illuminate\Support\Facades\Cache::get("pkg_screenshots_" . $id, []);
+        }
 
         return Cache::remember("pkg_screenshots_" . $id, 86400, function () use ($id) {
             try {
@@ -163,13 +167,19 @@ abstract class BaseManager implements PackageManagerInterface
         });
     }
 
-    public function getAppId(string $name): ?string
+    public function getAppId(string $name, bool $allowRemote = false): ?string
     {
         $cleanName = strtolower(trim($name));
         $mapping = $this->getAppMapping();
 
         if (isset($mapping[$cleanName])) {
             return $mapping[$cleanName];
+        }
+
+        // Se busca remota não for explicitamente permitida (ex: buscas ou listagens massivas),
+        // retorna o app_id do cache se já tiver sido consultado antes, evitando travar a thread com curl
+        if (!$allowRemote) {
+            return \Illuminate\Support\Facades\Cache::get("pkg_flathub_appid_" . $cleanName, null);
         }
 
         // Dynamic Flathub lookup cached for 7 days

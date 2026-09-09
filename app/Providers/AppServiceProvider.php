@@ -53,6 +53,7 @@ class AppServiceProvider extends ServiceProvider
                 ->minWidth(800)
                 ->minHeight(600)
                 ->title('Bamboo End Store - v' . config('nativephp.version'))
+                ->hideMenu()
                 ->rememberState();
         });
 
@@ -64,6 +65,7 @@ class AppServiceProvider extends ServiceProvider
                 ->minWidth(800)
                 ->minHeight(600)
                 ->title('Bamboo End Store - v' . config('nativephp.version'))
+                ->hideMenu()
                 ->rememberState();
         });
 

@@ -123,4 +123,25 @@ class PackageManagerTest extends TestCase
         $result2 = $manager2->remove('test-package');
         $this->assertEquals(7777, $result2);
     }
+
+    /**
+     * Test that search does not block on screenshots and respects non-remote icon lookups.
+     */
+    public function test_search_and_icon_lookup_avoids_remote_blocking(): void
+    {
+        $pacman = PackageManagerFactory::make(PackageSource::PACMAN);
+        
+        // Known mapping in getAppMapping
+        $iconUrl = $pacman->getIcon('steam', false, false);
+        $this->assertStringContainsString('com.valvesoftware.Steam', $iconUrl);
+
+        // Unknown package with allowRemote = false must return empty string instantly without curl
+        $iconUrlUnknown = $pacman->getIcon('some-nonexistent-unknown-pkg-xyz', false, false);
+        $this->assertEquals('', $iconUrlUnknown);
+
+        // Screenshots with allowRemote = false returns empty array without curl
+        $screenshots = $pacman->getScreenshots('some-nonexistent-unknown-pkg-xyz', false, false);
+        $this->assertIsArray($screenshots);
+        $this->assertEmpty($screenshots);
+    }
 }

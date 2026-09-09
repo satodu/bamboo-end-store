@@ -40,8 +40,8 @@ class PacmanManager extends BaseManager
                     'is_flatpak'  => false,
                     'installed'   => in_array($name, $installedNames),
                     'description' => isset($lines[$i+1]) ? trim($lines[$i+1]) : '',
-                    'icon_url'    => $this->getIcon($name, false),
-                    'screenshots' => $this->getScreenshots($name, false),
+                    'icon_url'    => $this->getIcon($name, false, false),
+                    'screenshots' => [],
                 ];
                 $i++; 
             }
@@ -146,8 +146,8 @@ class PacmanManager extends BaseManager
             }
         }
 
-        $details['icon_url'] = $this->getIcon($packageName, false);
-        $details['screenshots'] = $this->getScreenshots($packageName, false);
+        $details['icon_url'] = $this->getIcon($packageName, false, true);
+        $details['screenshots'] = $this->getScreenshots($packageName, false, true);
         $details['is_installed'] = $this->isInstalled($packageName);
 
         return $details ?: null;

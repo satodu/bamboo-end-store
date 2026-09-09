@@ -276,17 +276,17 @@ class PackageService
     /**
      * Fetches the icon URL for a package
      */
-    public function getIcon(string $name, bool $isFlatpak = false): string
+    public function getIcon(string $name, bool $isFlatpak = false, bool $allowRemote = false): string
     {
-        return PackageManagerFactory::make(PackageSource::fromFlags(false, $isFlatpak))->getIcon($name, $isFlatpak);
+        return PackageManagerFactory::make(PackageSource::fromFlags(false, $isFlatpak))->getIcon($name, $isFlatpak, $allowRemote);
     }
 
     /**
      * Busca screenshots
      */
-    public function getScreenshots(string $name, bool $isFlatpak = false): array
+    public function getScreenshots(string $name, bool $isFlatpak = false, bool $allowRemote = true): array
     {
-        return PackageManagerFactory::make(PackageSource::fromFlags(false, $isFlatpak))->getScreenshots($name, $isFlatpak);
+        return PackageManagerFactory::make(PackageSource::fromFlags(false, $isFlatpak))->getScreenshots($name, $isFlatpak, $allowRemote);
     }
 
     /**
@@ -433,7 +433,7 @@ class PackageService
     /**
      * Executa um comando em background com sentinela no log
      */
-    public function runInBackground(string $name, bool $isAur = false, bool $isFlatpak = false, string $logFile): int
+    public function runInBackground(string $name, bool $isAur = false, bool $isFlatpak = false, string $logFile = ''): int
     {
         app(\App\Services\UserStateMachine::class)->transitionTo(\App\Enums\UserState::INSTALLING, $name);
         return PackageManagerFactory::make(PackageSource::fromFlags($isAur, $isFlatpak))->runInBackground($name, $logFile);
