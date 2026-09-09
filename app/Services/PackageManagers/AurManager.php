@@ -16,7 +16,7 @@ class AurManager extends BaseManager
         $packages = [];
 
         if ($helper !== 'pacman') {
-            $result = Process::run("LC_ALL=C $helper -Ss " . escapeshellarg($query));
+            $result = Process::timeout(6)->run("LC_ALL=C $helper -Ss " . escapeshellarg($query));
             if ($result->successful()) {
                 $lines = explode("\n", trim($result->output()));
                 $installedNames = $this->getInstalledNames();

@@ -6,13 +6,18 @@
         <title>Bamboo End Store - v{{ config('nativephp.version') }}</title>
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Mulish:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,600&family=Silkscreen:wght@400;700&display=swap" rel="stylesheet">
         <script src="https://cdn.tailwindcss.com"></script>
         <script>
             tailwind.config = {
                 darkMode: 'class',
                 theme: {
                     extend: {
+                        fontFamily: {
+                            sans: ['Mulish', 'sans-serif'],
+                            heading: ['Inter', 'sans-serif'],
+                            arcade: ['Silkscreen', 'cursive', 'sans-serif'],
+                        },
                         colors: {
                             bamboo: 'var(--bamboo)',
                             background: 'var(--background)',
@@ -54,9 +59,6 @@
                             lg: "var(--radius)",
                             md: "calc(var(--radius) - 2px)",
                             sm: "calc(var(--radius) - 4px)",
-                        },
-                        fontFamily: {
-                            sans: ['Inter', 'sans-serif'],
                         },
                     }
                 }
@@ -222,7 +224,13 @@
                 overflow: hidden;
             }
             body {
+                font-family: 'Mulish', sans-serif;
                 -webkit-font-smoothing: antialiased;
+            }
+
+            /* Global Typography: Inter for all titles & headings */
+            h1, h2, h3, h4, h5, h6, .font-heading {
+                font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
             }
             
             /* Region drag control */
@@ -309,3 +317,4 @@
         <livewire:store />
     </body>
 </html>
+

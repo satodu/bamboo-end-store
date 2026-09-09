@@ -12,7 +12,7 @@ class PacmanManager extends BaseManager
             return [];
         }
 
-        $result = Process::run("LC_ALL=C pacman -Ss " . escapeshellarg($query));
+        $result = Process::timeout(5)->run("LC_ALL=C pacman -Ss " . escapeshellarg($query));
         if ($result->failed()) {
             return [];
         }
@@ -48,6 +48,57 @@ class PacmanManager extends BaseManager
         }
 
         return $data;
+    }
+
+    public function getPackagesByNames(array $names): array
+    {
+        if (empty($names)) {
+            return [];
+        }
+
+        $cleanNames = array_filter(array_map('trim', $names));
+        if (empty($cleanNames)) {
+            return [];
+        }
+
+        $escapedNames = implode(' ', array_map('escapeshellarg', $cleanNames));
+        $result = Process::run("LC_ALL=C pacman -Si " . $escapedNames);
+        if ($result->failed() && empty($result->output())) {
+            return [];
+        }
+
+        $output = $result->output();
+        $blocks = preg_split('/\n\s*\n/', trim($output));
+        $packages = [];
+        $installedNames = $this->getInstalledNames();
+
+        foreach ($blocks as $block) {
+            $lines = explode("\n", trim($block));
+            $data = [];
+            foreach ($lines as $line) {
+                if (str_contains($line, ' : ')) {
+                    [$key, $val] = explode(' : ', $line, 2);
+                    $data[trim($key)] = trim($val);
+                }
+            }
+
+            if (!empty($data['Name'])) {
+                $name = $data['Name'];
+                $packages[] = [
+                    'repo'        => $data['Repository'] ?? 'core',
+                    'name'        => $name,
+                    'version'     => $data['Version'] ?? '',
+                    'is_aur'      => false,
+                    'is_flatpak'  => false,
+                    'installed'   => in_array($name, $installedNames),
+                    'description' => $data['Description'] ?? '',
+                    'icon_url'    => $this->getIcon($name, false),
+                    'screenshots' => $this->getScreenshots($name, false),
+                ];
+            }
+        }
+
+        return $packages;
     }
 
     public function install(string $packageName): int|false

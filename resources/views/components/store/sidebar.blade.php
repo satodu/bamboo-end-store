@@ -33,6 +33,27 @@
                 <span>{{ __('Explore') }}</span>
             </button>
             <button 
+                wire:click="setTab('bamboo_installs')"
+                class="w-full flex items-center gap-4 px-4 py-3 rounded-md text-[15px] transition-all {{ $tab === 'bamboo_installs' ? 'bg-accent text-accent-foreground font-bold' : 'text-muted-foreground hover:bg-accent/40 hover:text-foreground' }}"
+            >
+                @if($tab === 'bamboo_installs')
+                    <svg class="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24" fill="none">
+                        <g stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5">
+                            <path stroke="currentColor" d="M12 2L2 7l10 5 10-5-10-5z"/>
+                            <path stroke="#b4befe" d="M2 17l10 5 10-5M2 12l10 5 10-5"/>
+                        </g>
+                    </svg>
+                @else
+                    <svg class="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24" fill="none">
+                        <g stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5">
+                            <path stroke="currentColor" d="M12 2L2 7l10 5 10-5-10-5z"/>
+                            <path stroke="#b4befe" d="M2 17l10 5 10-5M2 12l10 5 10-5"/>
+                        </g>
+                    </svg>
+                @endif
+                <span>{{ __('Bamboo Installs') }}</span>
+            </button>
+            <button 
                 wire:click="setTab('installed')"
                 class="w-full flex items-center gap-4 px-4 py-3 rounded-md text-[15px] transition-all {{ $tab === 'installed' ? 'bg-accent text-accent-foreground font-bold' : 'text-muted-foreground hover:bg-accent/40 hover:text-foreground' }}"
             >

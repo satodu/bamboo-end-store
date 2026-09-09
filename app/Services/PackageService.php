@@ -149,6 +149,38 @@ class PackageService
     }
 
     /**
+     * Retrieves specific packages by exact names fast using batch queries
+     */
+    public function getPackagesByExactNames(array $names): array
+    {
+        if (empty($names)) {
+            return [];
+        }
+
+        $pacmanManager = PackageManagerFactory::make(PackageSource::PACMAN);
+        $officialPackages = $pacmanManager->getPackagesByNames($names);
+
+        $foundNames = array_column($officialPackages, 'name');
+        $missingNames = array_diff($names, $foundNames);
+
+        $aurPackages = [];
+        if (!empty($missingNames)) {
+            $aurManager = PackageManagerFactory::make(PackageSource::AUR);
+            foreach ($missingNames as $name) {
+                $results = $aurManager->search($name);
+                foreach ($results as $pkg) {
+                    if ($pkg['name'] === $name) {
+                        $aurPackages[] = $pkg;
+                        break;
+                    }
+                }
+            }
+        }
+
+        return array_merge($officialPackages, $aurPackages);
+    }
+
+    /**
      * Searches packages on Flathub
      */
     public function searchFlatpak(string $query): array
@@ -266,12 +298,166 @@ class PackageService
     }
 
     /**
+     * Abre e executa um comando no terminal padrão do usuário (Terminal First / EndeavourOS)
+     */
+    public function openInTerminal(string $command, string $title = 'Bamboo Store'): bool
+    {
+        $settings = $this->getSettings();
+        $autoClose = $settings['auto_close_terminal'] ?? false;
+        $delay = (int) ($settings['terminal_close_delay'] ?? 10);
+
+        if ($autoClose) {
+            $closingMsg = str_replace('{delay}', (string)$delay, __('console_closing_terminal') ?: "Fechando terminal em {delay}s...");
+            $postScript = "echo ''; echo " . escapeshellarg($closingMsg) . "; sleep {$delay}";
+        } else {
+            $pressEnter = __('console_press_enter') ?: 'Pressione ENTER para fechar esta janela...';
+            $postScript = "echo ''; echo -e \"\\033[1;32m:: Operação finalizada.\\033[0m\"; read -rp " . escapeshellarg($pressEnter . " ");
+        }
+
+        $fullScript = "echo -e \"\\033[1;34m:: {$title}\\033[0m\\n\"; " .
+                      $command . "; " .
+                      $postScript;
+
+        // 1. EndeavourOS native RunInTerminal
+        if ($this->commandExists('RunInTerminal')) {
+            $cmd = "RunInTerminal " . escapeshellarg($fullScript);
+            shell_exec($cmd . " > /dev/null 2>&1 &");
+            return true;
+        }
+
+        // 2. Terminal emulator fallback
+        $terminals = ['konsole', 'alacritty', 'kitty', 'foot', 'gnome-terminal', 'xfce4-terminal', 'xterm'];
+        $foundTerminal = null;
+
+        $envTerm = env('TERMINAL');
+        if ($envTerm && $this->commandExists($envTerm)) {
+            $foundTerminal = $envTerm;
+        } else {
+            foreach ($terminals as $term) {
+                if ($this->commandExists($term)) {
+                    $foundTerminal = $term;
+                    break;
+                }
+            }
+        }
+
+        if (!$foundTerminal) {
+            return false;
+        }
+
+        $terminalCmd = match ($foundTerminal) {
+            'konsole'        => "konsole --title " . escapeshellarg($title) . " -e bash -c " . escapeshellarg($fullScript),
+            'gnome-terminal' => "gnome-terminal --title " . escapeshellarg($title) . " -- bash -c " . escapeshellarg($fullScript),
+            'xfce4-terminal' => "xfce4-terminal --title " . escapeshellarg($title) . " -e " . escapeshellarg("bash -c \"$fullScript\""),
+            'alacritty'      => "alacritty --title " . escapeshellarg($title) . " -e bash -c " . escapeshellarg($fullScript),
+            'kitty'          => "kitty --title " . escapeshellarg($title) . " bash -c " . escapeshellarg($fullScript),
+            'foot'           => "foot -T " . escapeshellarg($title) . " bash -c " . escapeshellarg($fullScript),
+            default          => "$foundTerminal -e bash -c " . escapeshellarg($fullScript)
+        };
+
+        shell_exec($terminalCmd . " > /dev/null 2>&1 &");
+        return true;
+    }
+
+    /**
+     * Executa a instalação de um pacote no terminal padrão
+     */
+    public function installInTerminal(string $name, bool $isAur = false, bool $isFlatpak = false, bool $isCustomInstall = false): bool
+    {
+        if ($isCustomInstall) {
+            $scriptPath = base_path("scripts/installers/{$name}.sh");
+            if (!file_exists($scriptPath)) {
+                return false;
+            }
+            chmod($scriptPath, 0755);
+            $cmd = "bash " . escapeshellarg($scriptPath);
+            return $this->openInTerminal($cmd, "Bamboo Installs — {$name}");
+        }
+
+        if ($isFlatpak) {
+            $cmd = "flatpak install -y flathub " . escapeshellarg($name);
+            return $this->openInTerminal($cmd, "Instalação Flatpak — {$name}");
+        }
+
+        if ($isAur) {
+            $helper = $this->getHelper();
+            if ($helper === 'pacman') {
+                $helper = $this->commandExists('paru') ? 'paru' : ($this->commandExists('yay') ? 'yay' : 'pacman');
+            }
+            $cmd = "{$helper} -S --needed " . escapeshellarg($name);
+            return $this->openInTerminal($cmd, "Instalação AUR ({$helper}) — {$name}");
+        }
+
+        // Pacote Oficial
+        $cmd = "sudo pacman -S --needed " . escapeshellarg($name);
+        return $this->openInTerminal($cmd, "Instalação Pacman — {$name}");
+    }
+
+    /**
+     * Executa a desinstalação de um pacote no terminal padrão
+     */
+    public function removeInTerminal(string $name, bool $isFlatpak = false): bool
+    {
+        if ($isFlatpak) {
+            $scope = $this->getFlatpakInstallation($name);
+            $flag = ($scope === 'user') ? '--user' : '--system';
+            $cmd = "flatpak uninstall -y {$flag} " . escapeshellarg($name);
+            return $this->openInTerminal($cmd, "Desinstalação Flatpak — {$name}");
+        }
+
+        // Native / AUR packages:
+        // Trata aliases como winboat -> winboat-bin e linuxtoys -> linuxtoys-bin e davinci-resolve -> davinci-resolve-studio
+        $script = "PKG=" . escapeshellarg($name) . "\n" .
+                  "if [ \"\$PKG\" = 'winboat' ]; then\n" .
+                  "    if pacman -Qq winboat-bin &>/dev/null; then PKG='winboat-bin'; fi\n" .
+                  "elif [ \"\$PKG\" = 'linuxtoys' ]; then\n" .
+                  "    if pacman -Qq linuxtoys-bin &>/dev/null; then PKG='linuxtoys-bin'; fi\n" .
+                  "elif [ \"\$PKG\" = 'davinci-resolve' ]; then\n" .
+                  "    if pacman -Qq davinci-resolve-studio &>/dev/null; then PKG='davinci-resolve-studio'; fi\n" .
+                  "fi\n" .
+                  "echo \":: Removendo \$PKG...\"\n" .
+                  "sudo pacman -Rns \"\$PKG\"";
+
+        return $this->openInTerminal($script, "Desinstalação — {$name}");
+    }
+
+    public function getFlatpakInstallation(string $name): string
+    {
+        $res = Process::run(
+            "flatpak list --columns=application,installation | grep -F '" . str_replace("'", "'\\''", $name) . "' | awk '{print \$NF}'"
+        );
+        $scope = trim($res->output());
+        return in_array($scope, ['user', 'system']) ? $scope : 'system';
+    }
+
+    /**
      * Executa um comando em background com sentinela no log
      */
     public function runInBackground(string $name, bool $isAur = false, bool $isFlatpak = false, string $logFile): int
     {
         app(\App\Services\UserStateMachine::class)->transitionTo(\App\Enums\UserState::INSTALLING, $name);
         return PackageManagerFactory::make(PackageSource::fromFlags($isAur, $isFlatpak))->runInBackground($name, $logFile);
+    }
+
+    /**
+     * Executa um script customizado de instalação
+     */
+    public function runCustomInstallInBackground(string $name, string $logFile): int|false
+    {
+        app(\App\Services\UserStateMachine::class)->transitionTo(\App\Enums\UserState::INSTALLING, $name);
+        
+        $scriptPath = base_path("scripts/installers/{$name}.sh");
+        if (!file_exists($scriptPath)) {
+            file_put_contents($logFile, "Erro: Script de instalação customizado não encontrado em {$scriptPath}\n__PROCESS_DONE__\n");
+            return false;
+        }
+
+        chmod($scriptPath, 0755);
+        // Roda o script e ao final injeta o sentinela __PROCESS_DONE__
+        $command = "stdbuf -oL -eL bash -c " . escapeshellarg($scriptPath . "; echo '__PROCESS_DONE__'") . " > " . escapeshellarg($logFile) . " 2>&1";
+        
+        $pid = exec(sprintf("%s > /dev/null 2>&1 & echo $!", $command));
+        return $pid ? (int)$pid : false;
     }
 
     /**

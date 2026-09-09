@@ -4,6 +4,7 @@
     $isPending = isset($pendingInstallations[$pkg['name']]);
     $isAurVal = (isset($pkg['is_aur']) && $pkg['is_aur']) ? 'true' : 'false';
     $isFlatpakVal = (isset($pkg['is_flatpak']) && $pkg['is_flatpak']) ? 'true' : 'false';
+    $isCustomInstallVal = (isset($pkg['is_custom_install']) && $pkg['is_custom_install']) ? 'true' : 'false';
     $firstScreenshot = !empty($pkg['screenshots'][0]) ? $pkg['screenshots'][0] : null;
 @endphp
 
@@ -86,15 +87,15 @@
 
             <button disabled class="h-10 px-5 bg-bamboo/20 text-bamboo text-[11px] font-black rounded transition-all uppercase tracking-widest animate-pulse min-w-[120px]">{{ __('Finalizing...') }}</button>
         @else
-            <button wire:click="install('{{ $pkg['name'] }}', {{ $isAurVal }}, {{ $isFlatpakVal }})" @if($userState !== 'idle') disabled @endif class="h-10 px-5 bg-bamboo hover:bg-bamboo/90 text-white text-[11px] font-black rounded transition-all uppercase tracking-widest shadow-md disabled:opacity-50 min-w-[120px]">
-                <span wire:loading.remove wire:target="install('{{ $pkg['name'] }}', {{ $isAurVal }}, {{ $isFlatpakVal }})">
+            <button wire:click="install('{{ $pkg['name'] }}', {{ $isAurVal }}, {{ $isFlatpakVal }}, {{ $isCustomInstallVal }})" @if($userState !== 'idle') disabled @endif class="h-10 px-5 bg-bamboo hover:bg-bamboo/90 text-white text-[11px] font-black rounded transition-all uppercase tracking-widest shadow-md disabled:opacity-50 min-w-[120px]">
+                <span wire:loading.remove wire:target="install('{{ $pkg['name'] }}', {{ $isAurVal }}, {{ $isFlatpakVal }}, {{ $isCustomInstallVal }})">
                     @if($userState === 'installing' && $activePackage === $pkg['name'])
                         {{ __('Installing...') }}
                     @else
                         {{ __('Install') }}
                     @endif
                 </span>
-                <span wire:loading wire:target="install('{{ $pkg['name'] }}', {{ $isAurVal }}, {{ $isFlatpakVal }})">{{ __('Loading...') }}</span>
+                <span wire:loading wire:target="install('{{ $pkg['name'] }}', {{ $isAurVal }}, {{ $isFlatpakVal }}, {{ $isCustomInstallVal }})">{{ __('Loading...') }}</span>
             </button>
         @endif
 

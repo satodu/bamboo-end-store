@@ -4,6 +4,9 @@
     $nameLower = strtolower($name);
     $brand = match(true) { 
         str_contains($nameLower, 'steam') => 'steam', 
+        str_contains($nameLower, 'winboat') => 'winboat',
+        str_contains($nameLower, 'linuxtoys') => 'linuxtoys',
+        str_contains($nameLower, 'davinci') || str_contains($nameLower, 'resolve') => 'davinci-resolve',
         str_contains($nameLower, 'discord') => 'discord', 
         str_contains($nameLower, 'brave') => 'brave', 
         str_contains($nameLower, 'code') => 'code', 

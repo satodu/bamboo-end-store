@@ -12,7 +12,7 @@
 {{-- Skeleton: hidden by default, shown while Livewire is loading --}}
 <div class="hidden"
     wire:loading.class.remove="hidden"
-    wire:target="updatedSearch, clearSearch"
+    wire:target="search, updatedSearch, clearSearch"
 >
     @if($viewMode === 'grid')
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -55,7 +55,7 @@
 @if($viewMode === 'grid')
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
         wire:loading.class="hidden"
-        wire:target="updatedSearch, clearSearch"
+        wire:target="search, updatedSearch, clearSearch"
     >
         @forelse($packages as $pkg)
             <x-store.package-card :$pkg :$pendingInstallations :$userState :$activePackage wire:key="search-{{ $pkg['name'] }}-{{ $loop->index }}" />

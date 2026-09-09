@@ -117,27 +117,9 @@ abstract class BaseManager implements PackageManagerInterface
             return "https://dl.flathub.org/repo/appstream/x86_64/icons/128x128/{$name}.png";
         }
 
-        $mapping = [
-            'discord' => 'com.discordapp.Discord',
-            'spotify' => 'com.spotify.Client',
-            'steam' => 'com.valvesoftware.Steam',
-            'visual-studio-code-bin' => 'com.visualstudio.code',
-            'vscode' => 'com.visualstudio.code',
-            'brave-bin' => 'com.brave.Browser',
-            'brave' => 'com.brave.Browser',
-            'vlc' => 'org.videolan.VLC',
-            'obs-studio' => 'com.obsproject.Studio',
-            'telegram-desktop' => 'org.telegram.desktop',
-            'firefox' => 'org.mozilla.firefox',
-            'discord-canary' => 'com.discordapp.DiscordCanary',
-            'gimp' => 'org.gimp.GIMP',
-            'inkscape' => 'org.inkscape.Inkscape',
-            'blender' => 'org.blender.Blender',
-        ];
-
-        $cleanName = strtolower($name);
-        if (isset($mapping[$cleanName])) {
-            return "https://dl.flathub.org/repo/appstream/x86_64/icons/128x128/{$mapping[$cleanName]}.png";
+        $id = $this->getAppId($name);
+        if ($id) {
+            return "https://dl.flathub.org/repo/appstream/x86_64/icons/128x128/{$id}.png";
         }
 
         return '';
@@ -145,41 +127,7 @@ abstract class BaseManager implements PackageManagerInterface
 
     public function getScreenshots(string $name, bool $isFlatpak = false): array
     {
-        $id = $isFlatpak ? $name : null;
-        
-        if (!$id) {
-            $mapping = [
-                'discord'                  => 'com.discordapp.Discord',
-                'discord-canary'           => 'com.discordapp.DiscordCanary',
-                'telegram-desktop'         => 'org.telegram.desktop',
-                'spotify'                  => 'com.spotify.Client',
-                'vlc'                      => 'org.videolan.VLC',
-                'obs-studio'               => 'com.obsproject.Studio',
-                'kdenlive'                 => 'org.kde.kdenlive',
-                'mpv'                      => 'io.mpv.Mpv',
-                'steam'                    => 'com.valvesoftware.Steam',
-                'heroic'                   => 'com.heroicgameslauncher.hgl',
-                'lutris'                   => 'net.lutris.Lutris',
-                'brave-bin'                => 'com.brave.Browser',
-                'brave'                    => 'com.brave.Browser',
-                'firefox'                  => 'org.mozilla.firefox',
-                'chromium'                 => 'org.chromium.Chromium',
-                'google-chrome'            => 'com.google.Chrome',
-                'visual-studio-code-bin'   => 'com.visualstudio.code',
-                'vscode'                   => 'com.visualstudio.code',
-                'code'                     => 'com.visualstudio.code',
-                'jetbrains-toolbox'        => 'com.jetbrains.Toolbox',
-                'gimp'                     => 'org.gimp.GIMP',
-                'inkscape'                 => 'org.inkscape.Inkscape',
-                'blender'                  => 'org.blender.Blender',
-                'krita'                    => 'org.kde.krita',
-                'libreoffice-fresh'        => 'org.libreoffice.LibreOffice',
-                'libreoffice-still'        => 'org.libreoffice.LibreOffice',
-                'thunderbird'              => 'org.mozilla.Thunderbird',
-            ];
-            $id = $mapping[strtolower($name)] ?? null;
-        }
-
+        $id = $isFlatpak ? $name : $this->getAppId($name);
         if (!$id) return [];
 
         return Cache::remember("pkg_screenshots_" . $id, 86400, function () use ($id) {
@@ -213,6 +161,156 @@ abstract class BaseManager implements PackageManagerInterface
                 return [];
             }
         });
+    }
+
+    public function getAppId(string $name): ?string
+    {
+        $cleanName = strtolower(trim($name));
+        $mapping = $this->getAppMapping();
+
+        if (isset($mapping[$cleanName])) {
+            return $mapping[$cleanName];
+        }
+
+        // Dynamic Flathub lookup cached for 7 days
+        return Cache::remember("pkg_flathub_appid_" . $cleanName, 604800, function () use ($cleanName) {
+            try {
+                $searchQuery = preg_replace('/(-bin|-git|-gtk|-qt|-launcher|-community-edition)$/i', '', $cleanName);
+                $res = Process::run("curl -s --max-time 4 -X POST -H 'Content-Type: application/json' -d " . escapeshellarg(json_encode(['query' => $searchQuery])) . " https://flathub.org/api/v2/search");
+                if ($res->successful()) {
+                    $data = json_decode($res->output(), true);
+                    if (!empty($data['hits'][0]['id'])) {
+                        return str_replace('_', '.', $data['hits'][0]['id']);
+                    }
+                }
+            } catch (\Exception $e) {
+                // Silently fallback
+            }
+            return null;
+        });
+    }
+
+    protected function getAppMapping(): array
+    {
+        return [
+            // Popular & Gaming
+            'steam'                           => 'com.valvesoftware.Steam',
+            'discord'                         => 'com.discordapp.Discord',
+            'discord-canary'                  => 'com.discordapp.DiscordCanary',
+            'spotify'                         => 'com.spotify.Client',
+            'heroic'                          => 'com.heroicgameslauncher.hgl',
+            'lutris'                          => 'net.lutris.Lutris',
+            'obs-studio'                      => 'com.obsproject.Studio',
+            'blender'                         => 'org.blender.Blender',
+
+            // Browsers
+            'firefox'                         => 'org.mozilla.firefox',
+            'brave'                           => 'com.brave.Browser',
+            'brave-bin'                       => 'com.brave.Browser',
+            'chromium'                        => 'org.chromium.Chromium',
+            'google-chrome'                   => 'com.google.Chrome',
+            'vivaldi'                         => 'com.vivaldi.Vivaldi',
+            'falkon'                          => 'org.kde.falkon',
+            'torbrowser-launcher'             => 'com.github.micahflee.torbrowser-launcher',
+
+            // Communications & Email
+            'telegram-desktop'                => 'org.telegram.desktop',
+            'neochat'                         => 'org.kde.neochat',
+            'pidgin'                          => 'im.pidgin.Pidgin',
+            'hexchat'                         => 'io.github.Hexchat',
+            'konversation'                    => 'org.kde.konversation',
+            'polari'                          => 'org.gnome.Polari',
+            'thunderbird'                     => 'org.mozilla.Thunderbird',
+            'evolution'                       => 'org.gnome.Evolution',
+            'geary'                           => 'org.gnome.Geary',
+            'kmail'                           => 'org.kde.kontact',
+
+            // Media Players (Audio & Video)
+            'vlc'                             => 'org.videolan.VLC',
+            'mpv'                             => 'io.mpv.Mpv',
+            'celluloid'                       => 'io.github.celluloid_player.Celluloid',
+            'haruna'                          => 'org.kde.haruna',
+            'smplayer'                        => 'info.smplayer.SMPlayer',
+            'totem'                           => 'org.gnome.Totem',
+            'kaffeine'                        => 'org.kde.kaffeine',
+            'showtime'                        => 'org.gnome.Showtime',
+            'kdenlive'                        => 'org.kde.kdenlive',
+            'audacious'                       => 'org.atheme.audacious',
+            'rhythmbox'                       => 'org.gnome.Rhythmbox3',
+            'strawberry'                      => 'org.strawberrymusicplayer.strawberry',
+            'elisa'                           => 'org.kde.elisa',
+            'lollypop'                        => 'org.gnome.Lollypop',
+
+            // Graphics & Photo
+            'gimp'                            => 'org.gimp.GIMP',
+            'inkscape'                        => 'org.inkscape.Inkscape',
+            'krita'                           => 'org.kde.krita',
+            'darktable'                       => 'org.darktable.Darktable',
+            'rawtherapee'                     => 'com.rawtherapee.RawTherapee',
+            'pinta'                           => 'com.github.PintaProject.Pinta',
+            'kolourpaint'                     => 'org.kde.kolourpaint',
+            'photoflare'                      => 'io.photoflare.photoflare',
+            'digikam'                         => 'org.kde.digikam',
+            'gwenview'                        => 'org.kde.gwenview',
+            'shotwell'                        => 'org.gnome.Shotwell',
+            'ristretto'                       => 'org.xfce.ristretto',
+            'geeqie'                          => 'org.geeqie.Geeqie',
+            'gthumb'                          => 'org.gnome.gThumb',
+            'loupe'                           => 'org.gnome.Loupe',
+            'eog'                             => 'org.gnome.eog',
+
+            // Office & Productivity
+            'libreoffice-fresh'               => 'org.libreoffice.LibreOffice',
+            'libreoffice-still'               => 'org.libreoffice.LibreOffice',
+            'calligra'                        => 'org.kde.calligra',
+            'gnumeric'                        => 'org.gnumeric.Gnumeric',
+            'evince'                          => 'org.gnome.Evince',
+            'okular'                          => 'org.kde.okular',
+            'gnucash'                         => 'org.gnucash.GnuCash',
+            'homebank'                        => 'fr.free.Homebank',
+            'kmymoney'                        => 'org.kde.kmymoney',
+            'skrooge'                         => 'org.kde.skrooge',
+
+            // Development & Text Editors
+            'code'                            => 'com.visualstudio.code',
+            'vscode'                          => 'com.visualstudio.code',
+            'visual-studio-code-bin'          => 'com.visualstudio.code',
+            'geany'                           => 'org.geany.Geany',
+            'gedit'                           => 'org.gnome.gedit',
+            'kate'                            => 'org.kde.kwrite',
+            'mousepad'                        => 'org.xfce.mousepad',
+            'kdevelop'                        => 'org.kde.kdevelop',
+            'qtcreator'                       => 'io.qt.QtCreator',
+            'gnome-builder'                   => 'org.gnome.Builder',
+            'jetbrains-toolbox'               => 'com.jetbrains.Toolbox',
+            'intellij-idea-community-edition'  => 'com.jetbrains.IntelliJ-IDEA-Community',
+            'pycharm-community-edition'        => 'com.jetbrains.PyCharm-Community',
+            'netbeans'                        => 'org.apache.netbeans',
+
+            // Torrent & Downloads
+            'qbittorrent'                     => 'org.qbittorrent.qBittorrent',
+            'deluge-gtk'                      => 'org.deluge_torrent.deluge',
+            'deluge'                          => 'org.deluge_torrent.deluge',
+            'transmission-gtk'                => 'com.transmissionbt.Transmission',
+            'transmission-qt'                 => 'com.transmissionbt.Transmission',
+            'ktorrent'                        => 'org.kde.ktorrent',
+
+            // Security & System Tools
+            'bitwarden'                       => 'com.bitwarden.desktop',
+            'keepassxc'                       => 'org.keepassxc.KeePassXC',
+            'seahorse'                        => 'org.gnome.seahorse.Application',
+            'gnome-boxes'                     => 'org.gnome.Boxes',
+            'baobab'                          => 'org.gnome.baobab',
+            'filelight'                       => 'org.kde.filelight',
+            'krename'                         => 'org.kde.krename',
+
+            // Math
+            'gnome-calculator'                => 'org.gnome.Calculator',
+            'kcalc'                           => 'org.kde.kcalc',
+            'kalgebra'                        => 'org.kde.kalgebra',
+            'octave'                          => 'org.octave.Octave',
+            'geogebra'                        => 'org.geogebra.GeoGebra',
+        ];
     }
 
     protected function humanReadableName(string $appId): string
