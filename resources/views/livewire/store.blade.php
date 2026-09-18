@@ -740,15 +740,23 @@ new class extends Component
 
     public function selectAppImage()
     {
+        // No extension filters: GTK/xdg portals (Hyprland/Ryoku) often hide
+        // .AppImage (and even all files) when Electron sends MIME/extension filters.
         $path = Dialog::new()
             ->title(__('Select AppImage'))
             ->button(__('Select'))
-            ->filter('AppImage', ['AppImage', 'appimage'])
             ->open();
 
-        if ($path) {
-            $this->registerAppImage($path);
+        if (!$path) {
+            return;
         }
+
+        if (strtolower(pathinfo($path, PATHINFO_EXTENSION)) !== 'appimage') {
+            $this->showNotification(__('Error'), __('Selected file is not an AppImage.'), 'error');
+            return;
+        }
+
+        $this->registerAppImage($path);
     }
 
     public function selectAppImagePath()

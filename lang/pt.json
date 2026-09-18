@@ -116,6 +116,8 @@
     "AppImage integrated into your menu.": "AppImage integrada ao seu menu.",
     "Failed to integrate AppImage.": "Falha ao integrar a AppImage.",
     "Select AppImage": "Selecionar AppImage",
+    "All Files": "Todos os arquivos",
+    "Selected file is not an AppImage.": "O arquivo selecionado não é um AppImage.",
     "Select": "Selecionar",
     "Select Directory for AppImages": "Selecionar Diretório para AppImages",
     "Removed": "Removido",

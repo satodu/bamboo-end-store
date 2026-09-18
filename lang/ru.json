@@ -116,6 +116,8 @@
     "AppImage integrated into your menu.": "AppImage интегрирован в ваше меню.",
     "Failed to integrate AppImage.": "Не удалось интегрировать AppImage.",
     "Select AppImage": "Выбрать AppImage",
+    "All Files": "Все файлы",
+    "Selected file is not an AppImage.": "Выбранный файл не является AppImage.",
     "Select": "Выбрать",
     "Select Directory for AppImages": "Выбрать директорию для AppImages",
     "Removed": "Удалено",
