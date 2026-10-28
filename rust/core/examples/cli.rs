@@ -20,6 +20,12 @@ fn main() {
         }
         return;
     }
+    if args == ["notify"] {
+        // sends one real notification: check it appears on the desktop
+        let n = bamboo_core::notify::note_for("pt", "bamboo-teste", "installed", 0).unwrap();
+        bamboo_core::notify::send(&n);
+        return println!("sent: {} / {}", n.title, n.body);
+    }
     if args == ["settings"] {
         return println!("{:#?}", bamboo_core::Settings::load());
     }

@@ -11,6 +11,7 @@ pub mod i18n;
 mod http;
 mod manager;
 mod package;
+pub mod notify;
 pub mod pacman;
 pub(crate) mod settings;
 mod source;

@@ -302,5 +302,7 @@
   "No comments yet.": "Aún no hay comentarios.",
   "Could not load comments.": "No se pudieron cargar los comentarios.",
   "Loading comments...": "Cargando comentarios...",
-  "Developer and EndeavourOS fan. Built to enhance the Linux experience.": "Desarrollador y fan de EndeavourOS. Creado para mejorar la experiencia en Linux."
+  "Developer and EndeavourOS fan. Built to enhance the Linux experience.": "Desarrollador y fan de EndeavourOS. Creado para mejorar la experiencia en Linux.",
+  "Notifications": "Notificaciones",
+  "Show a desktop notification when an install, removal or update finishes.": "Muestra una notificación de escritorio cuando termina una instalación, eliminación o actualización."
 }

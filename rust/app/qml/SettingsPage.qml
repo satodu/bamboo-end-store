@@ -380,6 +380,11 @@ Item {
                     Toggle { checked: root.s.auto_close_terminal; onToggled: v => root.set("auto_close_terminal", v) }
                 }
                 SettingRow {
+                    title: Tr.t("Notifications")
+                    description: Tr.t("Show a desktop notification when an install, removal or update finishes.")
+                    Toggle { checked: root.s.notifications; onToggled: v => root.set("notifications", v) }
+                }
+                SettingRow {
                     visible: root.s.auto_close_terminal
                     title: Tr.t("Close Delay")
                     description: Tr.t("Countdown before the terminal window closes.")

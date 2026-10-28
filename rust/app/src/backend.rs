@@ -468,6 +468,7 @@ impl qobject::Backend {
                 OpOutcome::NoTerminal => -1,
                 OpOutcome::Aborted => -2,
             };
+            bamboo_core::notify::operation_finished(&store.settings(), name, action, code);
             let json = serde_json::to_string(&store.flatpak_status()).unwrap_or_else(|_| "{}".into());
             let _ = thread.queue(move |mut this| {
                 this.as_mut().set_flatpak(QString::from(&json));
@@ -522,6 +523,7 @@ impl qobject::Backend {
                 OpOutcome::NoTerminal => -1,
                 OpOutcome::Aborted => -2,
             };
+            bamboo_core::notify::operation_finished(&store.settings(), &name, action, code);
             let _ = thread.queue(move |mut this| {
                 this.as_mut().set_busy(false);
                 this.as_mut().operation_finished(QString::from(&name), QString::from(action), code);
