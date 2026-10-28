@@ -43,7 +43,7 @@ Item {
         anchors.rightMargin: 12
         spacing: 14
 
-        PackageIcon { name: root.pkg.display_name || root.pkg.name || ""; source: Style.iconFor(root.pkg); size: 36 }
+        PackageIcon { name: root.pkg.display_name || root.pkg.name || ""; source: Style.iconFor(root.pkg); origin: root.pkg.source || ""; size: 36 }
 
         ColumnLayout {
             Layout.fillWidth: true

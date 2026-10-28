@@ -30,7 +30,7 @@ Item {
                 Layout.fillWidth: true
                 spacing: 12
 
-                PackageIcon { name: root.pkg.display_name || root.pkg.name || ""; source: Style.iconFor(root.pkg); size: 44 }
+                PackageIcon { name: root.pkg.display_name || root.pkg.name || ""; source: Style.iconFor(root.pkg); origin: root.pkg.source || ""; size: 44 }
                 ColumnLayout {
                     Layout.fillWidth: true
                     spacing: 2

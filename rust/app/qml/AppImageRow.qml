@@ -35,7 +35,7 @@ Item {
         anchors.rightMargin: 12
         spacing: 14
 
-        PackageIcon { name: root.app.display_name || ""; source: root.app.icon_url || ""; size: 38 }
+        PackageIcon { name: root.app.display_name || ""; source: root.app.icon_url || ""; origin: "appimage"; size: 38 }
 
         Text {
             Layout.fillWidth: true

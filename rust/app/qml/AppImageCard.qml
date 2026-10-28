@@ -32,6 +32,7 @@ Item {
                 PackageIcon {
                     name: root.app.display_name || ""
                     source: root.app.icon_url || ""
+                    origin: "appimage"
                     size: 48
                 }
                 ColumnLayout {

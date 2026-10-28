@@ -79,7 +79,7 @@ QtObject {
     }
 
     // Icon for a package: bundled brand icons for the Bamboo Installs, the Flathub icon for Flatpaks,
-    // nothing for the rest (PackageIcon then draws a letter tile).
+    // nothing for the rest (PackageIcon then draws the rune of the origin).
     readonly property var customIcons: ({
         "steam": "https://upload.wikimedia.org/wikipedia/commons/8/83/Steam_icon_logo.svg",
         "winboat": Qt.resolvedUrl("../icons/winboat.svg"),
@@ -102,6 +102,15 @@ QtObject {
     function mix(a, b, t) {
         return Qt.rgba(a.r + (b.r - a.r) * t, a.g + (b.g - a.g) * t, a.b + (b.b - a.b) * t, a.a + (b.a - a.a) * t)
     }
+
+    // Stand-in icon for a package whose own icon was not found: the rune of where it comes from.
+    readonly property var originRunes: ({
+        "pacman": "ᛟ",      // Othala, heritage: the official repositories, the house
+        "aur": "ᚷ",         // Gebo, the gift: what the community offers
+        "flatpak": "ᛈ",     // Perthro, the lot-cup: the sealed, sandboxed package
+        "custom": "ᛒ",      // Berkanan, growth: the Bamboo scripts
+        "appimage": "ᛏ"     // Tiwaz, the arrow: standalone, one file
+    })
 
     // The 24 runes of the Elder Futhark, for the ring.
     readonly property string futhark: "ᚠᚢᚦᚨᚱᚲᚷᚹᚺᚾᛁᛃᛇᛈᛉᛊᛏᛒᛖᛗᛚᛜᛞᛟ"

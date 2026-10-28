@@ -52,6 +52,7 @@ Item {
                         name: root.pkg.display_name || root.pkg.name || ""
                         // the list already knew an icon, or the details view found one on Flathub
                         source: Style.iconFor(root.pkg) || (root.info && root.info.icon_url ? root.info.icon_url : "")
+                        origin: root.pkg.source || ""
                         size: 52
                     }
                     Text {
