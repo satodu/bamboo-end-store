@@ -17,6 +17,7 @@ mod source;
 pub mod store;
 pub mod state;
 pub mod sys;
+pub mod sysinfo;
 pub mod terminal;
 pub mod theme;
 

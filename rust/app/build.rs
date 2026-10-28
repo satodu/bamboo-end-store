@@ -34,6 +34,8 @@ fn main() {
             .qml_file("qml/SettingsPage.qml")
             .qml_file("qml/PackageResults.qml")
             .qml_file("qml/BambooInstallsPage.qml")
+            .qml_file("qml/RuneDecode.qml")
+            .qml_file("qml/SystemInfoBlock.qml")
             .qml_file("qml/CategoryTile.qml")
             .qml_file("qml/HomeView.qml")
             .qml_file("qml/StatusRow.qml")

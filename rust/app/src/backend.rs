@@ -59,6 +59,11 @@ pub mod qobject {
         #[cxx_name = "loadComments"]
         fn load_comments(self: Pin<&mut Backend>, name: &QString);
 
+        /// Machine name, OS, kernel and app version as JSON (read from `/proc`, instant).
+        #[qinvokable]
+        #[cxx_name = "systemInfo"]
+        fn system_info(self: &Backend) -> QString;
+
         /// Fill `categories` (downloads the EndeavourOS list the first time).
         #[qinvokable]
         #[cxx_name = "loadCategories"]
@@ -371,6 +376,10 @@ impl qobject::Backend {
             };
             let _ = thread.queue(move |mut this| this.as_mut().set_comments(QString::from(&json.to_string())));
         });
+    }
+
+    fn system_info(&self) -> QString {
+        QString::from(&serde_json::to_string(&bamboo_core::sysinfo::read()).unwrap_or_else(|_| "{}".into()))
     }
 
     fn load_categories(self: Pin<&mut Self>) {

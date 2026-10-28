@@ -42,6 +42,10 @@ ApplicationWindow {
         pageReveal.play()
     }
 
+    // First launch only: the sidebar's machine info starts as runes and settles into text.
+    property bool intro: false
+    Component.onCompleted: intro = !JSON.parse(appBackend.settings).intro_seen
+
     // Owns the settings JSON for the whole app; each screen has its own Backend for data.
     Backend { id: appBackend }
 
@@ -102,6 +106,16 @@ ApplicationWindow {
                 NavItem { Layout.fillWidth: true; text: Tr.t("Settings"); rune: "settings"; active: root.page === "settings"; onClicked: root.openPage("settings") }
 
                 Item { Layout.fillHeight: true }
+
+                SystemInfoBlock {
+                    Layout.leftMargin: 22
+                    Layout.rightMargin: 12
+                    Layout.bottomMargin: 18
+                    info: JSON.parse(appBackend.systemInfo())
+                    intro: root.intro
+                    // remembered, so the intro plays only once
+                    onIntroFinished: { appBackend.setSetting("intro_seen", "true"); root.intro = false }
+                }
 
                 RuneRuler {
                     Layout.alignment: Qt.AlignLeft

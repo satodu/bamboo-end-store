@@ -34,6 +34,8 @@ pub struct Settings {
     pub theme_scheme: String,
     /// Turns off wipes, typing, drifting runes and the rotating ring (Galdr: respect reduced motion).
     pub reduce_motion: bool,
+    /// Set after the first launch's sidebar intro (runes turning into text) has played once.
+    pub intro_seen: bool,
     /// Keys this version does not know, kept so they survive a save.
     #[serde(flatten)]
     pub extra: Map<String, Value>,
@@ -59,6 +61,7 @@ impl Default for Settings {
             theme_mode: "dark".into(),
             theme_scheme: "scheme-tonal-spot".into(),
             reduce_motion: false,
+            intro_seen: false,
             extra: Map::new(),
         }
     }
