@@ -82,7 +82,7 @@ the palette, the shapes and motion come from Galdr.
 - The Bamboo Installs scripts (`rust/core/src/installers/*.sh`) change `/etc/pacman.conf`, use `pkexec`, build from the AUR and
   download binaries. They are ported verbatim from the PHP app, embedded in the binary, and run only on an explicit click in a
   visible terminal. Unknown names never become commands (`CustomManager`).
-- Installing and removing packages, and the Flatpak setup buttons in Settings (`installFlatpak`, `addFlathub`), open an
+- Installing and removing packages, and the Flatpak setup buttons in Settings (`installFlatpak`, `addFlathub`) and "Update System" in the sidebar (`updateSystem`), open an
   external terminal and run `sudo`. Never trigger that from tests or automation; reading the status (`checkFlatpak`) is safe. Registering an AppImage executes it (`--appimage-extract`); only do that with files you trust.
 - Filters follow the old app: repository (`all`, `official` = pacman, `aur`, `flatpak`) and sort (`relevance`, `name`)
   apply to the whole result before pagination; `search_limit` is the page size. Counts per repository come from the

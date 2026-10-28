@@ -353,6 +353,13 @@ impl Store {
         FlatpakManager.status()
     }
 
+    /// Full system update in a terminal: the distro updater or AUR helper, Flatpak, then orphans.
+    pub fn update_system(&self) -> OpOutcome {
+        let lang = crate::i18n::language_for(&self.settings().locale);
+        let command = crate::update::system_update_command(crate::aur::Helper::detect(), lang);
+        self.run_command(&command, UserState::Updating, "System Update")
+    }
+
     /// Install Flatpak itself (`pacman -S flatpak`) in a terminal.
     pub fn install_flatpak(&self) -> OpOutcome {
         self.run_command(INSTALL_FLATPAK_COMMAND, UserState::Installing, "flatpak")

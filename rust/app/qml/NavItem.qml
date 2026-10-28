@@ -10,6 +10,8 @@ Item {
     property string rune: "default"
     property bool active: false
     property int badge: 0
+    /// Show the rune spinner at the right edge: an action is running.
+    property bool busy: false
 
     signal clicked()
 
@@ -53,6 +55,15 @@ Item {
             font.weight: root.active ? Font.DemiBold : Font.Normal
             anchors.verticalCenter: parent.verticalCenter
         }
+    }
+
+    RuneSpinner {
+        visible: root.busy
+        running: root.busy
+        size: 18
+        anchors.right: parent.right
+        anchors.rightMargin: 16
+        anchors.verticalCenter: parent.verticalCenter
     }
 
     Tag {

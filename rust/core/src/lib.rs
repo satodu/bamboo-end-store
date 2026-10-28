@@ -20,6 +20,7 @@ pub mod sys;
 pub mod sysinfo;
 pub mod terminal;
 pub mod theme;
+pub mod update;
 
 pub use appimage::{AppImage, AppImages};
 pub use aur::AurManager;

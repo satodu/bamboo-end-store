@@ -34,6 +34,12 @@ ApplicationWindow {
     property var visited: ({ "explore": true })
     readonly property var appSettings: JSON.parse(appBackend.settings)
 
+    /// Clicking the logo: the Explore home (the categories), from wherever we are.
+    function goHome() {
+        explore.goHome()
+        openPage("explore")
+    }
+
     function openPage(name) {
         if (name === page) return
         // a new object: QML does not notice a mutated one, so the Loader would never activate
@@ -77,6 +83,7 @@ ApplicationWindow {
                     Reveal {
                         anchors.fill: parent
                         Row {
+                            id: logo
                             anchors.verticalCenter: parent.verticalCenter
                             anchors.left: parent.left
                             anchors.leftMargin: 22
@@ -96,6 +103,14 @@ ApplicationWindow {
                                 font.weight: Font.ExtraBold
                             }
                         }
+
+                        // The logo is a button: it goes to the Explore home.
+                        MouseArea {
+                            anchors.fill: logo
+                            anchors.margins: -8
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: root.goHome()
+                        }
                     }
                 }
 
@@ -103,6 +118,14 @@ ApplicationWindow {
                 NavItem { Layout.fillWidth: true; text: Tr.t("Installed"); rune: "installed"; active: root.page === "installed"; onClicked: root.openPage("installed") }
                 NavItem { Layout.fillWidth: true; text: Tr.t("Bamboo Installs"); rune: "bamboo"; active: root.page === "bamboo"; onClicked: root.openPage("bamboo") }
                 NavItem { Layout.fillWidth: true; text: Tr.t("AppImages"); rune: "appimages"; active: root.page === "appimages"; onClicked: root.openPage("appimages") }
+                // An action, not a page: runs the full system update in a terminal.
+                NavItem {
+                    Layout.fillWidth: true
+                    text: appBackend.busy ? Tr.t("Running updates") : Tr.t("Update System")
+                    rune: "update"
+                    busy: appBackend.busy
+                    onClicked: if (!appBackend.busy) appBackend.updateSystem()
+                }
                 NavItem { Layout.fillWidth: true; text: Tr.t("Settings"); rune: "settings"; active: root.page === "settings"; onClicked: root.openPage("settings") }
 
                 Item { Layout.fillHeight: true }

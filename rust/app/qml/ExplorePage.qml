@@ -41,6 +41,8 @@ Item {
         research()
     }
     function closeCategory() { category = ""; current = null }
+    /// Back to the home of categories: no search, no open category, no details.
+    function goHome() { field.text = ""; category = ""; current = null; page = 1 }
     Component.onCompleted: { backend.loadCategories(); backend.loadEssentials() }
     // A filter for a repository that was just turned off in Settings would hide everything.
     Connections {

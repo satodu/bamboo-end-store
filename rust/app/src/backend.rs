@@ -84,6 +84,11 @@ pub mod qobject {
         #[cxx_name = "checkFlatpak"]
         fn check_flatpak(self: Pin<&mut Backend>);
 
+        /// Run the full system update in a terminal; `operationFinished("System Update", "updated", code)`.
+        #[qinvokable]
+        #[cxx_name = "updateSystem"]
+        fn update_system(self: Pin<&mut Backend>);
+
         /// Open a terminal and install Flatpak itself; `operationFinished("Flatpak", "installed", code)`.
         #[qinvokable]
         #[cxx_name = "installFlatpak"]
@@ -432,6 +437,10 @@ impl qobject::Backend {
             let json = serde_json::to_string(&store.flatpak_status()).unwrap_or_else(|_| "{}".into());
             let _ = thread.queue(move |mut this| this.as_mut().set_flatpak(QString::from(&json)));
         });
+    }
+
+    fn update_system(self: Pin<&mut Self>) {
+        self.run_setup("System Update", "updated", |store| store.update_system());
     }
 
     fn install_flatpak(self: Pin<&mut Self>) {

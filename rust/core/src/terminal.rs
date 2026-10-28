@@ -5,6 +5,7 @@ use std::sync::atomic::{AtomicU32, Ordering};
 use std::thread::sleep;
 use std::time::{Duration, Instant};
 
+use crate::i18n;
 use crate::settings::Settings;
 use crate::sys::{command_exists, shell_quote};
 
@@ -31,12 +32,13 @@ pub fn invocation(terminal: &str, script: &str) -> Vec<String> {
 
 /// The shell script the terminal runs: the command, a status-file write, then the close policy.
 /// The command runs in a subshell so an `exit` inside it cannot skip the status write.
-pub fn script(command: &str, status_file: &str, settings: &Settings) -> String {
+pub fn script(command: &str, status_file: &str, settings: &Settings, lang: &str) -> String {
     let post = if settings.auto_close_terminal {
         let d = settings.terminal_close_delay;
-        format!("echo ''; echo 'Closing terminal in {d} seconds...'; sleep {d}")
+        let msg = i18n::tr(lang, "console_closing_terminal").replace("{delay}", &d.to_string());
+        format!("echo ''; echo {}; sleep {d}", shell_quote(&msg))
     } else {
-        "echo ''; read -p 'Press Enter to close...'".to_owned()
+        format!("echo ''; read -p {}", shell_quote(&i18n::tr(lang, "console_press_enter")))
     };
     format!("({command}); echo $? > {}; {post}", shell_quote(status_file))
 }
@@ -58,7 +60,7 @@ impl TerminalJob {
 
     pub fn spawn_with(terminal: &str, command: &str, settings: &Settings) -> Option<Self> {
         let status_file = status_path();
-        let script = script(command, status_file.to_str()?, settings);
+        let script = script(command, status_file.to_str()?, settings, i18n::language_for(&settings.locale));
         let child = Command::new(terminal)
             .args(invocation(terminal, &script))
             .stdin(Stdio::null())
@@ -132,16 +134,18 @@ mod tests {
 
     #[test]
     fn script_auto_close() {
-        let s = script("pacman -S 'x'", "/tmp/s", &Settings::default());
+        let s = script("pacman -S 'x'", "/tmp/s", &Settings::default(), "en");
         assert_eq!(
             s,
             "(pacman -S 'x'); echo $? > '/tmp/s'; echo ''; echo 'Closing terminal in 10 seconds...'; sleep 10"
         );
+        let pt = script("true", "/tmp/s", &Settings::default(), "pt");
+        assert!(pt.contains("Fechando terminal em 10 segundos..."), "{pt}");
     }
 
     #[test]
     fn script_manual_close() {
-        let s = script("true", "/tmp/s", &Settings { auto_close_terminal: false, ..Settings::default() });
+        let s = script("true", "/tmp/s", &Settings { auto_close_terminal: false, ..Settings::default() }, "en");
         assert!(s.ends_with("read -p 'Press Enter to close...'"));
     }
 

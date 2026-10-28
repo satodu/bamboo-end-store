@@ -40,6 +40,7 @@ QtObject {
         "appimages": "ᚷ",   // Gebo, gift: collection
         "bamboo": "ᛒ",      // Berkanan, growth
         "settings": "ᛇ",    // Eihwaz, the yew: axis, tuning
+        "update": "ᛃ",      // Jera, the turning year: renewal
         "text": "ᚨ",        // Ansuz, message
         "light": "ᛊ",       // Sowilo, sun
         "active": "ᛏ",      // Tiwaz, guidance
