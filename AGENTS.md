@@ -76,6 +76,9 @@ the palette, the shapes and motion come from Galdr.
 - Settings keep the PHP app's key names and defaults so an old `settings.json` loads unchanged. Unknown keys are kept.
 - Matugen: the app generates palettes in-process (`material-colors`) and never runs the `matugen` binary. If that ever
   changes, it must use `--dry-run` and an empty config: Matugen with the user's config re-themes the whole desktop.
+- The Bamboo Installs scripts (`rust/core/src/installers/*.sh`) change `/etc/pacman.conf`, use `pkexec`, build from the AUR and
+  download binaries. They are ported verbatim from the PHP app, embedded in the binary, and run only on an explicit click in a
+  visible terminal. Unknown names never become commands (`CustomManager`).
 - Installing and removing packages, and the Flatpak setup buttons in Settings (`installFlatpak`, `addFlathub`), open an
   external terminal and run `sudo`. Never trigger that from tests or automation; reading the status (`checkFlatpak`) is safe. Registering an AppImage executes it (`--appimage-extract`); only do that with files you trust.
 - Filters follow the old app: repository (`all`, `official` = pacman, `aur`, `flatpak`) and sort (`relevance`, `name`)
@@ -103,4 +106,4 @@ binary reach `Qt.application.arguments` (the screenshot scripts use this with `g
 
 ## Not done yet
 
-AUR comments, the "Bamboo Installs" tab, system notifications, brand icons for packages. See the git log for what is already ported.
+AUR comments, system notifications, brand icons for installed pacman and AUR packages (Flatpak and Bamboo Installs have them). See the git log for what is already ported.

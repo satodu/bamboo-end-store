@@ -134,6 +134,7 @@ pub struct Store {
     pacman: Box<dyn PackageManager>,
     aur: Box<dyn PackageManager>,
     flatpak: Box<dyn PackageManager>,
+    custom: Box<dyn PackageManager>,
     settings: Mutex<Settings>,
     searches: TtlCache<Vec<Package>>,
     details: TtlCache<Option<Details>>,
@@ -163,6 +164,7 @@ impl Store {
             pacman,
             aur,
             flatpak,
+            custom: Box::new(crate::bamboo::CustomManager),
             settings: Mutex::new(settings),
             searches: TtlCache::new(),
             details: TtlCache::new(),
@@ -190,6 +192,7 @@ impl Store {
             PackageSource::Pacman => &*self.pacman,
             PackageSource::Aur => &*self.aur,
             PackageSource::Flatpak => &*self.flatpak,
+            PackageSource::Custom => &*self.custom,
         }
     }
 
@@ -248,6 +251,11 @@ impl Store {
     pub fn details(&self, name: &str, source: PackageSource) -> Option<Details> {
         let key = format!("{source}:{name}");
         self.details.remember(&key, DETAILS_TTL, || self.manager(source).details(name))
+    }
+
+    /// The Bamboo Installs catalogue with installed flags.
+    pub fn bamboo_installs(&self) -> Vec<Package> {
+        crate::bamboo::packages(&crate::pacman::installed_names())
     }
 
     /// The curated categories, downloaded once a day.

@@ -47,6 +47,11 @@ pub mod qobject {
         #[cxx_name = "loadInstalled"]
         fn load_installed(self: Pin<&mut Backend>, filter: &QString, page: i32);
 
+        /// The Bamboo Installs catalogue; fills `results` and `total`.
+        #[qinvokable]
+        #[cxx_name = "loadBambooInstalls"]
+        fn load_bamboo_installs(self: Pin<&mut Backend>);
+
         /// Fill `categories` (downloads the EndeavourOS list the first time).
         #[qinvokable]
         #[cxx_name = "loadCategories"]
@@ -320,6 +325,27 @@ impl qobject::Backend {
                     ok,
                     QString::from(&message),
                 );
+            });
+        });
+    }
+
+    fn load_bamboo_installs(mut self: Pin<&mut Self>) {
+        let store = self.rust().store.clone();
+        let generation = self.rust().search_gen.clone();
+        let mine = generation.fetch_add(1, Ordering::SeqCst) + 1;
+        let thread = self.qt_thread();
+
+        self.as_mut().set_busy(true);
+        std::thread::spawn(move || {
+            let items = store.bamboo_installs();
+            let json = serde_json::to_string(&items).unwrap_or_else(|_| "[]".into());
+            let total = items.len();
+            let _ = thread.queue(move |mut this| {
+                if generation.load(Ordering::SeqCst) == mine {
+                    this.as_mut().set_total(total as i32);
+                    this.as_mut().set_results(QString::from(&json));
+                    this.as_mut().set_busy(false);
+                }
             });
         });
     }

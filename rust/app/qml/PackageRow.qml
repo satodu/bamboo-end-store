@@ -43,7 +43,7 @@ Item {
         anchors.rightMargin: 12
         spacing: 14
 
-        PackageIcon { name: root.pkg.display_name || root.pkg.name || ""; size: 36 }
+        PackageIcon { name: root.pkg.display_name || root.pkg.name || ""; source: Style.iconFor(root.pkg); size: 36 }
 
         ColumnLayout {
             Layout.fillWidth: true
@@ -59,7 +59,7 @@ Item {
             Text {
                 Layout.fillWidth: true
                 visible: text.length > 0
-                text: root.pkg.description || ""
+                text: Tr.t(root.pkg.description || "")
                 color: Theme.fgSurfaceVariant
                 font.pixelSize: 12
                 elide: Text.ElideRight
@@ -74,7 +74,7 @@ Item {
             Layout.maximumWidth: 140
             elide: Text.ElideRight
         }
-        Tag { text: root.pkg.source || ""; tone: root.pkg.source === "aur" ? "tertiary" : "neutral" }
+        Tag { text: root.pkg.source === "custom" ? "Bamboo" : (root.pkg.source || ""); tone: root.pkg.source === "aur" ? "tertiary" : root.pkg.source === "custom" ? "primary" : "neutral" }
         Tag { visible: root.showInstalledTag && !!root.pkg.installed; text: Tr.t("Installed"); tone: "primary" }
         Btn {
             text: root.pkg.installed ? Tr.t("Remove") : Tr.t("Install")

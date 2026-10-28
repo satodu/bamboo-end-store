@@ -30,10 +30,7 @@ Item {
                 Layout.fillWidth: true
                 spacing: 12
 
-                PackageIcon {
-                    name: root.pkg.display_name || root.pkg.name || ""
-                    size: 44
-                }
+                PackageIcon { name: root.pkg.display_name || root.pkg.name || ""; source: Style.iconFor(root.pkg); size: 44 }
                 ColumnLayout {
                     Layout.fillWidth: true
                     spacing: 2
@@ -59,7 +56,7 @@ Item {
             Text {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                text: root.pkg.description || ""
+                text: Tr.t(root.pkg.description || "")
                 color: Theme.fgSurfaceVariant
                 font.pixelSize: 12
                 wrapMode: Text.Wrap
@@ -71,7 +68,7 @@ Item {
                 Layout.fillWidth: true
                 spacing: 6
 
-                Tag { text: root.pkg.source || ""; tone: root.pkg.source === "aur" ? "tertiary" : "neutral" }
+                Tag { text: root.pkg.source === "custom" ? "Bamboo" : (root.pkg.source || ""); tone: root.pkg.source === "aur" ? "tertiary" : root.pkg.source === "custom" ? "primary" : "neutral" }
                 Tag { visible: root.showInstalledTag && !!root.pkg.installed; text: Tr.t("Installed"); tone: "primary" }
                 Item { Layout.fillWidth: true }
                 Btn {

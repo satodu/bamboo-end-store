@@ -29,7 +29,7 @@ ApplicationWindow {
         dark: Theme.outlineVariant
     }
 
-    readonly property var pages: ["explore", "installed", "appimages", "settings"]
+    readonly property var pages: ["explore", "installed", "bamboo", "appimages", "settings"]
     property string page: "explore"
     property var visited: ({ "explore": true })
     readonly property var appSettings: JSON.parse(appBackend.settings)
@@ -97,6 +97,7 @@ ApplicationWindow {
 
                 NavItem { Layout.fillWidth: true; text: Tr.t("Explore"); rune: "explore"; active: root.page === "explore"; onClicked: root.openPage("explore") }
                 NavItem { Layout.fillWidth: true; text: Tr.t("Installed"); rune: "installed"; active: root.page === "installed"; onClicked: root.openPage("installed") }
+                NavItem { Layout.fillWidth: true; text: Tr.t("Bamboo Installs"); rune: "bamboo"; active: root.page === "bamboo"; onClicked: root.openPage("bamboo") }
                 NavItem { Layout.fillWidth: true; text: Tr.t("AppImages"); rune: "appimages"; active: root.page === "appimages"; onClicked: root.openPage("appimages") }
                 NavItem { Layout.fillWidth: true; text: Tr.t("Settings"); rune: "settings"; active: root.page === "settings"; onClicked: root.openPage("settings") }
 
@@ -133,6 +134,11 @@ ApplicationWindow {
                     Loader {
                         active: !!root.visited["installed"]
                         sourceComponent: InstalledPage { appSettings: root.appSettings; settingsBackend: appBackend }
+                    }
+
+                    Loader {
+                        active: !!root.visited["bamboo"]
+                        sourceComponent: BambooInstallsPage { appSettings: root.appSettings; settingsBackend: appBackend }
                     }
 
                     Loader {

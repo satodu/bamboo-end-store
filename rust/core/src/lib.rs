@@ -2,6 +2,7 @@
 
 pub mod appimage;
 pub mod aur;
+pub mod bamboo;
 pub mod cache;
 pub mod curated;
 pub mod flatpak;

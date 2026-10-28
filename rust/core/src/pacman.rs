@@ -5,6 +5,14 @@ use crate::manager::PackageManager;
 use crate::sys::{self, shell_quote};
 use crate::{Details, Package, PackageSource};
 
+/// Names of every installed package (`pacman -Qq`); empty when pacman is unavailable.
+pub fn installed_names() -> HashSet<String> {
+    sys::run("pacman", &["-Qq"], None)
+        .filter(|o| o.success)
+        .map(|o| o.stdout.lines().map(str::to_owned).collect())
+        .unwrap_or_default()
+}
+
 pub struct PacmanManager;
 
 impl PacmanManager {

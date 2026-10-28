@@ -33,6 +33,7 @@ fn main() {
             .qml_file("qml/SettingsSection.qml")
             .qml_file("qml/SettingsPage.qml")
             .qml_file("qml/PackageResults.qml")
+            .qml_file("qml/BambooInstallsPage.qml")
             .qml_file("qml/CategoryTile.qml")
             .qml_file("qml/HomeView.qml")
             .qml_file("qml/StatusRow.qml")
@@ -48,7 +49,13 @@ fn main() {
             .qml_file(QmlFile::from("qml/Tr.qml").singleton(true)),
     )
     .qt_module("Quick")
-    .qrc_resources(["fonts/NotoSansRunic-Regular.ttf", "fonts/BigShouldersDisplay.ttf"])
+    .qrc_resources([
+        "fonts/NotoSansRunic-Regular.ttf",
+        "fonts/BigShouldersDisplay.ttf",
+        "icons/winboat.svg",
+        "icons/linuxtoys.svg",
+        "icons/davinci-resolve.svg",
+    ])
     .files(["src/backend.rs", "src/theme_bridge.rs", "src/i18n_bridge.rs"])
     .build();
 }

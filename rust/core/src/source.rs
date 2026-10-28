@@ -10,6 +10,8 @@ pub enum PackageSource {
     Pacman,
     Aur,
     Flatpak,
+    /// A Bamboo Installs script (see `bamboo.rs`), not a repository.
+    Custom,
 }
 
 impl PackageSource {
@@ -18,6 +20,7 @@ impl PackageSource {
             Self::Pacman => "pacman",
             Self::Aur => "aur",
             Self::Flatpak => "flatpak",
+            Self::Custom => "custom",
         }
     }
 }
@@ -36,6 +39,7 @@ impl FromStr for PackageSource {
             "pacman" => Ok(Self::Pacman),
             "aur" => Ok(Self::Aur),
             "flatpak" => Ok(Self::Flatpak),
+            "custom" => Ok(Self::Custom),
             other => Err(format!("unknown package source: {other}")),
         }
     }
@@ -47,7 +51,7 @@ mod tests {
 
     #[test]
     fn roundtrip() {
-        for s in [PackageSource::Pacman, PackageSource::Aur, PackageSource::Flatpak] {
+        for s in [PackageSource::Pacman, PackageSource::Aur, PackageSource::Flatpak, PackageSource::Custom] {
             assert_eq!(s.as_str().parse::<PackageSource>(), Ok(s));
         }
         assert!("nope".parse::<PackageSource>().is_err());

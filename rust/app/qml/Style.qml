@@ -77,6 +77,25 @@ QtObject {
         return futhark.charAt(h)
     }
 
+    // Icon for a package: bundled brand icons for the Bamboo Installs, the Flathub icon for Flatpaks,
+    // nothing for the rest (PackageIcon then draws a letter tile).
+    readonly property var customIcons: ({
+        "steam": "https://upload.wikimedia.org/wikipedia/commons/8/83/Steam_icon_logo.svg",
+        "winboat": Qt.resolvedUrl("../icons/winboat.svg"),
+        "linuxtoys": Qt.resolvedUrl("../icons/linuxtoys.svg"),
+        "davinci-resolve": Qt.resolvedUrl("../icons/davinci-resolve.svg")
+    })
+    function iconFor(pkg) {
+        if (!pkg || !pkg.name) return ""
+        if (pkg.source === "custom") return customIcons[pkg.name] || ""
+        if (pkg.source === "flatpak") {
+            // Runtimes and extensions have no icon on Flathub.
+            if (/platform|sdk|theme|extension|plugin|driver|codecs|baseapp/i.test(pkg.name)) return ""
+            return "https://dl.flathub.org/repo/appstream/x86_64/icons/128x128/" + pkg.name + ".png"
+        }
+        return ""
+    }
+
     // The 24 runes of the Elder Futhark, for the ring.
     readonly property string futhark: "ᚠᚢᚦᚨᚱᚲᚷᚹᚺᚾᛁᛃᛇᛈᛉᛊᛏᛒᛖᛗᛚᛜᛞᛟ"
 }
