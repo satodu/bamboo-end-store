@@ -37,10 +37,11 @@ fn main() {
             .qml_file("qml/AppImageRow.qml")
             .qml_file("qml/AppImagesPage.qml")
             .qml_file(QmlFile::from("qml/Theme.qml").singleton(true))
-            .qml_file(QmlFile::from("qml/Style.qml").singleton(true)),
+            .qml_file(QmlFile::from("qml/Style.qml").singleton(true))
+            .qml_file(QmlFile::from("qml/Tr.qml").singleton(true)),
     )
     .qt_module("Quick")
     .qrc_resources(["fonts/NotoSansRunic-Regular.ttf", "fonts/BigShouldersDisplay.ttf"])
-    .files(["src/backend.rs", "src/theme_bridge.rs"])
+    .files(["src/backend.rs", "src/theme_bridge.rs", "src/i18n_bridge.rs"])
     .build();
 }

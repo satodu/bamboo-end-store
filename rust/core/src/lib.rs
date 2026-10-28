@@ -4,6 +4,7 @@ pub mod appimage;
 pub mod aur;
 pub mod cache;
 pub mod flatpak;
+pub mod i18n;
 mod http;
 mod manager;
 mod package;

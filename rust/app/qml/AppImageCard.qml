@@ -57,7 +57,7 @@ Item {
             RowLayout {
                 spacing: 6
                 Tag { text: "appimage" }
-                Tag { visible: !!root.app.has_desktop; text: "integrated"; tone: "primary" }
+                Tag { visible: !!root.app.has_desktop; text: Tr.t("Integrated"); tone: "primary" }
             }
 
             Item { Layout.fillHeight: true }
@@ -65,11 +65,11 @@ Item {
             RowLayout {
                 Layout.fillWidth: true
                 spacing: 8
-                Btn { Layout.fillWidth: true; text: "Launch"; variant: "tonal"; implicitHeight: 32; enabled: !root.busy
+                Btn { Layout.fillWidth: true; text: Tr.t("Launch"); variant: "tonal"; implicitHeight: 32; enabled: !root.busy
                       onClicked: root.launchRequested() }
-                Btn { Layout.fillWidth: true; visible: !root.app.has_desktop; text: "Integrate"; implicitHeight: 32; enabled: !root.busy
+                Btn { Layout.fillWidth: true; visible: !root.app.has_desktop; text: Tr.t("Integrate"); implicitHeight: 32; enabled: !root.busy
                       onClicked: root.integrateRequested() }
-                Btn { text: "Remove"; variant: "outline"; implicitHeight: 32; enabled: !root.busy
+                Btn { text: Tr.t("Remove"); variant: "outline"; implicitHeight: 32; enabled: !root.busy
                       onClicked: root.removeRequested() }
             }
         }

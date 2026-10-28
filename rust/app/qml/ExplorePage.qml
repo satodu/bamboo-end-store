@@ -30,7 +30,8 @@ Item {
     Backend {
         id: backend
         onOperationFinished: (name, action, code) => {
-            root.status = code === 0 ? name + " " + action : name + " failed (exit " + code + ")"
+            root.status = code !== 0 ? Tr.f("%s failed (exit %s)", name, code)
+                : action === "installed" ? Tr.f("%s installed", name) : Tr.f("%s removed", name)
             if (field.text.length) backend.search(field.text, root.page)
         }
     }
@@ -58,13 +59,14 @@ Item {
                 SearchField {
                     id: field
                     Layout.fillWidth: true
-                    placeholder: "Search pacman, AUR, Flatpak"
+                    placeholder: Tr.t("Search pacman, AUR, Flatpak")
                     onTextChanged: debounce.restart()
                 }
                 RuneSpinner { running: backend.busy }
                 Text {
                     visible: !backend.busy
-                    text: backend.total + " RESULTS"
+                    text: Tr.f("%s results", backend.total)
+                    font.capitalization: Font.AllUppercase
                     color: Theme.fgSurfaceVariant
                     font.family: Style.mono
                     font.pixelSize: 11
@@ -118,7 +120,7 @@ Item {
                     width: Math.min(parent.width - 40, 420)
                     height: Math.min(parent.height - 40, 320)
                     visible: root.packages.length === 0 && !backend.busy
-                    caption: field.text.length ? "FIG. — NO PACKAGE." : "FIG. — AWAITING QUERY."
+                    caption: field.text.length ? Tr.t("FIG. — NO PACKAGE.") : Tr.t("FIG. — AWAITING QUERY.")
                 }
             }
 
@@ -127,10 +129,10 @@ Item {
                 visible: root.pageCount > 1
                 spacing: 12
                 Item { Layout.fillWidth: true }
-                Btn { text: "Prev"; variant: "outline"; enabled: root.page > 1 && !backend.busy
+                Btn { text: Tr.t("Prev"); variant: "outline"; enabled: root.page > 1 && !backend.busy
                       onClicked: backend.search(field.text, --root.page) }
                 Text { text: root.page + " / " + root.pageCount; color: Theme.fgSurface; font.family: Style.mono; font.pixelSize: 12 }
-                Btn { text: "Next"; variant: "outline"; enabled: root.page < root.pageCount && !backend.busy
+                Btn { text: Tr.t("Next"); variant: "outline"; enabled: root.page < root.pageCount && !backend.busy
                       onClicked: backend.search(field.text, ++root.page) }
             }
         }

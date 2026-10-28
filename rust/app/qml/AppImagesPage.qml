@@ -30,16 +30,20 @@ Item {
     Backend {
         id: backend
         onAppImageFinished: (action, name, ok, message) => {
-            const label = { "register": "integrated", "remove": "removed", "launch": "launched" }[action]
+            const done = {
+                "register": () => Tr.f("%s integrated", name),
+                "remove": () => Tr.f("%s removed", name),
+                "launch": () => Tr.f("%s launched", name)
+            }
             root.statusFailed = !ok
-            root.status = ok ? name + " " + label : name + " failed: " + message
+            root.status = ok ? done[action]() : Tr.f("%s failed: %s", name, message)
             if (action !== "launch") root.reload()
         }
     }
 
     FileDialog {
         id: picker
-        title: "Select AppImage"
+        title: Tr.t("Select AppImage")
         nameFilters: ["AppImage (*.AppImage *.appimage)", "All files (*)"]
         onAccepted: root.register(root.pathOf(selectedFile))
     }
@@ -69,7 +73,8 @@ Item {
                 Layout.fillWidth: true
                 spacing: 4
                 Text {
-                    text: "APPIMAGES"
+                    text: Tr.t("AppImages")
+                    font.capitalization: Font.AllUppercase
                     color: Theme.fgSurface
                     font.family: Style.displayFont
                     font.pixelSize: 46
@@ -82,18 +87,18 @@ Item {
                     }
                 }
                 Text {
-                    text: "Manage and integrate standalone AppImage applications."
+                    text: Tr.t("Manage and integrate standalone AppImage applications.")
                     color: Theme.fgSurfaceVariant
                     font.pixelSize: 14
                 }
             }
 
             Segmented {
-                options: [{ label: "Grid", value: "grid" }, { label: "List", value: "list" }]
+                options: [{ label: Tr.t("Grid"), value: "grid" }, { label: Tr.t("List"), value: "list" }]
                 current: root.viewMode
                 onActivated: v => root.settingsBackend.setSetting("appimages_view_mode", JSON.stringify(v))
             }
-            Btn { text: "Add AppImage"; enabled: !backend.busy; onClicked: picker.open() }
+            Btn { text: Tr.t("Add AppImage"); enabled: !backend.busy; onClicked: picker.open() }
         }
 
         RowLayout {
@@ -110,7 +115,8 @@ Item {
                 Layout.maximumWidth: 420
             }
             Text {
-                text: root.apps.length + " FOUND"
+                text: Tr.f("%s found", root.apps.length)
+                font.capitalization: Font.AllUppercase
                 color: Theme.fgSurfaceVariant
                 font.family: Style.mono
                 font.pixelSize: 11
@@ -166,8 +172,8 @@ Item {
                             onLaunchRequested: backend.launchAppImage(cell.modelData.path)
                             onIntegrateRequested: backend.registerAppImage(cell.modelData.path)
                             onRemoveRequested: { root.pendingRemoval = cell.modelData
-                                confirm.open("Delete " + cell.modelData.display_name + "?",
-                                             "The file, its menu entry and its icon will be deleted. This cannot be undone.") }
+                                confirm.open(Tr.f("Delete %s?", cell.modelData.display_name),
+                                             Tr.t("The file, its menu entry and its icon will be deleted. This cannot be undone.")) }
                         }
                     }
                 }
@@ -200,8 +206,8 @@ Item {
                             onLaunchRequested: backend.launchAppImage(rowItem.modelData.path)
                             onIntegrateRequested: backend.registerAppImage(rowItem.modelData.path)
                             onRemoveRequested: { root.pendingRemoval = rowItem.modelData
-                                confirm.open("Delete " + rowItem.modelData.display_name + "?",
-                                             "The file, its menu entry and its icon will be deleted. This cannot be undone.") }
+                                confirm.open(Tr.f("Delete %s?", rowItem.modelData.display_name),
+                                             Tr.t("The file, its menu entry and its icon will be deleted. This cannot be undone.")) }
                         }
                     }
                 }
@@ -212,8 +218,8 @@ Item {
                 width: Math.min(parent.width - 40, 440)
                 height: Math.min(parent.height - 40, 340)
                 visible: root.apps.length === 0 && !backend.busy
-                caption: "FIG. — NO APPIMAGE."
-                actionText: "Register AppImage"
+                caption: Tr.t("FIG. — NO APPIMAGE.")
+                actionText: Tr.t("Register AppImage")
                 onAction: picker.open()
             }
 
@@ -227,7 +233,8 @@ Item {
                 padding: 0
                 Text {
                     anchors.centerIn: parent
-                    text: "DROP TO REGISTER"
+                    text: Tr.t("Drop to register")
+                    font.capitalization: Font.AllUppercase
                     color: Theme.primary
                     font.family: Style.displayFont
                     font.pixelSize: 34
@@ -240,7 +247,7 @@ Item {
 
     Confirm {
         id: confirm
-        acceptText: "Delete"
+        acceptText: Tr.t("Delete")
         onAccepted: if (root.pendingRemoval) backend.removeAppImage(root.pendingRemoval.path)
     }
 }

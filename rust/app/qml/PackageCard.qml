@@ -71,10 +71,10 @@ Item {
                 spacing: 6
 
                 Tag { text: root.pkg.source || ""; tone: root.pkg.source === "aur" ? "tertiary" : "neutral" }
-                Tag { visible: !!root.pkg.installed; text: "installed"; tone: "primary" }
+                Tag { visible: !!root.pkg.installed; text: Tr.t("Installed"); tone: "primary" }
                 Item { Layout.fillWidth: true }
                 Btn {
-                    text: root.pkg.installed ? "Remove" : "Install"
+                    text: root.pkg.installed ? Tr.t("Remove") : Tr.t("Install")
                     variant: root.pkg.installed ? "outline" : "filled"
                     busy: root.busy
                     implicitHeight: 32

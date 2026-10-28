@@ -6,7 +6,7 @@ import QtQuick.Layouts
 Item {
     id: root
 
-    property string caption: "FIG. — NO SHARD."
+    property string caption: Tr.t("FIG. — NO SHARD.")
     property string actionText: ""
     signal action()
 

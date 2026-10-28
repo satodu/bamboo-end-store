@@ -95,10 +95,10 @@ ApplicationWindow {
                     }
                 }
 
-                NavItem { Layout.fillWidth: true; text: "Explore"; rune: "explore"; active: root.page === "explore"; onClicked: root.openPage("explore") }
-                NavItem { Layout.fillWidth: true; text: "Installed"; rune: "installed"; active: root.page === "installed"; onClicked: root.openPage("installed") }
-                NavItem { Layout.fillWidth: true; text: "AppImages"; rune: "appimages"; active: root.page === "appimages"; onClicked: root.openPage("appimages") }
-                NavItem { Layout.fillWidth: true; text: "Settings"; rune: "settings"; active: root.page === "settings"; onClicked: root.openPage("settings") }
+                NavItem { Layout.fillWidth: true; text: Tr.t("Explore"); rune: "explore"; active: root.page === "explore"; onClicked: root.openPage("explore") }
+                NavItem { Layout.fillWidth: true; text: Tr.t("Installed"); rune: "installed"; active: root.page === "installed"; onClicked: root.openPage("installed") }
+                NavItem { Layout.fillWidth: true; text: Tr.t("AppImages"); rune: "appimages"; active: root.page === "appimages"; onClicked: root.openPage("appimages") }
+                NavItem { Layout.fillWidth: true; text: Tr.t("Settings"); rune: "settings"; active: root.page === "settings"; onClicked: root.openPage("settings") }
 
                 Item { Layout.fillHeight: true }
 

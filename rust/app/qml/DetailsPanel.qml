@@ -65,7 +65,7 @@ Item {
                 RowLayout {
                     spacing: 6
                     Tag { text: root.pkg.source || ""; tone: root.pkg.source === "aur" ? "tertiary" : "neutral" }
-                    Tag { visible: !!root.pkg.installed; text: "installed"; tone: "primary" }
+                    Tag { visible: !!root.pkg.installed; text: Tr.t("Installed"); tone: "primary" }
                 }
 
                 TypedText {
@@ -91,7 +91,7 @@ Item {
                         spacing: 10
 
                         Text {
-                            text: fieldRow.modelData
+                            text: Tr.t(fieldRow.modelData)
                             color: Theme.fgSurfaceVariant
                             font.family: Style.mono
                             font.pixelSize: 10
@@ -128,7 +128,7 @@ Item {
 
                 Btn {
                     Layout.fillWidth: true
-                    text: root.pkg.installed ? "Remove" : "Install"
+                    text: root.pkg.installed ? Tr.t("Remove") : Tr.t("Install")
                     variant: root.pkg.installed ? "outline" : "filled"
                     busy: root.busy
                     onClicked: root.pkg.installed ? root.removeRequested() : root.installRequested()

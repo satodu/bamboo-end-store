@@ -7,7 +7,7 @@ Item {
 
     property string title: ""
     property string message: ""
-    property string acceptText: "Delete"
+    property string acceptText: Tr.t("Delete")
 
     signal accepted()
     signal rejected()
@@ -73,7 +73,7 @@ Item {
                         Layout.fillWidth: true
                         spacing: 10
                         Item { Layout.fillWidth: true }
-                        Btn { text: "Cancel"; variant: "ghost"; onClicked: { root.close(); root.rejected() } }
+                        Btn { text: Tr.t("Cancel"); variant: "ghost"; onClicked: { root.close(); root.rejected() } }
                         Btn { text: root.acceptText; variant: "danger"; onClicked: { root.close(); root.accepted() } }
                     }
                 }

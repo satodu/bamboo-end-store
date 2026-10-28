@@ -16,6 +16,7 @@ Item {
     function set(key, value) {
         backend.setSetting(key, JSON.stringify(value))
         if (key.indexOf("theme") === 0 || key === "reduce_motion") Theme.reload()
+        if (key === "locale") Tr.reload()
     }
     function validHex(h) { return /^#[0-9a-fA-F]{6}$/.test(h) }
 
@@ -42,7 +43,8 @@ Item {
             ColumnLayout {
                 spacing: 4
                 Text {
-                    text: "SETTINGS"
+                    text: Tr.t("Settings")
+                    font.capitalization: Font.AllUppercase
                     color: Theme.fgSurface
                     font.family: Style.displayFont
                     font.pixelSize: 46
@@ -55,29 +57,29 @@ Item {
                     }
                 }
                 Text {
-                    text: "Manage your repositories and preferences."
+                    text: Tr.t("Manage your repositories and preferences.")
                     color: Theme.fgSurfaceVariant
                     font.pixelSize: 14
                 }
             }
 
             SettingsSection {
-                title: "Repositories"
+                title: Tr.t("Repositories")
                 rune: "appimages"
                 delay: 0
                 SettingRow {
-                    title: "Arch User Repository"
-                    description: "Search and install thousands of community-maintained packages."
+                    title: Tr.t("Arch User Repository")
+                    description: Tr.t("Search and install thousands of community-maintained packages.")
                     Toggle { checked: root.s.enable_aur; onToggled: v => root.set("enable_aur", v) }
                 }
                 SettingRow {
-                    title: "Flatpak Integration"
-                    description: "Access Flathub's universal application ecosystem."
+                    title: Tr.t("Flatpak Integration")
+                    description: Tr.t("Access Flathub's universal application ecosystem.")
                     Toggle { checked: root.s.enable_flatpak; onToggled: v => root.set("enable_flatpak", v) }
                 }
                 SettingRow {
-                    title: "Search Results Limit"
-                    description: "Packages per page; lower is faster."
+                    title: Tr.t("Search Results Limit")
+                    description: Tr.t("Packages per page; lower is faster.")
                     Segmented {
                         options: [{ label: "25", value: 25 }, { label: "50", value: 50 }, { label: "100", value: 100 }]
                         current: root.s.search_limit
@@ -87,15 +89,28 @@ Item {
             }
 
             SettingsSection {
-                title: "Appearance"
+                title: Tr.t("Appearance")
                 rune: "light"
                 delay: 70
 
                 SettingRow {
-                    title: "Color source"
-                    description: "Follow the desktop palette, pick a preset, or choose your own main color."
+                    title: Tr.t("Language")
+                    description: Tr.t("Choose your interface language.")
                     Segmented {
-                        options: [{ label: "System", value: "auto" }, { label: "Preset", value: "preset" }, { label: "Custom", value: "seed" }]
+                        // Language names are written in their own language, never translated.
+                        options: [{ label: Tr.t("System"), value: "system" }, { label: "Português", value: "pt" },
+                                  { label: "English", value: "en" }, { label: "Español", value: "es" },
+                                  { label: "Русский", value: "ru" }]
+                        current: root.s.locale
+                        onActivated: v => root.set("locale", v)
+                    }
+                }
+
+                SettingRow {
+                    title: Tr.t("Color source")
+                    description: Tr.t("Follow the desktop palette, pick a preset, or choose your own main color.")
+                    Segmented {
+                        options: [{ label: Tr.t("System"), value: "auto" }, { label: Tr.t("Preset"), value: "preset" }, { label: Tr.t("Custom"), value: "seed" }]
                         current: root.s.theme_source === "system" ? "auto" : root.s.theme_source
                         onActivated: v => root.set("theme_source", v)
                     }
@@ -103,8 +118,8 @@ Item {
 
                 SettingRow {
                     visible: root.s.theme_source === "preset"
-                    title: "Color Palette"
-                    description: "Choose an accent color theme for the store."
+                    title: Tr.t("Color Palette")
+                    description: Tr.t("Choose an accent color theme for the store.")
                     Row {
                         spacing: 8
                         Repeater {
@@ -139,8 +154,8 @@ Item {
 
                 SettingRow {
                     visible: root.s.theme_source === "seed"
-                    title: "Main color"
-                    description: "Any #rrggbb. Everything else is derived from it, Material You style."
+                    title: Tr.t("Main color")
+                    description: Tr.t("Any #rrggbb. Everything else is derived from it, Material You style.")
                     Row {
                         spacing: 10
                         Rectangle {
@@ -161,17 +176,17 @@ Item {
                 }
                 SettingRow {
                     visible: root.s.theme_source === "seed"
-                    title: "Secondary and tertiary"
-                    description: "Optional. Leave empty to derive them from the main color."
+                    title: Tr.t("Secondary and tertiary")
+                    description: Tr.t("Optional. Leave empty to derive them from the main color.")
                     Row {
                         spacing: 10
                         Field {
-                            width: 130; placeholder: "secondary"; maximumLength: 7
+                            width: 130; placeholder: Tr.t("Secondary"); maximumLength: 7
                             text: root.s.theme_secondary
                             onEdited: if (text === "" || root.validHex(text)) root.set("theme_secondary", text)
                         }
                         Field {
-                            width: 130; placeholder: "tertiary"; maximumLength: 7
+                            width: 130; placeholder: Tr.t("Tertiary"); maximumLength: 7
                             text: root.s.theme_tertiary
                             onEdited: if (text === "" || root.validHex(text)) root.set("theme_tertiary", text)
                         }
@@ -180,18 +195,18 @@ Item {
 
                 SettingRow {
                     visible: Theme.source !== "system"
-                    title: "Mode"
-                    description: "Dark or light surfaces."
+                    title: Tr.t("Mode")
+                    description: Tr.t("Dark or light surfaces.")
                     Segmented {
-                        options: [{ label: "Dark", value: "dark" }, { label: "Light", value: "light" }]
+                        options: [{ label: Tr.t("Dark"), value: "dark" }, { label: Tr.t("Light"), value: "light" }]
                         current: root.s.theme_mode
                         onActivated: v => root.set("theme_mode", v)
                     }
                 }
 
                 SettingRow {
-                    title: "Current palette"
-                    description: Theme.source === "system" ? "From the desktop palette file." : "Generated by the Material You algorithm."
+                    title: Tr.t("Current palette")
+                    description: Theme.source === "system" ? Tr.t("From the desktop palette file.") : Tr.t("Generated by the Material You algorithm.")
                     Row {
                         spacing: 6
                         Repeater {
@@ -207,27 +222,27 @@ Item {
                 }
 
                 SettingRow {
-                    title: "Reduce motion"
-                    description: "Turns off wipes, typing, drifting runes and the rotating ring."
+                    title: Tr.t("Reduce motion")
+                    description: Tr.t("Turns off wipes, typing, drifting runes and the rotating ring.")
                     Toggle { checked: root.s.reduce_motion; onToggled: v => root.set("reduce_motion", v) }
                 }
             }
 
             SettingsSection {
-                title: "Terminal"
+                title: Tr.t("Terminal")
                 rune: "active"
                 delay: 140
                 SettingRow {
-                    title: "Terminal Auto-close"
-                    description: "Automatically close the terminal window after the process completes."
+                    title: Tr.t("Terminal Auto-close")
+                    description: Tr.t("Automatically close the terminal window after the process completes.")
                     Toggle { checked: root.s.auto_close_terminal; onToggled: v => root.set("auto_close_terminal", v) }
                 }
                 SettingRow {
                     visible: root.s.auto_close_terminal
-                    title: "Close Delay"
-                    description: "Countdown before the terminal window closes."
+                    title: Tr.t("Close Delay")
+                    description: Tr.t("Countdown before the terminal window closes.")
                     Segmented {
-                        options: [{ label: "5 s", value: 5 }, { label: "10 s", value: 10 }, { label: "15 s", value: 15 }, { label: "30 s", value: 30 }]
+                        options: [{ label: Tr.f("%s s", 5), value: 5 }, { label: Tr.f("%s s", 10), value: 10 }, { label: Tr.f("%s s", 15), value: 15 }, { label: Tr.f("%s s", 30), value: 30 }]
                         current: root.s.terminal_close_delay
                         onActivated: v => root.set("terminal_close_delay", v)
                     }
@@ -235,12 +250,12 @@ Item {
             }
 
             SettingsSection {
-                title: "AppImages"
+                title: Tr.t("AppImages")
                 rune: "bamboo"
                 delay: 210
                 SettingRow {
-                    title: "AppImage Storage Directory"
-                    description: "Where your AppImages are stored and managed."
+                    title: Tr.t("AppImage Storage Directory")
+                    description: Tr.t("Where your AppImages are stored and managed.")
                     Row {
                         spacing: 10
                         Field {
@@ -250,23 +265,23 @@ Item {
                             text: root.s.appimage_path
                             onEdited: root.set("appimage_path", text)
                         }
-                        Btn { text: "Change"; variant: "outline"; onClicked: folder.open() }
+                        Btn { text: Tr.t("Change"); variant: "outline"; onClicked: folder.open() }
                     }
                 }
             }
 
             SettingsSection {
-                title: "Maintenance"
+                title: Tr.t("Maintenance")
                 rune: "loading"
                 delay: 280
                 SettingRow {
-                    title: "Clear Cache"
-                    description: "Clear all cached package details, searches and lists."
+                    title: Tr.t("Clear Cache")
+                    description: Tr.t("Clear all cached package details, searches and lists.")
                     Row {
                         spacing: 12
                         Rune { visible: root.note.length > 0; name: "success"; size: 17; anchors.verticalCenter: parent.verticalCenter }
                         Btn {
-                            text: "Clear Cache"
+                            text: Tr.t("Clear Cache")
                             variant: "outline"
                             onClicked: { backend.clearCache(); root.note = "cleared" }
                         }
@@ -280,7 +295,7 @@ Item {
 
     FolderDialog {
         id: folder
-        title: "AppImage Storage Directory"
+        title: Tr.t("AppImage Storage Directory")
         onAccepted: {
             const p = decodeURIComponent(selectedFolder.toString().replace("file://", ""))
             dirField.text = p

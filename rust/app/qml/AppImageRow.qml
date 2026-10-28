@@ -52,9 +52,9 @@ Item {
             font.family: Style.mono
         }
         Tag { text: "appimage" }
-        Tag { visible: !!root.app.has_desktop; text: "integrated"; tone: "primary" }
-        Btn { text: "Launch"; variant: "tonal"; implicitHeight: 32; enabled: !root.busy; onClicked: root.launchRequested() }
-        Btn { visible: !root.app.has_desktop; text: "Integrate"; implicitHeight: 32; enabled: !root.busy; onClicked: root.integrateRequested() }
-        Btn { text: "Remove"; variant: "outline"; implicitHeight: 32; enabled: !root.busy; onClicked: root.removeRequested() }
+        Tag { visible: !!root.app.has_desktop; text: Tr.t("Integrated"); tone: "primary" }
+        Btn { text: Tr.t("Launch"); variant: "tonal"; implicitHeight: 32; enabled: !root.busy; onClicked: root.launchRequested() }
+        Btn { visible: !root.app.has_desktop; text: Tr.t("Integrate"); implicitHeight: 32; enabled: !root.busy; onClicked: root.integrateRequested() }
+        Btn { text: Tr.t("Remove"); variant: "outline"; implicitHeight: 32; enabled: !root.busy; onClicked: root.removeRequested() }
     }
 }

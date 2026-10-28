@@ -24,7 +24,8 @@ Item {
     Backend {
         id: backend
         onOperationFinished: (name, action, code) => {
-            root.status = code === 0 ? name + " " + action : name + " failed (exit " + code + ")"
+            root.status = code !== 0 ? Tr.f("%s failed (exit %s)", name, code)
+                : action === "installed" ? Tr.f("%s installed", name) : Tr.f("%s removed", name)
             if (code === 0) root.current = null
             root.reload()
         }
@@ -50,7 +51,7 @@ Item {
                     id: filter
                     Layout.fillWidth: true
                     rune: "installed"
-                    placeholder: "Filter installed packages"
+                    placeholder: Tr.t("Filter installed packages")
                     clearable: true
                     ruleAlways: true
                     onTextChanged: debounce.restart()
@@ -58,7 +59,8 @@ Item {
                 RuneSpinner { running: backend.busy }
                 Text {
                     visible: !backend.busy
-                    text: backend.total + " INSTALLED"
+                    text: Tr.f("%s packages installed", backend.total)
+                    font.capitalization: Font.AllUppercase
                     color: Theme.fgSurfaceVariant
                     font.family: Style.mono
                     font.pixelSize: 11
@@ -109,7 +111,7 @@ Item {
                     width: Math.min(parent.width - 40, 420)
                     height: Math.min(parent.height - 40, 320)
                     visible: root.packages.length === 0 && !backend.busy
-                    caption: filter.text.length ? "FIG. — NO MATCH." : "FIG. — NO SHARD."
+                    caption: filter.text.length ? Tr.t("FIG. — NO MATCH.") : Tr.t("FIG. — NO SHARD.")
                 }
             }
 
@@ -118,10 +120,10 @@ Item {
                 visible: root.pageCount > 1
                 spacing: 12
                 Item { Layout.fillWidth: true }
-                Btn { text: "Prev"; variant: "outline"; enabled: root.page > 1 && !backend.busy
+                Btn { text: Tr.t("Prev"); variant: "outline"; enabled: root.page > 1 && !backend.busy
                       onClicked: { root.page--; root.reload() } }
                 Text { text: root.page + " / " + root.pageCount; color: Theme.fgSurface; font.family: Style.mono; font.pixelSize: 12 }
-                Btn { text: "Next"; variant: "outline"; enabled: root.page < root.pageCount && !backend.busy
+                Btn { text: Tr.t("Next"); variant: "outline"; enabled: root.page < root.pageCount && !backend.busy
                       onClicked: { root.page++; root.reload() } }
             }
         }
