@@ -16,127 +16,94 @@
     </a>
 </p>
 
-<p align="center">
-  <b>🌐 Check the official website: <a href="https://satodu.github.io/bamboo-end-store/">satodu.github.io/bamboo-end-store/</a></b>
-</p>
+A fast, console-first software store for **EndeavourOS / Arch Linux**, written in **Rust** with a **Qt/QML** interface.
 
-A high-performance, beautiful community store for **EndeavourOS / Arch Linux**, built with **Laravel**, **Livewire (Volt)**, and **NativePHP**. 
-
-Designed and crafted specifically for **EndeavourOS** users, this project is created by a passionate daily fan of the system as a tribute and tool to enhance the desktop experience.
+Designed and crafted for **EndeavourOS** users by a devoted daily user of the system, as a tribute and a tool to improve the desktop experience.
 
 > [!IMPORTANT]
-> **UNOFFICIAL FAN PROJECT**: This application is not an official product of any Linux distribution team. It is a fan-made project created by **Panda** to enhance the software management experience on Arch Linux and derivatives.
+> **UNOFFICIAL FAN PROJECT**: this application is not an official product of any Linux distribution team. It is a fan-made project created by **Panda**.
+
+> [!NOTE]
+> Version 2 is a complete rewrite. The 1.x series (Laravel, Livewire and NativePHP/Electron) is kept in the git history and under the tag `v1.4.2-php`.
 
 ---
 
-## 🎨 Theme Showcases
+## 📸 Screenshots
 
-Bamboo End Store offers custom accent themes tailored for your desktop aesthetic:
-
-| **Bamboo Theme (Default)** | **Catppuccin Theme** |
-|:---:|:---:|
-| <img src="docs/imgs/theme/bamboo.png" width="100%" alt="Bamboo Theme"> | <img src="docs/imgs/theme/catputtin.png" width="100%" alt="Catppuccin Theme"> |
-| **Gruvbox Theme** | **Nordic Theme** |
-| <img src="docs/imgs/theme/gruvbox.png" width="100%" alt="Gruvbox Theme"> | <img src="docs/imgs/theme/nordic.png" width="100%" alt="Nordic Theme"> |
-
----
-
-## 📸 Visual Previews
-
-### Dashboard & List Layouts
 <p align="center">
-  <img src="docs/imgs/Home.png" width="49%" alt="Dashboard Overview">
-  <img src="docs/imgs/ListView.png" width="49%" alt="List View Layout">
+  <img src="docs/imgs/app-home.png" width="49%" alt="Explore home with curated categories shown as Elder Futhark runes">
+  <img src="docs/imgs/app-details.png" width="49%" alt="Package details with the terminal command and screenshots">
 </p>
-
-### Package Details & Live Terminal Logs
 <p align="center">
-  <img src="docs/imgs/PackageDetails.png" width="49%" alt="Package Details & Terminal Copy Command">
-  <img src="docs/imgs/TerminalFirst.png" width="49%" alt="Live Command Terminal Logs">
+  <img src="docs/imgs/app-installed.png" width="49%" alt="Installed packages">
+  <img src="docs/imgs/app-bamboo-installs.png" width="49%" alt="Bamboo Installs">
 </p>
-
-### AUR Comments & Flatpak Integration
 <p align="center">
-  <img src="docs/imgs/AurComments.png" width="49%" alt="AUR Community Comments">
-  <img src="docs/imgs/flatpakintegration.png" width="49%" alt="Flatpak Setup & Permissions">
-</p>
-
-### AppImage Workspace & One-Click System Updates
-<p align="center">
-  <img src="docs/imgs/AppImages.png" width="49%" alt="AppImage Manager Workspace">
-  <img src="docs/imgs/UpdateSystemOneClick.png" width="49%" alt="One-Click System Update">
+  <img src="docs/imgs/app-settings.png" width="98%" alt="Settings">
 </p>
 
 ---
 
 ## ✨ Features
 
-- **⚙️ AppImage Management (Gear Lever Style)**: Integrated workspace to integrate, launch, and uninstall AppImages. Automatically handles icon extraction and desktop menu entries.
-- **📦 Flatpak Support**: Configure Flathub natively. Browse categories, manage sandboxed applications, and edit flatpak permissions from a gorgeous interface.
-- **🚀 Performance-First**: Intelligent caching system for lightning-fast search results.
-- **💎 Custom Accent Themes**: Toggle between premium dark themes tailored for EndeavourOS power users (Bamboo, Catppuccin, Gruvbox, Nordic) to fit your desktop aesthetic.
-- **⚡ Native AUR & Pacman Integration**: Direct connection to official and community repositories. Read packaging guidelines, inspect build scripts, see real user comments, and copy terminal installation commands.
-- **📑 Real Pagination**: Navigate through thousands of packages easily with a robust pagination system.
-- **⚙️ Configurable**: Toggle repositories, set search limits, and manage your preferences in a dedicated settings menu.
-- **🖥️ Native Experience**: Runs as a native Linux desktop application thanks to **NativePHP (Electron)**.
-- **📊 System Info**: Real-time display of Hostname, Kernel, and OS info in the sidebar.
+- **Console first**: every package shows the exact command it stands for (`sudo pacman -S`, `yay -S`, `flatpak install flathub`) with a copy button, and installs run in a visible terminal. Nothing happens behind your back.
+- **Three sources in one search**: official repositories, the AUR and Flatpak, with filters by repository, sorting, counts per repository and pagination.
+- **Curated categories** from the EndeavourOS quickstart list, each one with a rune, plus the official EndeavourOS tools when your system has them.
+- **Package details**: description, sizes, license, screenshots with a full-window viewer, and the AUR community comments.
+- **Installed packages**: pacman, AUR and Flatpak in one list, filterable.
+- **Bamboo Installs**: Steam, WinBoat, Linux Toys and DaVinci Resolve with their extra setup scripts (multilib, Wine, 32-bit libraries).
+- **AppImages**: add by file picker or drag and drop, integrate into the menu (`.desktop` entry and icon), launch and remove.
+- **Flatpak setup**: checks the `flatpak` binary and the Flathub remote and fixes them from Settings.
+- **System update** in one click: `eos-update` or your AUR helper, then Flatpak, then orphaned packages.
+- **Material You theming**: follows your desktop palette, a preset (Bamboo, Catppuccin, Nord, Gruvbox) or any color you choose. No `matugen` needed.
+- **Four languages**: English, Portuguese, Spanish and Russian.
+- **Desktop integration**: notifications when an operation ends, a system tray icon, machine info in the sidebar.
+- **The Galdr look**: chamfered panels, real Elder Futhark runes as icons, calm diagonal wipes. Motion can be turned off.
 
 ---
 
 ## 📦 Installation
 
-### Recommended: Arch User Repository (AUR)
+### Build from source
 
-If you are using **Arch Linux** or derivatives, the easiest way to install is via AUR. You can use any AUR helper like `paru` or `yay`:
+Requirements on Arch / EndeavourOS:
 
 ```bash
-paru -S bamboo-end-store-bin
+sudo pacman -S --needed base-devel rust qt6-base qt6-declarative qt6-svg qt6-wayland
 ```
-*or*
+
+Then:
+
 ```bash
-yay -S bamboo-end-store-bin
+git clone https://github.com/satodu/bamboo-end-store.git
+cd bamboo-end-store
+cargo run --release -p bamboo-end-store
 ```
+
+The first build takes a few minutes. Settings live in `~/.config/bamboo-end-store/settings.json`; an old 1.x settings file is read automatically.
+
+### AUR
+
+The `bamboo-end-store-bin` AUR package still ships the 1.x (Electron) release. A 2.x package is not published yet.
 
 ---
 
-### Development Setup
-
-If you want to contribute or run the latest development version:
-
-1. **Clone the repository:**
-   ```bash
-   git clone https://github.com/satodu/bamboo-end-store.git
-   cd bamboo-end-store
-   ```
-
-2. **Install dependencies:**
-   ```bash
-   composer install
-   npm install
-   ```
-
-3. **Configure environment:**
-   ```bash
-   cp .env.example .env
-   php artisan key:generate
-   ```
-
-4. **Run the development server:**
-   ```bash
-   php artisan native:serve
-   ```
-
----
-
-## 📦 Distribution
-
-To generate a portable version for yourself or others:
+## 🛠️ Development
 
 ```bash
-php artisan native:build linux
+cargo test -p bamboo-core            # unit tests, parsers on real captured output, i18n checks
+cargo run -p bamboo-end-store        # the app
+cargo run -p bamboo-core --example cli -- aur search yay    # the core without the UI
+BAMBOO_QML=app/qml/Gallery.qml cargo run -p bamboo-end-store # component catalogue
 ```
 
-This will generate an **AppImage** and a **.deb** package in the `dist` folder.
+| Folder | What is in it |
+|---|---|
+| `core/` | Rust core, no Qt: package managers, store, settings, cache, terminal, AppImages, themes, i18n |
+| `app/` | Qt/QML app: cxx-qt bridges in `src/`, QML in `qml/`, bundled fonts and icons |
+| `docs/` | the project website |
+
+Project rules (visual language, QML pitfalls, tests that never touch your data) are in [`AGENTS.md`](AGENTS.md).
 
 ---
 
@@ -172,6 +139,7 @@ SOFTWARE.
 
 Created with ❤️ by **Panda**.
 Inspired by the strength and versatility of **Bamboo**.
-Special thanks to the **NativePHP** and **Laravel** communities.
 
 Heartfelt thanks to the **EndeavourOS** team and community for providing such an amazing Linux distribution. This application was built and designed specifically for EndeavourOS users by a devoted fan who uses this OS daily!
+
+The visual language comes from the **Galdr** design system. Color schemes use Google's Material Color Utilities through the `material-colors` crate.

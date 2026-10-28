@@ -5,13 +5,13 @@ do not re-litigate them without asking the maintainer.
 
 ## What this repo is
 
-Bamboo End Store, a store for EndeavourOS / Arch (pacman, AUR, Flatpak, AppImage).
+Bamboo End Store, a console-first store for EndeavourOS / Arch (pacman, AUR, Flatpak, AppImage), in Rust with a Qt/QML interface.
 
-- `app/`, `resources/`, `routes/`, ... : the **legacy PHP app** (Laravel, Livewire, NativePHP). Frozen:
-  only touch it to keep the old build working until the Rust app reaches parity.
-- `rust/core/` : the **Rust core** (no Qt): package managers, store, settings, cache, terminal,
-  AppImages, themes, i18n.
-- `rust/app/` : the **Qt/QML app** (cxx-qt): QObject bridges in `src/`, QML in `qml/`, bundled fonts in `fonts/`.
+- `core/` : the **Rust core** (no Qt): package managers, store, settings, cache, terminal, AppImages, themes, i18n.
+- `app/` : the **Qt/QML app** (cxx-qt): QObject bridges in `src/`, QML in `qml/`, bundled fonts and icons.
+- `docs/` : the project website (GitHub Pages) and the README screenshots.
+- The old PHP/Laravel/NativePHP app (1.x) was removed from the tree. It lives in the git history and under the tag `v1.4.2-php`;
+  several things here say "the PHP app" or "the old app" because they were ported from it (settings keys, translations, tables).
 - Work happens on the `rust-qml` branch.
 
 ## Commits
@@ -19,9 +19,9 @@ Bamboo End Store, a store for EndeavourOS / Arch (pacman, AUR, Flatpak, AppImage
 - Conventional Commits (`feat(rust): ...`, `fix(...)`, `docs: ...`), imperative, with a short body for the why.
 - **No Claude or Anthropic attribution anywhere**: no `Co-Authored-By:` trailer, no "Generated with"
   line, in commits or PR descriptions. The author is the maintainer only.
-- Run `cd rust && cargo test -p bamboo-core` before committing. All tests must pass.
+- Run `cargo test -p bamboo-core` before committing. All tests must pass.
 - Never push, and never rewrite history that was pushed, without asking. Rewriting local, unpushed commits is fine.
-- Do not commit build output (`rust/target` is ignored). Keep `.gitignore` lines separate.
+- Do not commit build output (`/target` is ignored). Keep `.gitignore` lines separate.
 
 ## Visual language (Galdr)
 
@@ -66,7 +66,7 @@ the palette, the shapes and motion come from Galdr.
 - **Never name a property `on<Capital>...`** (for example `onSurface`): QML reads it as a signal handler and returns
   black with no error. Material `on*` roles are exposed as `fg*` (`Theme.fgSurface`).
 - **All user-visible text goes through `Tr.t("English phrase")` or `Tr.f("... %s ...", arg)`.** The English phrase is
-  the key. Add every new key to all four files in `rust/core/src/i18n/` (`en`, `pt`, `es`, `ru`). Proper nouns and
+  the key. Add every new key to all four files in `core/src/i18n/` (`en`, `pt`, `es`, `ru`). Proper nouns and
   language names are not translated. A test fails if a key used in QML is missing or if the languages diverge.
 - Do not mutate a JS object or array and expect bindings to update: assign a new one.
 - Do not give a property the same name as the `id` it is bound to (`settingsBackend: settingsBackend` resolves to itself).
@@ -74,15 +74,15 @@ the palette, the shapes and motion come from Galdr.
   needs an explicit height from `childrenRect` (see `FilterBar`).
 - Lists and details cross the Rust bridge as JSON strings. Each screen owns its own `Backend` instance
   (own results and busy state); the `Store` underneath is shared, and so are its caches.
-- Register every new QML file in `rust/app/build.rs`.
+- Register every new QML file in `app/build.rs`.
 - **Layouts must adapt to the window, up to full screen.** No fixed page widths. Grids add columns as the window grows
   (`PackageResults`, `AppImagesPage`). List mode flows into 1, 2 or 3 columns of rows (`PackageResults`, `AppImagesPage`) so an action button stays next to the name it belongs to instead of sitting at the far edge of a wide window. Settings flows into 1, 2 or 3 columns (`SettingsPage.columnPlan`); wide controls use
   `SettingRow { stacked: true }`. Check new screens at 1280, 1400 and 1920 px wide.
 
 ## Rust rules
 
-- `rust/core` must not depend on Qt. Parsers are pure functions tested against real captured output in
-  `rust/core/tests/fixtures/`.
+- `core` must not depend on Qt. Parsers are pure functions tested against real captured output in
+  `core/tests/fixtures/`.
 - **Tests never touch the user's real data.** Directories are injected (`AppImageDirs`), tests use temp dirs and a fake
   AppImage, and any run that writes settings sets `XDG_CONFIG_HOME` (and `XDG_DATA_HOME`) to a scratch directory.
 - Package icons: `Style.iconFor` in QML (bundled brands, Flathub for Flatpaks, `pkg.icon_url`), and `core::icons` (installed `.desktop`
@@ -91,7 +91,7 @@ the palette, the shapes and motion come from Galdr.
 - Settings keep the PHP app's key names and defaults so an old `settings.json` loads unchanged. Unknown keys are kept.
 - Matugen: the app generates palettes in-process (`material-colors`) and never runs the `matugen` binary. If that ever
   changes, it must use `--dry-run` and an empty config: Matugen with the user's config re-themes the whole desktop.
-- The Bamboo Installs scripts (`rust/core/src/installers/*.sh`) change `/etc/pacman.conf`, use `pkexec`, build from the AUR and
+- The Bamboo Installs scripts (`core/src/installers/*.sh`) change `/etc/pacman.conf`, use `pkexec`, build from the AUR and
   download binaries. They are ported verbatim from the PHP app, embedded in the binary, and run only on an explicit click in a
   visible terminal. Unknown names never become commands (`CustomManager`).
 - Installing and removing packages, and the Flatpak setup buttons in Settings (`installFlatpak`, `addFlathub`) and "Update System" in the sidebar (`updateSystem`), open an
@@ -103,7 +103,6 @@ the palette, the shapes and motion come from Galdr.
 ## Checking your work
 
 ```bash
-cd rust
 cargo test -p bamboo-core                      # unit tests, fixtures, i18n key checks
 cargo run -p bamboo-end-store                  # the app
 cargo run -p bamboo-core --example cli -- aur search yay   # core without the UI
@@ -121,6 +120,6 @@ binary reach `Qt.application.arguments` (the screenshot scripts use this with `g
 
 ## Not done yet
 
-The PHP app's features are all ported. What is left is polish: icons for the installed pacman and AUR apps whose icon lives in a theme
-other than hicolor (they fall back to a letter tile), and removing the legacy PHP/Electron code once the Rust app has been
-used for a while. See the git log for what is already ported.
+- The website in `docs/index.html` still describes the 1.x (Laravel/Electron) app and uses its screenshots; it needs a rewrite.
+- Icons for installed pacman and AUR apps whose icon lives in a theme other than hicolor fall back to the origin rune.
+- No 2.x package (AUR, AppImage, `.deb`) is published yet.
