@@ -12,6 +12,10 @@ pub trait PackageManager: Send + Sync {
     fn installed(&self) -> Vec<Package> {
         Vec::new()
     }
+    /// Look up packages by exact name in one go. Sources that cannot do that return nothing.
+    fn by_names(&self, _names: &[&str]) -> Vec<Package> {
+        Vec::new()
+    }
     fn install_command(&self, name: &str) -> String;
     fn remove_command(&self, name: &str) -> String;
 }

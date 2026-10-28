@@ -2,6 +2,7 @@ use std::sync::Mutex;
 use std::time::Duration;
 
 use crate::cache::TtlCache;
+use crate::curated::{self, Category};
 use crate::manager::PackageManager;
 use crate::state::{UserState, UserStateMachine};
 use crate::terminal::TerminalJob;
@@ -137,6 +138,8 @@ pub struct Store {
     searches: TtlCache<Vec<Package>>,
     details: TtlCache<Option<Details>>,
     installed: TtlCache<Vec<Package>>,
+    categories: TtlCache<Vec<Category>>,
+    category_packages: TtlCache<Vec<Package>>,
     pub state: UserStateMachine,
 }
 
@@ -164,6 +167,8 @@ impl Store {
             searches: TtlCache::new(),
             details: TtlCache::new(),
             installed: TtlCache::new(),
+            categories: TtlCache::new(),
+            category_packages: TtlCache::new(),
             state: UserStateMachine::new(),
         }
     }
@@ -245,11 +250,60 @@ impl Store {
         self.details.remember(&key, DETAILS_TTL, || self.manager(source).details(name))
     }
 
+    /// The curated categories, downloaded once a day.
+    pub fn categories(&self) -> Vec<Category> {
+        self.categories.remember("all", Duration::from_secs(24 * 3600), curated::fetch)
+    }
+
+    /// The packages of a curated category: exact names from the official repos in one query, and
+    /// whatever those do not have from the AUR. Cached for an hour.
+    pub fn category_packages(&self, name: &str) -> Vec<Package> {
+        self.category_packages.remember(name, Duration::from_secs(3600), || {
+            let Some(category) = self.categories().into_iter().find(|c| c.name == name) else {
+                return Vec::new();
+            };
+            let wanted: Vec<&str> = category.packages.iter().map(String::as_str).collect();
+            let mut found = self.pacman.by_names(&wanted);
+            let missing: Vec<&str> = wanted.iter().copied().filter(|w| !found.iter().any(|p| p.name == *w)).collect();
+            let from_aur: Vec<Package> = std::thread::scope(|scope| {
+                let handles: Vec<_> = missing
+                    .iter()
+                    .map(|&n| scope.spawn(move || self.aur.search(n).into_iter().find(|p| p.name == n)))
+                    .collect();
+                handles.into_iter().filter_map(|h| h.join().ok().flatten()).collect()
+            });
+            found.extend(from_aur);
+            found
+        })
+    }
+
+    pub fn category_page(&self, name: &str, page: usize, filter: Filter) -> Page {
+        apply_filter(&self.category_packages(name), filter, page, self.settings().search_limit as usize)
+    }
+
+    /// Up to three of the official EndeavourOS tools the system actually has (none on other distros).
+    pub fn essentials(&self) -> Vec<Package> {
+        self.category_packages.remember("\u{0}essentials", Duration::from_secs(3600), || {
+            let found = self.pacman.by_names(&curated::ESSENTIALS);
+            if found.is_empty() {
+                return found;
+            }
+            // Not always the same three: rotate the start once an hour.
+            let hour = std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .map_or(0, |d| d.as_secs() / 3600) as usize;
+            let n = found.len();
+            (0..n.min(3)).map(|i| found[(hour + i) % n].clone()).collect()
+        })
+    }
+
     /// Drop every cache (the settings screen's "Clear Cache").
     pub fn clear_cache(&self) {
         self.searches.clear();
         self.details.clear();
         self.installed.clear();
+        self.categories.clear();
+        self.category_packages.clear();
     }
 
     pub fn command(&self, op: Op, name: &str, source: PackageSource) -> String {
@@ -453,6 +507,50 @@ mod tests {
         let only_flatpak = st.installed_page("", 1, Filter { repo: RepoFilter::Flatpak, sort: SortBy::Relevance });
         assert_eq!(only_flatpak.total, 2);
         st.clear_cache();
+    }
+
+    /// Official repos know every name except those starting with "x-"; the AUR knows exactly those.
+    struct CatFake(bool);
+
+    impl PackageManager for CatFake {
+        fn search(&self, q: &str) -> Vec<Package> {
+            if self.0 && q.starts_with("x-") { vec![pkg(q, "", PackageSource::Aur), pkg("x-other", "", PackageSource::Aur)] } else { vec![] }
+        }
+        fn details(&self, _: &str) -> Option<Details> {
+            None
+        }
+        fn is_installed(&self, _: &str) -> bool {
+            false
+        }
+        fn by_names(&self, names: &[&str]) -> Vec<Package> {
+            names.iter().filter(|n| !n.starts_with("x-")).map(|n| pkg(n, "", PackageSource::Pacman)).collect()
+        }
+        fn install_command(&self, n: &str) -> String {
+            n.into()
+        }
+        fn remove_command(&self, n: &str) -> String {
+            n.into()
+        }
+    }
+
+    #[test]
+    fn category_packages_fall_back_to_exact_aur_matches() {
+        let st = Store::with_managers(Box::new(CatFake(false)), Box::new(CatFake(true)), Box::new(CatFake(false)), Settings::default());
+        // seed the category list so the test never touches the network
+        st.categories.put(
+            "all",
+            vec![Category { name: "T".into(), slug: "t".into(), description_key: "cat_desc_t".into(), packages: vec!["a".into(), "x-b".into(), "x-gone".into()] }],
+            Duration::from_secs(60),
+        );
+        let got = st.category_packages("T");
+        // x-gone is in the AUR fake only as a search hit for itself, so it is found too
+        assert_eq!(names(&got), ["a", "x-b", "x-gone"]);
+        assert_eq!(got[0].source, PackageSource::Pacman);
+        assert_eq!(got[1].source, PackageSource::Aur);
+        assert!(st.category_packages("unknown").is_empty());
+        let page = st.category_page("T", 1, Filter { repo: RepoFilter::Aur, sort: SortBy::Name });
+        assert_eq!((page.total, names(&page.items)), (2, vec!["x-b", "x-gone"]));
+        assert_eq!(page.counts.official, 1);
     }
 
     #[test]

@@ -89,6 +89,10 @@ impl PackageManager for PacmanManager {
         parse_installed(&all.stdout, &foreign)
     }
 
+    fn by_names(&self, names: &[&str]) -> Vec<Package> {
+        self.packages_by_names(names)
+    }
+
     fn install_command(&self, name: &str) -> String {
         format!("sudo pacman -S --noconfirm {}", shell_quote(name))
     }

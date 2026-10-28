@@ -33,6 +33,8 @@ fn main() {
             .qml_file("qml/SettingsSection.qml")
             .qml_file("qml/SettingsPage.qml")
             .qml_file("qml/PackageResults.qml")
+            .qml_file("qml/CategoryTile.qml")
+            .qml_file("qml/HomeView.qml")
             .qml_file("qml/StatusRow.qml")
             .qml_file("qml/SegmentFill.qml")
             .qml_file("qml/Select.qml")

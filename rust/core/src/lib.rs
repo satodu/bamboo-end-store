@@ -3,6 +3,7 @@
 pub mod appimage;
 pub mod aur;
 pub mod cache;
+pub mod curated;
 pub mod flatpak;
 pub mod i18n;
 mod http;
@@ -19,6 +20,7 @@ pub mod theme;
 
 pub use appimage::{AppImage, AppImages};
 pub use aur::AurManager;
+pub use curated::Category;
 pub use flatpak::FlatpakManager;
 pub use manager::PackageManager;
 pub use package::{Details, Package};

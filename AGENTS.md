@@ -36,7 +36,8 @@ the palette, the shapes and motion come from Galdr.
 - **Colour**: only through the `Theme` singleton (`Theme.primary`, `Theme.surfaceContainer`, ...). Never hard-code a
   colour in QML. The palette is Material You: from the desktop file `~/.cache/ryoku/colors.json`, a preset,
   or a custom seed, with a bundled fallback. Depth comes from surface tones and line work, not shadows.
-- **Runes**: real Elder Futhark characters only, each with a meaning (`Style.runes`, `Rune.qml`). Never random
+- **Runes**: real Elder Futhark characters only, each with a meaning (`Style.runes`, `Rune.qml`). Software categories
+  use runes too (`Style.categoryRune`); a category the table does not know gets a stable rune from a hash, never an image. Never random
   glyphs, never emoji. One rune ruler per screen. The Noto Sans Runic font is bundled.
 - **Type**: display titles use Big Shoulders Display (bundled), uppercase, with the full stop in the primary
   colour. Data and captions use the mono font in caps with letter spacing. Body text uses the system sans.
@@ -102,5 +103,4 @@ binary reach `Qt.application.arguments` (the screenshot scripts use this with `g
 
 ## Not done yet
 
-AUR comments, the "Bamboo Installs" tab, the home page with
-categories, system notifications, brand icons for packages. See the git log for what is already ported.
+AUR comments, the "Bamboo Installs" tab, system notifications, brand icons for packages. See the git log for what is already ported.

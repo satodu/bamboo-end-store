@@ -32,6 +32,10 @@ pub mod qobject {
         #[qproperty(QString, settings)]
         /// JSON `{installed, flathub}`: is the flatpak binary there, and is the Flathub remote set up.
         #[qproperty(QString, flatpak)]
+        /// JSON list of curated categories `{name, slug, description_key, packages}`.
+        #[qproperty(QString, categories)]
+        /// JSON list of official EndeavourOS tools found on this system (empty elsewhere).
+        #[qproperty(QString, essentials)]
         type Backend = super::BackendRust;
 
         /// 1-based `page`; the page size is the `search_limit` setting.
@@ -42,6 +46,21 @@ pub mod qobject {
         #[qinvokable]
         #[cxx_name = "loadInstalled"]
         fn load_installed(self: Pin<&mut Backend>, filter: &QString, page: i32);
+
+        /// Fill `categories` (downloads the EndeavourOS list the first time).
+        #[qinvokable]
+        #[cxx_name = "loadCategories"]
+        fn load_categories(self: Pin<&mut Backend>);
+
+        /// Fill `essentials`.
+        #[qinvokable]
+        #[cxx_name = "loadEssentials"]
+        fn load_essentials(self: Pin<&mut Backend>);
+
+        /// A page of one curated category's packages; fills `results`, `total` and `facets`.
+        #[qinvokable]
+        #[cxx_name = "loadCategory"]
+        fn load_category(self: Pin<&mut Backend>, name: &QString, page: i32);
 
         /// Refresh `flatpak` (cheap: a PATH lookup and `flatpak remotes`).
         #[qinvokable]
@@ -149,6 +168,8 @@ pub struct BackendRust {
     details: QString,
     settings: QString,
     flatpak: QString,
+    categories: QString,
+    essentials: QString,
     store: Arc<Store>,
     /// Bumped per search; a slow older search must not overwrite a newer one.
     search_gen: Arc<AtomicU64>,
@@ -171,6 +192,8 @@ impl Default for BackendRust {
             details: QString::from("null"),
             settings: settings_json(&store),
             flatpak: QString::from("{}"),
+            categories: QString::from("[]"),
+            essentials: QString::from("[]"),
             store,
             search_gen: Arc::new(AtomicU64::new(0)),
         }
@@ -297,6 +320,49 @@ impl qobject::Backend {
                     ok,
                     QString::from(&message),
                 );
+            });
+        });
+    }
+
+    fn load_categories(self: Pin<&mut Self>) {
+        let store = self.rust().store.clone();
+        let thread = self.qt_thread();
+        std::thread::spawn(move || {
+            let json = serde_json::to_string(&store.categories()).unwrap_or_else(|_| "[]".into());
+            let _ = thread.queue(move |mut this| this.as_mut().set_categories(QString::from(&json)));
+        });
+    }
+
+    fn load_essentials(self: Pin<&mut Self>) {
+        let store = self.rust().store.clone();
+        let thread = self.qt_thread();
+        std::thread::spawn(move || {
+            let json = serde_json::to_string(&store.essentials()).unwrap_or_else(|_| "[]".into());
+            let _ = thread.queue(move |mut this| this.as_mut().set_essentials(QString::from(&json)));
+        });
+    }
+
+    fn load_category(mut self: Pin<&mut Self>, name: &QString, page: i32) {
+        let store = self.rust().store.clone();
+        let generation = self.rust().search_gen.clone();
+        let mine = generation.fetch_add(1, Ordering::SeqCst) + 1;
+        let name = name.to_string();
+        let filter = self.filter();
+        let thread = self.qt_thread();
+
+        self.as_mut().set_busy(true);
+        std::thread::spawn(move || {
+            let result = store.category_page(&name, page.max(1) as usize, filter);
+            let json = serde_json::to_string(&result.items).unwrap_or_else(|_| "[]".into());
+            let facets = serde_json::to_string(&result.counts).unwrap_or_else(|_| "{}".into());
+            let total = result.total;
+            let _ = thread.queue(move |mut this| {
+                if generation.load(Ordering::SeqCst) == mine {
+                    this.as_mut().set_facets(QString::from(&facets));
+                    this.as_mut().set_total(total as i32);
+                    this.as_mut().set_results(QString::from(&json));
+                    this.as_mut().set_busy(false);
+                }
             });
         });
     }

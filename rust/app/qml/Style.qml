@@ -49,6 +49,34 @@ QtObject {
     })
     function rune(name) { return runes[name] || runes["default"] }
 
+    // One rune per curated software category, chosen by its meaning. Real Elder Futhark characters.
+    readonly property var categoryRunes: ({
+        "browsers": "ᚱ",                        // Raido, the journey
+        "image_viewers_and_managers": "ᛊ",      // Sowilo, the sun: light
+        "image_processing_and_editing": "ᛃ",    // Jera, the turning year: transformation
+        "torrent_clients": "ᚷ",                 // Gebo, the gift: sharing
+        "communications": "ᛗ",                  // Mannaz, humanity
+        "email": "ᛖ",                           // Ehwaz, the horse: the carrier
+        "audio_players": "ᛚ",                   // Laguz, water: flow
+        "video_players": "ᚹ",                   // Wunjo, joy
+        "development_tools": "ᛜ",               // Ingwaz, the seed: making
+        "text_editors": "ᚨ",                    // Ansuz, the message: text
+        "office": "ᛞ",                          // Dagaz, the day: work
+        "personal_security": "ᛉ",               // Algiz, protection
+        "math": "ᚺ",                            // Hagalaz, hail: crystalline order
+        "personal_finance": "ᚠ",                // Fehu, wealth
+        "pdf_viewers": "ᛟ",                     // Othala, heritage: the archive
+        "misc_system_tools": "ᚦ"                // Thurisaz, the thorn: the tool
+    })
+    // A category the table does not know still gets a real rune, always the same one for it.
+    function categoryRune(slug) {
+        const known = categoryRunes[slug]
+        if (known) return known
+        let h = 0
+        for (let i = 0; i < slug.length; i++) h = (h * 31 + slug.charCodeAt(i)) % futhark.length
+        return futhark.charAt(h)
+    }
+
     // The 24 runes of the Elder Futhark, for the ring.
     readonly property string futhark: "ᚠᚢᚦᚨᚱᚲᚷᚹᚺᚾᛁᛃᛇᛈᛉᛊᛏᛒᛖᛗᛚᛜᛞᛟ"
 }

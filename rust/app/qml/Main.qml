@@ -149,4 +149,5 @@ ApplicationWindow {
     // Used by the screenshot harness.
     function runSearch(q) { explore.runSearch(q) }
     function openFirst() { explore.openFirst() }
+    function openCategory(name) { explore.openCategory(name) }
 }
