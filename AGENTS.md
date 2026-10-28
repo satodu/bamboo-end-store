@@ -31,6 +31,8 @@ the palette, the shapes and motion come from Galdr.
 - **Shape**: panels, buttons, tags and fields have two 45 degree chamfered corners (top-right and bottom-left),
   a 1 px hairline, a 2 px "fillet" for active/focus rules. Never rounded corners, never drop shadows. Use
   `ChamferPanel`, `Btn`, `Tag`, `Field`, `Select`, `Toggle`, `Segmented`; do not draw ad-hoc rectangles for these.
+  A fill inside a chamfered container (an active segment, a highlighted dropdown row) must use `SegmentFill`, cut at the
+  container's chamfered corners; a plain `Rectangle` pokes out over the corner and the outline.
 - **Colour**: only through the `Theme` singleton (`Theme.primary`, `Theme.surfaceContainer`, ...). Never hard-code a
   colour in QML. The palette is Material You: from the desktop file `~/.cache/ryoku/colors.json`, a preset,
   or a custom seed, with a bundled fallback. Depth comes from surface tones and line work, not shadows.
@@ -61,8 +63,7 @@ the palette, the shapes and motion come from Galdr.
   (own results and busy state); the `Store` underneath is shared, and so are its caches.
 - Register every new QML file in `rust/app/build.rs`.
 - **Layouts must adapt to the window, up to full screen.** No fixed page widths. Grids add columns as the window grows
-  (`PackageResults`, `AppImagesPage`). List rows are capped (about 820 px) so an action button stays next to the name it
-  belongs to. Settings flows into 1, 2 or 3 columns (`SettingsPage.columnPlan`); wide controls use
+  (`PackageResults`, `AppImagesPage`). List mode flows into 1, 2 or 3 columns of rows (`PackageResults`, `AppImagesPage`) so an action button stays next to the name it belongs to instead of sitting at the far edge of a wide window. Settings flows into 1, 2 or 3 columns (`SettingsPage.columnPlan`); wide controls use
   `SettingRow { stacked: true }`. Check new screens at 1280, 1400 and 1920 px wide.
 
 ## Rust rules

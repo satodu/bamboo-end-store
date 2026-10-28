@@ -179,12 +179,15 @@ Item {
                 }
             }
 
-            ListView {
+            GridView {
                 id: list
                 anchors.fill: parent
                 clip: true
                 visible: root.viewMode === "list" && root.apps.length > 0
                 model: root.viewMode === "list" ? root.apps : []
+                readonly property int columns: Math.max(1, Math.min(3, Math.floor(width / 620)))
+                cellWidth: Math.floor(width / columns)
+                cellHeight: 64
                 boundsBehavior: Flickable.StopAtBounds
                 ScrollBar.vertical: ScrollBar {}
 
@@ -192,13 +195,13 @@ Item {
                     id: rowItem
                     required property var modelData
                     required property int index
-                    width: list.width
-                    height: 64
+                    width: list.cellWidth
+                    height: list.cellHeight
                     Reveal {
-                        width: Math.min(rowItem.width, 820)
+                        width: rowItem.width - 14
                         height: rowItem.height
-                        autoPlay: rowItem.index < 14
-                        delay: Math.min(rowItem.index, 13) * 24
+                        autoPlay: rowItem.index < 20
+                        delay: Math.min(rowItem.index, 19) * 20
                         slide: 6
                         AppImageRow {
                             anchors.fill: parent

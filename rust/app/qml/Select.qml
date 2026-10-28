@@ -117,18 +117,24 @@ Item {
                         delegate: Item {
                             id: row
                             required property var modelData
+                            required property int index
                             readonly property bool on: root.current === modelData.value
                             width: list.width
                             height: 38
 
-                            Rectangle {
+                            SegmentFill {
+                                id: fill
                                 anchors.fill: parent
                                 color: row.on ? Theme.secondaryContainer : rowMouse.containsMouse ? Theme.surfaceContainerHighest : "transparent"
+                                cutTR: row.index === 0 ? fill.inset : 0
+                                cutBL: row.index === root.options.length - 1 ? fill.inset : 0
                                 Behavior on color { ColorAnimation { duration: Style.quick } }
                             }
                             Rectangle {
+                                // stays inside the chamfered bottom-left corner on the last row
+                                y: row.index === root.options.length - 1 ? fill.inset : 0
                                 width: Style.fillet
-                                height: row.on ? parent.height : 0
+                                height: row.on ? parent.height - y : 0
                                 color: Theme.primary
                             }
                             Text {

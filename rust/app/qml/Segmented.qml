@@ -34,9 +34,12 @@ Item {
                 width: Math.max(64, label.implicitWidth + 28)
                 height: row.height
 
-                Rectangle {
+                SegmentFill {
+                    id: fill
                     anchors.fill: parent
                     color: seg.on ? Theme.primary : segMouse.containsMouse ? Theme.surfaceContainerHigh : "transparent"
+                    cutBL: seg.index === 0 ? fill.inset : 0
+                    cutTR: seg.index === root.options.length - 1 ? fill.inset : 0
                     Behavior on color { ColorAnimation { duration: Style.quick } }
                 }
                 Text {
