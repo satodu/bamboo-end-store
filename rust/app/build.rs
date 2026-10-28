@@ -32,6 +32,8 @@ fn main() {
             .qml_file("qml/SettingRow.qml")
             .qml_file("qml/SettingsSection.qml")
             .qml_file("qml/SettingsPage.qml")
+            .qml_file("qml/Select.qml")
+            .qml_file("qml/FilterBar.qml")
             .qml_file("qml/Confirm.qml")
             .qml_file("qml/AppImageCard.qml")
             .qml_file("qml/AppImageRow.qml")

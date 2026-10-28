@@ -68,6 +68,17 @@ Item {
                 }
             }
 
+            FilterBar {
+                Layout.fillWidth: true
+                repo: backend.repo
+                sort: backend.sort
+                facets: JSON.parse(backend.facets)
+                aur: root.appSettings.enable_aur !== false
+                flatpak: !!root.appSettings.enable_flatpak
+                onRepoPicked: v => { backend.repo = v; root.page = 1; root.reload() }
+                onSortPicked: v => { backend.sort = v; root.page = 1; root.reload() }
+            }
+
             Item {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
@@ -111,7 +122,9 @@ Item {
                     width: Math.min(parent.width - 40, 420)
                     height: Math.min(parent.height - 40, 320)
                     visible: root.packages.length === 0 && !backend.busy
-                    caption: filter.text.length ? Tr.t("FIG. — NO MATCH.") : Tr.t("FIG. — NO SHARD.")
+                    caption: filter.text.length || backend.repo !== "all" ? Tr.t("FIG. — NO MATCH.") : Tr.t("FIG. — NO SHARD.")
+                    actionText: backend.repo !== "all" ? Tr.t("Reset filters") : ""
+                    onAction: { backend.repo = "all"; root.page = 1; root.reload() }
                 }
             }
 

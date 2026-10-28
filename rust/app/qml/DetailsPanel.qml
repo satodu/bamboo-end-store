@@ -80,15 +80,16 @@ Item {
 
                 Rectangle { Layout.fillWidth: true; height: 1; color: Theme.outlineVariant }
 
+                // Label above value: translated labels are long, values (dates, sizes) are wide.
                 Repeater {
                     model: root.fields
-                    delegate: RowLayout {
+                    delegate: ColumnLayout {
                         id: fieldRow
                         required property string modelData
                         readonly property string value: root.info ? (root.info[modelData] || "") : ""
                         Layout.fillWidth: true
                         visible: value.length > 0
-                        spacing: 10
+                        spacing: 2
 
                         Text {
                             text: Tr.t(fieldRow.modelData)
@@ -97,7 +98,6 @@ Item {
                             font.pixelSize: 10
                             font.letterSpacing: 1.5
                             font.capitalization: Font.AllUppercase
-                            Layout.preferredWidth: 104
                         }
                         TypedText {
                             Layout.fillWidth: true

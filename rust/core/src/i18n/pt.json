@@ -290,5 +290,6 @@
   "%s failed: %s": "%s falhou: %s",
   "Licenses": "Licenças",
   "Installed Size": "Tamanho instalado",
-  "Download Size": "Tamanho do download"
+  "Download Size": "Tamanho do download",
+  "Reset filters": "Limpar filtros"
 }

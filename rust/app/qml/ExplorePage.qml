@@ -19,6 +19,18 @@ Item {
     readonly property int pageCount: Math.max(1, Math.ceil(backend.total / pageSize))
 
     function runSearch(q) { field.text = q }
+    function research() { root.page = 1; if (field.text.length) backend.search(field.text, 1) }
+    // A filter for a repository that was just turned off in Settings would hide everything.
+    Connections {
+        target: root
+        function onAppSettingsChanged() {
+            if ((backend.repo === "aur" && !root.appSettings.enable_aur)
+                    || (backend.repo === "flatpak" && !root.appSettings.enable_flatpak)) {
+                backend.repo = "all"
+            }
+            root.research()
+        }
+    }
     // Automation hook (screenshot harness): open the first result.
     function openFirst() {
         if (packages.length === 0) return
@@ -74,6 +86,17 @@ Item {
                 }
             }
 
+            FilterBar {
+                Layout.fillWidth: true
+                repo: backend.repo
+                sort: backend.sort
+                facets: JSON.parse(backend.facets)
+                aur: root.appSettings.enable_aur !== false
+                flatpak: !!root.appSettings.enable_flatpak
+                onRepoPicked: v => { backend.repo = v; root.research() }
+                onSortPicked: v => { backend.sort = v; root.research() }
+            }
+
             Item {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
@@ -121,6 +144,8 @@ Item {
                     height: Math.min(parent.height - 40, 320)
                     visible: root.packages.length === 0 && !backend.busy
                     caption: field.text.length ? Tr.t("FIG. — NO PACKAGE.") : Tr.t("FIG. — AWAITING QUERY.")
+                    actionText: field.text.length && backend.repo !== "all" ? Tr.t("Reset filters") : ""
+                    onAction: { backend.repo = "all"; root.research() }
                 }
             }
 

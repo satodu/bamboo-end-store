@@ -80,8 +80,10 @@ Item {
                 SettingRow {
                     title: Tr.t("Search Results Limit")
                     description: Tr.t("Packages per page; lower is faster.")
-                    Segmented {
-                        options: [{ label: "25", value: 25 }, { label: "50", value: 50 }, { label: "100", value: 100 }]
+                    Select {
+                        width: 160
+                        options: [{ label: Tr.f("%s results", 25), value: 25 }, { label: Tr.f("%s results", 50), value: 50 },
+                                  { label: Tr.f("%s results", 100), value: 100 }]
                         current: root.s.search_limit
                         onActivated: v => root.set("search_limit", v)
                     }
@@ -96,9 +98,10 @@ Item {
                 SettingRow {
                     title: Tr.t("Language")
                     description: Tr.t("Choose your interface language.")
-                    Segmented {
+                    Select {
+                        width: 220
                         // Language names are written in their own language, never translated.
-                        options: [{ label: Tr.t("System"), value: "system" }, { label: "Português", value: "pt" },
+                        options: [{ label: Tr.t("System Default"), value: "system" }, { label: "Português", value: "pt" },
                                   { label: "English", value: "en" }, { label: "Español", value: "es" },
                                   { label: "Русский", value: "ru" }]
                         current: root.s.locale
@@ -241,7 +244,8 @@ Item {
                     visible: root.s.auto_close_terminal
                     title: Tr.t("Close Delay")
                     description: Tr.t("Countdown before the terminal window closes.")
-                    Segmented {
+                    Select {
+                        width: 140
                         options: [{ label: Tr.f("%s s", 5), value: 5 }, { label: Tr.f("%s s", 10), value: 10 }, { label: Tr.f("%s s", 15), value: 15 }, { label: Tr.f("%s s", 30), value: 30 }]
                         current: root.s.terminal_close_delay
                         onActivated: v => root.set("terminal_close_delay", v)

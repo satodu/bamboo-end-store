@@ -26,6 +26,6 @@ pub use pacman::PacmanManager;
 pub use cache::TtlCache;
 pub use settings::Settings;
 pub use source::PackageSource;
-pub use store::{Op, OpOutcome, Store};
+pub use store::{apply_filter, Counts, Filter, Op, OpOutcome, Page, RepoFilter, SortBy, Store};
 pub use terminal::TerminalJob;
 pub use state::{UserState, UserStateMachine};

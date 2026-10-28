@@ -10,6 +10,107 @@ use crate::{AurManager, Details, FlatpakManager, Package, PacmanManager, Package
 const SEARCH_TTL: Duration = Duration::from_secs(300);
 const DETAILS_TTL: Duration = Duration::from_secs(600);
 
+/// Which repositories a result list shows. `Official` is everything that is neither AUR nor Flatpak.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub enum RepoFilter {
+    #[default]
+    All,
+    Official,
+    Aur,
+    Flatpak,
+}
+
+impl RepoFilter {
+    pub fn parse(s: &str) -> Self {
+        match s {
+            "official" => Self::Official,
+            "aur" => Self::Aur,
+            "flatpak" => Self::Flatpak,
+            _ => Self::All,
+        }
+    }
+
+    fn matches(self, p: &Package) -> bool {
+        match self {
+            Self::All => true,
+            Self::Official => p.source == PackageSource::Pacman,
+            Self::Aur => p.source == PackageSource::Aur,
+            Self::Flatpak => p.source == PackageSource::Flatpak,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub enum SortBy {
+    /// The order the sources returned: official, then AUR, then Flatpak.
+    #[default]
+    Relevance,
+    Name,
+}
+
+impl SortBy {
+    pub fn parse(s: &str) -> Self {
+        if s == "name" { Self::Name } else { Self::Relevance }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub struct Filter {
+    pub repo: RepoFilter,
+    pub sort: SortBy,
+}
+
+impl Filter {
+    pub fn parse(repo: &str, sort: &str) -> Self {
+        Self { repo: RepoFilter::parse(repo), sort: SortBy::parse(sort) }
+    }
+}
+
+/// How many results each repository filter would show for the current query.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, serde::Serialize)]
+pub struct Counts {
+    pub all: usize,
+    pub official: usize,
+    pub aur: usize,
+    pub flatpak: usize,
+}
+
+/// One page of a filtered, sorted list.
+#[derive(Debug, Clone, PartialEq, Eq, Default)]
+pub struct Page {
+    /// Items matching the filter, across all pages.
+    pub total: usize,
+    pub items: Vec<Package>,
+    /// Counts before the repository filter is applied, for the filter chips.
+    pub counts: Counts,
+}
+
+fn sort_key(p: &Package) -> String {
+    if p.display_name.is_empty() { p.name.to_lowercase() } else { p.display_name.to_lowercase() }
+}
+
+/// Filter by repository, sort, then cut out page `page` (1-based) of `limit` items.
+pub fn apply_filter(all: &[Package], filter: Filter, page: usize, limit: usize) -> Page {
+    let count = |f: RepoFilter| all.iter().filter(|p| f.matches(p)).count();
+    let counts = Counts {
+        all: all.len(),
+        official: count(RepoFilter::Official),
+        aur: count(RepoFilter::Aur),
+        flatpak: count(RepoFilter::Flatpak),
+    };
+    let mut kept: Vec<&Package> = all.iter().filter(|p| filter.repo.matches(p)).collect();
+    if filter.sort == SortBy::Name {
+        kept.sort_by_cached_key(|p| sort_key(p));
+    }
+    let limit = limit.max(1);
+    let start = page.saturating_sub(1).saturating_mul(limit);
+    Page {
+        total: kept.len(),
+        items: kept.into_iter().skip(start).take(limit).cloned().collect(),
+        counts,
+    }
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Op {
     Install,
@@ -114,27 +215,22 @@ impl Store {
         })
     }
 
-    /// One page of `search`, 1-based, `search_limit` items per page. Returns `(total, items)`.
-    pub fn search_page(&self, query: &str, page: usize) -> (usize, Vec<Package>) {
+    /// One page of `search` after filtering and sorting; the page size is `search_limit`.
+    pub fn search_page(&self, query: &str, page: usize, filter: Filter) -> Page {
         let all = self.search(query);
-        let limit = (self.settings().search_limit as usize).max(1);
-        let start = page.saturating_sub(1).saturating_mul(limit);
-        let items = all.iter().skip(start).take(limit).cloned().collect();
-        (all.len(), items)
+        apply_filter(&all, filter, page, self.settings().search_limit as usize)
     }
 
     /// Installed packages: pacman and AUR (foreign) plus Flatpaks, cached for a minute. A non-empty
-    /// `filter` keeps names containing it (case-insensitive). Returns `(total, page items)`.
-    pub fn installed_page(&self, filter: &str, page: usize) -> (usize, Vec<Package>) {
+    /// `text` keeps names containing it (case-insensitive), then `filter` is applied.
+    pub fn installed_page(&self, text: &str, page: usize, filter: Filter) -> Page {
         let all = self.installed.remember("all", Duration::from_secs(60), || self.collect_installed());
-        let needle = filter.trim().to_lowercase();
-        let matching: Vec<&Package> = all
-            .iter()
+        let needle = text.trim().to_lowercase();
+        let matching: Vec<Package> = all
+            .into_iter()
             .filter(|p| needle.is_empty() || p.name.to_lowercase().contains(&needle) || p.display_name.to_lowercase().contains(&needle))
             .collect();
-        let limit = (self.settings().search_limit as usize).max(1);
-        let start = page.saturating_sub(1).saturating_mul(limit);
-        (matching.len(), matching.into_iter().skip(start).take(limit).cloned().collect())
+        apply_filter(&matching, filter, page, self.settings().search_limit as usize)
     }
 
     fn collect_installed(&self) -> Vec<Package> {
@@ -186,6 +282,16 @@ mod tests {
 
     struct Fake(&'static str, usize);
 
+    impl Fake {
+        fn source(&self) -> PackageSource {
+            match self.0 {
+                "aur" => PackageSource::Aur,
+                "flatpak" => PackageSource::Flatpak,
+                _ => PackageSource::Pacman,
+            }
+        }
+    }
+
     impl PackageManager for Fake {
         fn search(&self, _: &str) -> Vec<Package> {
             (0..self.1)
@@ -195,7 +301,7 @@ mod tests {
                     display_name: String::new(),
                     version: "1".into(),
                     description: String::new(),
-                    source: PackageSource::Pacman,
+                    source: self.source(),
                     installed: false,
                 })
                 .collect()
@@ -244,25 +350,90 @@ mod tests {
     fn pages_slice_the_full_result() {
         let s = Settings { enable_flatpak: true, search_limit: 4, ..Settings::default() };
         let st = store(s);
-        let (total, first) = st.search_page("x", 1);
-        assert_eq!((total, names(&first)), (6, vec!["pacman-0", "pacman-1", "aur-0", "aur-1"]));
-        let (_, second) = st.search_page("x", 2);
-        assert_eq!(names(&second), ["flatpak-0", "flatpak-1"]);
-        assert!(st.search_page("x", 3).1.is_empty());
-        assert_eq!(st.search_page("x", 0).1.len(), 4, "page 0 behaves like page 1");
+        let first = st.search_page("x", 1, Filter::default());
+        assert_eq!((first.total, names(&first.items)), (6, vec!["pacman-0", "pacman-1", "aur-0", "aur-1"]));
+        let second = st.search_page("x", 2, Filter::default());
+        assert_eq!(names(&second.items), ["flatpak-0", "flatpak-1"]);
+        assert!(st.search_page("x", 3, Filter::default()).items.is_empty());
+        assert_eq!(st.search_page("x", 0, Filter::default()).items.len(), 4, "page 0 behaves like page 1");
+    }
+
+    fn pkg(name: &str, display: &str, source: PackageSource) -> Package {
+        Package {
+            repo: String::new(),
+            name: name.into(),
+            display_name: display.into(),
+            version: String::new(),
+            description: String::new(),
+            source,
+            installed: false,
+        }
+    }
+
+    fn mixed() -> Vec<Package> {
+        vec![
+            pkg("zsh", "", PackageSource::Pacman),
+            pkg("Bash", "", PackageSource::Pacman),
+            pkg("yay", "", PackageSource::Aur),
+            pkg("org.mozilla.firefox", "Firefox", PackageSource::Flatpak),
+            pkg("org.gimp.GIMP", "GIMP", PackageSource::Flatpak),
+        ]
+    }
+
+    #[test]
+    fn repo_filters_match_the_old_app() {
+        let all = mixed();
+        let page = |repo| apply_filter(&all, Filter { repo, sort: SortBy::Relevance }, 1, 50);
+        assert_eq!(names(&page(RepoFilter::All).items), ["zsh", "Bash", "yay", "org.mozilla.firefox", "org.gimp.GIMP"]);
+        assert_eq!(names(&page(RepoFilter::Official).items), ["zsh", "Bash"]);
+        assert_eq!(names(&page(RepoFilter::Aur).items), ["yay"]);
+        assert_eq!(page(RepoFilter::Flatpak).total, 2);
+    }
+
+    #[test]
+    fn counts_ignore_the_repo_filter() {
+        let all = mixed();
+        let p = apply_filter(&all, Filter { repo: RepoFilter::Aur, sort: SortBy::Relevance }, 1, 50);
+        assert_eq!(p.counts, Counts { all: 5, official: 2, aur: 1, flatpak: 2 });
+        assert_eq!(p.total, 1);
+    }
+
+    #[test]
+    fn name_sort_is_case_insensitive_and_uses_the_display_name() {
+        let all = mixed();
+        let p = apply_filter(&all, Filter { repo: RepoFilter::All, sort: SortBy::Name }, 1, 50);
+        // Bash, Firefox, GIMP, yay, zsh
+        assert_eq!(names(&p.items), ["Bash", "org.mozilla.firefox", "org.gimp.GIMP", "yay", "zsh"]);
+    }
+
+    #[test]
+    fn filter_then_sort_then_page() {
+        let all = mixed();
+        let f = Filter { repo: RepoFilter::Flatpak, sort: SortBy::Name };
+        let p1 = apply_filter(&all, f, 1, 1);
+        assert_eq!((p1.total, names(&p1.items)), (2, vec!["org.mozilla.firefox"]));
+        assert_eq!(names(&apply_filter(&all, f, 2, 1).items), ["org.gimp.GIMP"]);
+    }
+
+    #[test]
+    fn parsing_unknown_values_means_no_filter() {
+        assert_eq!(Filter::parse("aur", "name"), Filter { repo: RepoFilter::Aur, sort: SortBy::Name });
+        assert_eq!(Filter::parse("???", ""), Filter::default());
     }
 
     #[test]
     fn installed_merges_filters_and_pages() {
         let s = Settings { search_limit: 3, ..Settings::default() };
         let st = store(s);
-        let (total, first) = st.installed_page("", 1);
+        let first = st.installed_page("", 1, Filter::default());
         // pacman (which already covers AUR) + flatpak; the AUR manager is not queried separately
-        assert_eq!((total, first.len()), (4, 3));
-        assert!(first.iter().all(|p| p.installed));
-        assert_eq!(st.installed_page("", 2).1.len(), 1);
-        let (total, hits) = st.installed_page("FLAT", 1);
-        assert_eq!((total, names(&hits)), (2, vec!["flatpak-0", "flatpak-1"]));
+        assert_eq!((first.total, first.items.len()), (4, 3));
+        assert!(first.items.iter().all(|p| p.installed));
+        assert_eq!(st.installed_page("", 2, Filter::default()).items.len(), 1);
+        let hits = st.installed_page("FLAT", 1, Filter::default());
+        assert_eq!((hits.total, names(&hits.items)), (2, vec!["flatpak-0", "flatpak-1"]));
+        let only_flatpak = st.installed_page("", 1, Filter { repo: RepoFilter::Flatpak, sort: SortBy::Relevance });
+        assert_eq!(only_flatpak.total, 2);
         st.clear_cache();
     }
 

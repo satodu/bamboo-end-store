@@ -3,7 +3,7 @@ use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::{Arc, OnceLock};
 
-use bamboo_core::{AppImages, Op, OpOutcome, PackageSource, Settings, Store};
+use bamboo_core::{AppImages, Filter, Op, OpOutcome, PackageSource, Settings, Store};
 use cxx_qt::{CxxQtType, Threading};
 use cxx_qt_lib::QString;
 
@@ -20,6 +20,12 @@ pub mod qobject {
         #[qml_element]
         #[qproperty(bool, busy)]
         #[qproperty(i32, total)]
+        /// Repository filter for search and installed lists: all, official, aur or flatpak.
+        #[qproperty(QString, repo)]
+        /// `relevance` or `name`.
+        #[qproperty(QString, sort)]
+        /// JSON `{all, official, aur, flatpak}`: how many results each repo filter would show.
+        #[qproperty(QString, facets)]
         #[qproperty(QString, results)]
         #[qproperty(QString, details)]
         /// The settings as JSON; changes after every successful `setSetting`.
@@ -119,6 +125,9 @@ fn file_name(p: &Path) -> String {
 pub struct BackendRust {
     busy: bool,
     total: i32,
+    repo: QString,
+    sort: QString,
+    facets: QString,
     results: QString,
     details: QString,
     settings: QString,
@@ -137,6 +146,9 @@ impl Default for BackendRust {
         Self {
             busy: false,
             total: 0,
+            repo: QString::from("all"),
+            sort: QString::from("relevance"),
+            facets: QString::from("{}"),
             results: QString::from("[]"),
             details: QString::from("null"),
             settings: settings_json(&store),
@@ -151,19 +163,28 @@ fn parse_source(s: &QString) -> Option<PackageSource> {
 }
 
 impl qobject::Backend {
+    /// The repo/sort the UI has picked, as the core's filter type.
+    fn filter(&self) -> Filter {
+        Filter::parse(&self.rust().repo.to_string(), &self.rust().sort.to_string())
+    }
+
     fn search(mut self: Pin<&mut Self>, query: &QString, page: i32) {
         let store = self.rust().store.clone();
         let generation = self.rust().search_gen.clone();
         let mine = generation.fetch_add(1, Ordering::SeqCst) + 1;
         let query = query.to_string();
+        let filter = self.filter();
         let thread = self.qt_thread();
 
         self.as_mut().set_busy(true);
         std::thread::spawn(move || {
-            let (total, items) = store.search_page(&query, page.max(1) as usize);
-            let json = serde_json::to_string(&items).unwrap_or_else(|_| "[]".into());
+            let result = store.search_page(&query, page.max(1) as usize, filter);
+            let json = serde_json::to_string(&result.items).unwrap_or_else(|_| "[]".into());
+            let facets = serde_json::to_string(&result.counts).unwrap_or_else(|_| "{}".into());
+            let total = result.total;
             let _ = thread.queue(move |mut this| {
                 if generation.load(Ordering::SeqCst) == mine {
+                    this.as_mut().set_facets(QString::from(&facets));
                     this.as_mut().set_total(total as i32);
                     this.as_mut().set_results(QString::from(&json));
                     this.as_mut().set_busy(false);
@@ -176,15 +197,19 @@ impl qobject::Backend {
         let store = self.rust().store.clone();
         let generation = self.rust().search_gen.clone();
         let mine = generation.fetch_add(1, Ordering::SeqCst) + 1;
-        let filter = filter.to_string();
+        let text = filter.to_string();
+        let filter = self.filter();
         let thread = self.qt_thread();
 
         self.as_mut().set_busy(true);
         std::thread::spawn(move || {
-            let (total, items) = store.installed_page(&filter, page.max(1) as usize);
-            let json = serde_json::to_string(&items).unwrap_or_else(|_| "[]".into());
+            let result = store.installed_page(&text, page.max(1) as usize, filter);
+            let json = serde_json::to_string(&result.items).unwrap_or_else(|_| "[]".into());
+            let facets = serde_json::to_string(&result.counts).unwrap_or_else(|_| "{}".into());
+            let total = result.total;
             let _ = thread.queue(move |mut this| {
                 if generation.load(Ordering::SeqCst) == mine {
+                    this.as_mut().set_facets(QString::from(&facets));
                     this.as_mut().set_total(total as i32);
                     this.as_mut().set_results(QString::from(&json));
                     this.as_mut().set_busy(false);
