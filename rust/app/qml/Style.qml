@@ -88,6 +88,7 @@ QtObject {
     })
     function iconFor(pkg) {
         if (!pkg || !pkg.name) return ""
+        if (pkg.icon_url) return pkg.icon_url
         if (pkg.source === "custom") return customIcons[pkg.name] || ""
         if (pkg.source === "flatpak") {
             // Runtimes and extensions have no icon on Flathub.

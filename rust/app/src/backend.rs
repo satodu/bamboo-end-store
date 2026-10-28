@@ -245,7 +245,7 @@ impl qobject::Backend {
         self.as_mut().set_busy(true);
         std::thread::spawn(move || {
             let result = store.search_page(&query, page.max(1) as usize, filter);
-            let json = serde_json::to_string(&result.items).unwrap_or_else(|_| "[]".into());
+            let json = bamboo_core::icons::packages_json(&result.items);
             let facets = serde_json::to_string(&result.counts).unwrap_or_else(|_| "{}".into());
             let total = result.total;
             let _ = thread.queue(move |mut this| {
@@ -270,7 +270,7 @@ impl qobject::Backend {
         self.as_mut().set_busy(true);
         std::thread::spawn(move || {
             let result = store.installed_page(&text, page.max(1) as usize, filter);
-            let json = serde_json::to_string(&result.items).unwrap_or_else(|_| "[]".into());
+            let json = bamboo_core::icons::packages_json(&result.items);
             let facets = serde_json::to_string(&result.counts).unwrap_or_else(|_| "{}".into());
             let total = result.total;
             let _ = thread.queue(move |mut this| {
@@ -357,7 +357,7 @@ impl qobject::Backend {
         self.as_mut().set_busy(true);
         std::thread::spawn(move || {
             let items = store.bamboo_installs();
-            let json = serde_json::to_string(&items).unwrap_or_else(|_| "[]".into());
+            let json = bamboo_core::icons::packages_json(&items);
             let total = items.len();
             let _ = thread.queue(move |mut this| {
                 if generation.load(Ordering::SeqCst) == mine {
@@ -400,7 +400,7 @@ impl qobject::Backend {
         let store = self.rust().store.clone();
         let thread = self.qt_thread();
         std::thread::spawn(move || {
-            let json = serde_json::to_string(&store.essentials()).unwrap_or_else(|_| "[]".into());
+            let json = bamboo_core::icons::packages_json(&store.essentials());
             let _ = thread.queue(move |mut this| this.as_mut().set_essentials(QString::from(&json)));
         });
     }
@@ -416,7 +416,7 @@ impl qobject::Backend {
         self.as_mut().set_busy(true);
         std::thread::spawn(move || {
             let result = store.category_page(&name, page.max(1) as usize, filter);
-            let json = serde_json::to_string(&result.items).unwrap_or_else(|_| "[]".into());
+            let json = bamboo_core::icons::packages_json(&result.items);
             let facets = serde_json::to_string(&result.counts).unwrap_or_else(|_| "{}".into());
             let total = result.total;
             let _ = thread.queue(move |mut this| {

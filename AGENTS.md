@@ -76,6 +76,9 @@ the palette, the shapes and motion come from Galdr.
   `rust/core/tests/fixtures/`.
 - **Tests never touch the user's real data.** Directories are injected (`AppImageDirs`), tests use temp dirs and a fake
   AppImage, and any run that writes settings sets `XDG_CONFIG_HOME` (and `XDG_DATA_HOME`) to a scratch directory.
+- Package icons: `Style.iconFor` in QML (bundled brands, Flathub for Flatpaks, `pkg.icon_url`), and `core::icons` (installed `.desktop`
+  files and the hicolor theme first, then the PHP app's Flathub table, and a *strict* Flathub search in the details view only; a search
+  hit must really be that package, the old app took the first one).
 - Settings keep the PHP app's key names and defaults so an old `settings.json` loads unchanged. Unknown keys are kept.
 - Matugen: the app generates palettes in-process (`material-colors`) and never runs the `matugen` binary. If that ever
   changes, it must use `--dry-run` and an empty config: Matugen with the user's config re-themes the whole desktop.
@@ -109,4 +112,6 @@ binary reach `Qt.application.arguments` (the screenshot scripts use this with `g
 
 ## Not done yet
 
-system notifications, brand icons for installed pacman and AUR packages (Flatpak and Bamboo Installs have them). See the git log for what is already ported.
+The PHP app's features are all ported. What is left is polish: icons for the installed pacman and AUR apps whose icon lives in a theme
+other than hicolor (they fall back to a letter tile), a tray icon, and removing the legacy PHP/Electron code once the Rust app has been
+used for a while. See the git log for what is already ported.

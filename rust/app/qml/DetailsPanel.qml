@@ -44,7 +44,12 @@ Item {
                     Layout.topMargin: 6
                     spacing: 12
 
-                    PackageIcon { name: root.pkg.display_name || root.pkg.name || ""; source: Style.iconFor(root.pkg); size: 52 }
+                    PackageIcon {
+                        name: root.pkg.display_name || root.pkg.name || ""
+                        // the list already knew an icon, or the details view found one on Flathub
+                        source: Style.iconFor(root.pkg) || (root.info && root.info.icon_url ? root.info.icon_url : "")
+                        size: 52
+                    }
                     Text {
                         Layout.fillWidth: true
                         text: root.pkg.display_name || root.pkg.name || ""

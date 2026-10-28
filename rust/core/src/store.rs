@@ -252,7 +252,28 @@ impl Store {
 
     pub fn details(&self, name: &str, source: PackageSource) -> Option<Details> {
         let key = format!("{source}:{name}");
-        self.details.remember(&key, DETAILS_TTL, || self.manager(source).details(name))
+        self.details.remember(&key, DETAILS_TTL, || {
+            let mut details = self.manager(source).details(name)?;
+            if matches!(source, PackageSource::Pacman | PackageSource::Aur) {
+                // local icon, then the Flathub table, then (details only) a strict Flathub search
+                let probe = Package {
+                    repo: String::new(),
+                    name: name.to_owned(),
+                    display_name: String::new(),
+                    version: String::new(),
+                    description: String::new(),
+                    source,
+                    installed: false,
+                };
+                let url = Some(crate::icons::icon_url(&probe))
+                    .filter(|u| !u.is_empty())
+                    .or_else(|| crate::icons::remote_icon_url(name));
+                if let Some(url) = url {
+                    details.insert("icon_url".into(), url);
+                }
+            }
+            Some(details)
+        })
     }
 
     /// AUR comments for a package, cached for half an hour. `None` means the page could not be loaded.

@@ -8,6 +8,7 @@ pub mod comments;
 pub mod curated;
 pub mod flatpak;
 pub mod i18n;
+pub mod icons;
 mod http;
 mod manager;
 mod package;
