@@ -219,6 +219,7 @@ Item {
                 pkg: root.current
                 info: root.info
                 comments: JSON.parse(backend.comments)
+                commands: JSON.parse(backend.consoleCommands(root.current.name, root.current.source))
                 onCommentsRequested: backend.loadComments(root.current.name)
                 status: root.status
                 busy: backend.busy

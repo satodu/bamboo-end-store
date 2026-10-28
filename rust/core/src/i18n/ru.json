@@ -304,5 +304,6 @@
   "Loading comments...": "Загрузка комментариев...",
   "Developer and EndeavourOS fan. Built to enhance the Linux experience.": "Разработчик и фанат EndeavourOS. Создано для улучшения работы в Linux.",
   "Notifications": "Уведомления",
-  "Show a desktop notification when an install, removal or update finishes.": "Показывать уведомление на рабочем столе, когда установка, удаление или обновление завершены."
+  "Show a desktop notification when an install, removal or update finishes.": "Показывать уведомление на рабочем столе, когда установка, удаление или обновление завершены.",
+  "Copy": "Копировать"
 }

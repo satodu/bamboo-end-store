@@ -113,6 +113,36 @@ pub fn apply_filter(all: &[Package], filter: Filter, page: usize, limit: usize) 
     }
 }
 
+/// Install and remove commands as typed in a terminal. Empty for sources that are not a command.
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize)]
+pub struct ConsoleCommands {
+    pub install: String,
+    pub remove: String,
+}
+
+/// A name safe to paste into a shell as is stays bare; anything odd is single-quoted.
+fn shell_arg(name: &str) -> String {
+    let plain = !name.is_empty() && name.chars().all(|c| c.is_ascii_alphanumeric() || "@._+:=-".contains(c));
+    if plain { name.to_owned() } else { crate::sys::shell_quote(name) }
+}
+
+pub fn console_commands(name: &str, source: PackageSource, helper: crate::aur::Helper) -> ConsoleCommands {
+    let n = shell_arg(name);
+    let (install, remove) = match source {
+        PackageSource::Pacman => (format!("sudo pacman -S {n}"), format!("sudo pacman -Rns {n}")),
+        PackageSource::Aur => {
+            let tool = match helper {
+                crate::aur::Helper::Paru => "paru",
+                crate::aur::Helper::Yay | crate::aur::Helper::None => "yay",
+            };
+            (format!("{tool} -S {n}"), format!("sudo pacman -Rns {n}"))
+        }
+        PackageSource::Flatpak => (format!("flatpak install flathub {n}"), format!("flatpak uninstall {n}")),
+        PackageSource::Custom => (String::new(), String::new()),
+    };
+    ConsoleCommands { install, remove }
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Op {
     Install,
@@ -142,6 +172,7 @@ pub struct Store {
     categories: TtlCache<Vec<Category>>,
     category_packages: TtlCache<Vec<Package>>,
     comments: TtlCache<Option<Vec<crate::comments::Comment>>>,
+    extras: TtlCache<Details>,
     pub state: UserStateMachine,
 }
 
@@ -173,6 +204,7 @@ impl Store {
             categories: TtlCache::new(),
             category_packages: TtlCache::new(),
             comments: TtlCache::new(),
+            extras: TtlCache::new(),
             state: UserStateMachine::new(),
         }
     }
@@ -252,28 +284,7 @@ impl Store {
 
     pub fn details(&self, name: &str, source: PackageSource) -> Option<Details> {
         let key = format!("{source}:{name}");
-        self.details.remember(&key, DETAILS_TTL, || {
-            let mut details = self.manager(source).details(name)?;
-            if matches!(source, PackageSource::Pacman | PackageSource::Aur) {
-                // local icon, then the Flathub table, then (details only) a strict Flathub search
-                let probe = Package {
-                    repo: String::new(),
-                    name: name.to_owned(),
-                    display_name: String::new(),
-                    version: String::new(),
-                    description: String::new(),
-                    source,
-                    installed: false,
-                };
-                let url = Some(crate::icons::icon_url(&probe))
-                    .filter(|u| !u.is_empty())
-                    .or_else(|| crate::icons::remote_icon_url(name));
-                if let Some(url) = url {
-                    details.insert("icon_url".into(), url);
-                }
-            }
-            Some(details)
-        })
+        self.details.remember(&key, DETAILS_TTL, || self.manager(source).details(name))
     }
 
     /// AUR comments for a package, cached for half an hour. `None` means the page could not be loaded.
@@ -341,6 +352,36 @@ impl Store {
         self.categories.clear();
         self.category_packages.clear();
         self.comments.clear();
+        self.extras.clear();
+    }
+
+    /// What the details view adds from the internet, after the panel is already open: a Flathub icon
+    /// when none was found locally, and Flathub's screenshots (`screenshots`: URLs, one per line).
+    /// Pacman and AUR packages are matched to a Flathub app through the table or a strict search.
+    pub fn details_extras(&self, name: &str, source: PackageSource) -> Details {
+        let key = format!("{source}:{name}");
+        self.extras.remember(&key, Duration::from_secs(3600), || {
+            let mut extras = Details::new();
+            if !matches!(source, PackageSource::Pacman | PackageSource::Aur) {
+                return extras;
+            }
+            let Some(id) = crate::icons::flathub_app_id(name) else {
+                return extras;
+            };
+            extras.insert("flathub_id".into(), id.clone());
+            let shots = FlatpakManager.screenshots(&id);
+            if !shots.is_empty() {
+                extras.insert("screenshots".into(), shots.join("\n"));
+            }
+            extras.insert("icon_url".into(), crate::icons::flathub_icon_url(&id));
+            extras
+        })
+    }
+
+    /// The commands a user would type by hand to install and to remove a package, as shown in the
+    /// details panel. (The app itself runs a slightly different form, with `--noconfirm`.)
+    pub fn console_commands(&self, name: &str, source: PackageSource) -> ConsoleCommands {
+        console_commands(name, source, crate::aur::Helper::detect())
     }
 
     pub fn command(&self, op: Op, name: &str, source: PackageSource) -> String {
@@ -595,6 +636,26 @@ mod tests {
         let page = st.category_page("T", 1, Filter { repo: RepoFilter::Aur, sort: SortBy::Name });
         assert_eq!((page.total, names(&page.items)), (2, vec!["x-b", "x-gone"]));
         assert_eq!(page.counts.official, 1);
+    }
+
+    #[test]
+    fn console_commands_match_what_the_old_app_showed() {
+        use crate::aur::Helper;
+        let c = |n, s, h| console_commands(n, s, h);
+        assert_eq!(c("firefox", PackageSource::Pacman, Helper::None).install, "sudo pacman -S firefox");
+        assert_eq!(c("firefox", PackageSource::Pacman, Helper::None).remove, "sudo pacman -Rns firefox");
+        assert_eq!(c("yay-bin", PackageSource::Aur, Helper::Paru).install, "paru -S yay-bin");
+        assert_eq!(c("yay-bin", PackageSource::Aur, Helper::None).install, "yay -S yay-bin");
+        assert_eq!(c("org.mozilla.firefox", PackageSource::Flatpak, Helper::Yay).install, "flatpak install flathub org.mozilla.firefox");
+        assert_eq!(c("x", PackageSource::Custom, Helper::Yay), ConsoleCommands { install: String::new(), remove: String::new() });
+    }
+
+    #[test]
+    fn odd_names_are_quoted_so_pasting_is_safe() {
+        use crate::aur::Helper;
+        assert_eq!(console_commands("a;rm -rf ~", PackageSource::Pacman, Helper::None).install, "sudo pacman -S 'a;rm -rf ~'");
+        assert_eq!(shell_arg("gtk3+x"), "gtk3+x");
+        assert_eq!(shell_arg(""), "''");
     }
 
     #[test]

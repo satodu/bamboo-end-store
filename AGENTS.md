@@ -52,6 +52,10 @@ the palette, the shapes and motion come from Galdr.
   light (only a change of tone). Both stop under reduced motion. No loose rune ruler in the sidebar: it looked out of place.
 - Empty states are a dashed plinth with the rune ring and a mono caption (`Plinth`, `FIG. — NO SHARD.`).
 
+- **Console first.** The app is for people who live in a terminal, so the package details always show the exact command
+  (`Store::console_commands`, `CommandBox`, with a copy button) before anything else, and the app runs the same kind of command in
+  a visible terminal. Never hide what a button does.
+
 ## QML rules
 
 - **Never name a property `on<Capital>...`** (for example `onSurface`): QML reads it as a signal handler and returns

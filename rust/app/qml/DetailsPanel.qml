@@ -13,9 +13,13 @@ Item {
     property bool busy: false
     /// {loaded, failed, items} from Backend.comments; only used for AUR packages.
     property var comments: ({ loaded: false })
+    /// {install, remove} from Backend.consoleCommands
+    property var commands: ({})
     property string tab: "details"
     property int shownComments: 5
     readonly property bool isAur: root.pkg.source === "aur"
+    /// Screenshot URLs: the details carry them one per line.
+    readonly property var screenshots: root.info && root.info.screenshots ? root.info.screenshots.split("\n").filter(u => u.length > 0) : []
 
     signal commentsRequested()
     signal installRequested()
@@ -89,46 +93,89 @@ Item {
                     onActivated: v => { root.tab = v; if (v === "comments") root.commentsRequested() }
                 }
 
-                TypedText {
+                // The body of the details tab scrolls: command, description, screenshots, fields.
+                ScrollView {
+                    id: scroll
                     visible: root.tab === "details"
                     Layout.fillWidth: true
-                    full: root.info ? Tr.t(root.info["Description"] || "") : ""
-                    color: Theme.fgSurface
-                    font.pixelSize: 13
-                    wrapMode: Text.Wrap
-                    maximumLineCount: 7
-                    elide: Text.ElideRight
-                }
+                    Layout.fillHeight: true
+                    contentWidth: availableWidth
+                    clip: true
 
-                Rectangle { visible: root.tab === "details"; Layout.fillWidth: true; height: 1; color: Theme.outlineVariant }
+                    ColumnLayout {
+                        width: scroll.availableWidth
+                        spacing: 14
 
-                // Label above value: translated labels are long, values (dates, sizes) are wide.
-                Repeater {
-                    model: root.fields
-                    delegate: ColumnLayout {
-                        id: fieldRow
-                        required property string modelData
-                        readonly property string value: root.info ? (root.info[modelData] || "") : ""
-                        Layout.fillWidth: true
-                        visible: root.tab === "details" && value.length > 0
-                        spacing: 2
-
-                        Text {
-                            text: Tr.t(fieldRow.modelData)
-                            color: Theme.fgSurfaceVariant
-                            font.family: Style.mono
-                            font.pixelSize: 10
-                            font.letterSpacing: 1.5
-                            font.capitalization: Font.AllUppercase
+                        // Console first: the exact commands this package stands for.
+                        CommandBox {
+                            Layout.fillWidth: true
+                            label: Tr.t("Terminal Command")
+                            command: root.commands.install || ""
                         }
+                        CommandBox {
+                            Layout.fillWidth: true
+                            visible: !!root.pkg.installed && !!root.commands.remove
+                            label: Tr.t("Uninstall")
+                            command: root.commands.remove || ""
+                        }
+
                         TypedText {
                             Layout.fillWidth: true
-                            full: fieldRow.value
+                            full: root.info ? Tr.t(root.info["Description"] || "") : ""
                             color: Theme.fgSurface
-                            font.family: Style.mono
-                            font.pixelSize: 12
+                            font.pixelSize: 13
+                            wrapMode: Text.Wrap
+                            maximumLineCount: 7
                             elide: Text.ElideRight
                         }
+
+                        ColumnLayout {
+                            Layout.fillWidth: true
+                            visible: root.screenshots.length > 0
+                            spacing: 8
+                            Text {
+                                text: Tr.t("Screenshots")
+                                color: Theme.fgSurfaceVariant
+                                font.family: Style.mono
+                                font.pixelSize: 10
+                                font.letterSpacing: 1.5
+                                font.capitalization: Font.AllUppercase
+                            }
+                            ScreenshotStrip { Layout.fillWidth: true; images: root.screenshots }
+                        }
+
+                        Rectangle { Layout.fillWidth: true; height: 1; color: Theme.outlineVariant }
+
+                        // Label above value: translated labels are long, values (dates, sizes) are wide.
+                        Repeater {
+                            model: root.fields
+                            delegate: ColumnLayout {
+                                id: fieldRow
+                                required property string modelData
+                                readonly property string value: root.info ? (root.info[modelData] || "") : ""
+                                Layout.fillWidth: true
+                                visible: value.length > 0
+                                spacing: 2
+
+                                Text {
+                                    text: Tr.t(fieldRow.modelData)
+                                    color: Theme.fgSurfaceVariant
+                                    font.family: Style.mono
+                                    font.pixelSize: 10
+                                    font.letterSpacing: 1.5
+                                    font.capitalization: Font.AllUppercase
+                                }
+                                TypedText {
+                                    Layout.fillWidth: true
+                                    full: fieldRow.value
+                                    color: Theme.fgSurface
+                                    font.family: Style.mono
+                                    font.pixelSize: 12
+                                    elide: Text.ElideRight
+                                }
+                            }
+                        }
+                        Item { Layout.preferredHeight: 4 }
                     }
                 }
 
@@ -232,8 +279,6 @@ Item {
                         onClicked: root.shownComments += 5
                     }
                 }
-
-                Item { visible: root.tab === "details"; Layout.fillHeight: true }
 
                 RowLayout {
                     Layout.fillWidth: true

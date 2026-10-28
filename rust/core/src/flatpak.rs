@@ -120,10 +120,17 @@ impl PackageManager for FlatpakManager {
             download_size = download_size.or(d);
         }
 
+        let mut shots = Vec::new();
         let mut details = match api {
-            Some((d, _)) => d,
+            Some((d, s)) => {
+                shots = s;
+                d
+            }
             None => parse_remote_info(&remote?.stdout, name),
         };
+        if !shots.is_empty() {
+            details.insert("screenshots".into(), shots.join("\n"));
+        }
         if let Some(v) = installed_size {
             details.insert("Installed Size".into(), v);
         }

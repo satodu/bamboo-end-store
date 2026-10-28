@@ -108,6 +108,11 @@ pub mod qobject {
         #[cxx_name = "loadDetails"]
         fn load_details(self: Pin<&mut Backend>, name: &QString, source: &QString);
 
+        /// `{install, remove}`: the commands to type by hand, shown in the details panel.
+        #[qinvokable]
+        #[cxx_name = "consoleCommands"]
+        fn console_commands(self: &Backend, name: &QString, source: &QString) -> QString;
+
         #[qinvokable]
         fn install(self: Pin<&mut Backend>, name: &QString, source: &QString);
 
@@ -491,9 +496,29 @@ impl qobject::Backend {
         let thread = self.qt_thread();
 
         std::thread::spawn(move || {
-            let json = serde_json::to_string(&store.details(&name, source)).unwrap_or_else(|_| "null".into());
+            // Phase 1: what the package manager knows, so the panel opens at once.
+            let base = store.details(&name, source);
+            let json = serde_json::to_string(&base).unwrap_or_else(|_| "null".into());
+            let queued = thread.queue(move |mut this| this.as_mut().set_details(QString::from(&json)));
+            let Some(mut merged) = base.filter(|_| queued.is_ok()) else { return };
+
+            // Phase 2: icon and screenshots from Flathub (network); the panel updates when they arrive.
+            let extras = store.details_extras(&name, source);
+            if extras.is_empty() {
+                return;
+            }
+            merged.extend(extras);
+            let json = serde_json::to_string(&Some(merged)).unwrap_or_else(|_| "null".into());
             let _ = thread.queue(move |mut this| this.as_mut().set_details(QString::from(&json)));
         });
+    }
+
+    fn console_commands(&self, name: &QString, source: &QString) -> QString {
+        let Some(source) = parse_source(source) else {
+            return QString::from("{\"install\":\"\",\"remove\":\"\"}");
+        };
+        let c = self.rust().store.console_commands(&name.to_string(), source);
+        QString::from(&serde_json::to_string(&c).unwrap_or_else(|_| "{}".into()))
     }
 
     fn install(self: Pin<&mut Self>, name: &QString, source: &QString) {

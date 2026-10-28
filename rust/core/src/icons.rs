@@ -231,16 +231,19 @@ pub fn pick_flathub_hit(search_json: &str, name: &str) -> Option<String> {
     })
 }
 
-/// Flathub icon for a package found by a strict search. A network call (4 s at most): only for the
-/// details view, never for lists.
-pub fn remote_icon_url(name: &str) -> Option<String> {
+/// Flathub app id of a package: the table first, then a strict Flathub search. The search is a
+/// network call (4 s at most): only for the details view, never for lists.
+pub fn flathub_app_id(name: &str) -> Option<String> {
+    if let Some(id) = name_variants(name).iter().find_map(|n| flathub_id(n)) {
+        return Some(id.to_owned());
+    }
     let query = name_variants(name).pop()?;
     let body = crate::http::post_json(
         "https://flathub.org/api/v2/search",
         &serde_json::json!({ "query": query }),
         std::time::Duration::from_secs(4),
     )?;
-    pick_flathub_hit(&body, name).map(|id| flathub_icon_url(&id))
+    pick_flathub_hit(&body, name)
 }
 
 /// The icon URL (`file://...` or `https://...`) for a pacman or AUR package, or `""`.
