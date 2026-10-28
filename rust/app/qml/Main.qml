@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import Qt.labs.platform as Platform
 import io.bamboo.store
 
 ApplicationWindow {
@@ -38,6 +39,41 @@ ApplicationWindow {
     function goHome() {
         explore.goHome()
         openPage("explore")
+    }
+
+    /// Show the window again from the tray (also brings it to the front).
+    function bringToFront() {
+        show()
+        raise()
+        requestActivate()
+    }
+    function toggleVisible() { visible ? hide() : bringToFront() }
+
+    // The program no longer ends with its last window (the tray keeps it alive), so closing
+    // either hides it to the tray, if that is wanted and there is a tray, or quits.
+    onClosing: close => {
+        if (appSettings.close_to_tray && tray.available) {
+            close.accepted = false
+            hide()
+        } else {
+            Qt.quit()
+        }
+    }
+
+    Platform.SystemTrayIcon {
+        id: tray
+        visible: true
+        icon.source: Qt.resolvedUrl("../icons/app-icon.png")
+        tooltip: "Bamboo End Store"
+        onActivated: reason => { if (reason === Platform.SystemTrayIcon.Trigger) root.toggleVisible() }
+
+        menu: Platform.Menu {
+            Platform.MenuItem { text: Tr.t("Open Store"); onTriggered: root.bringToFront() }
+            Platform.MenuItem { separator: true }
+            Platform.MenuItem { text: Tr.t("Update System"); onTriggered: if (!appBackend.busy) appBackend.updateSystem() }
+            Platform.MenuItem { separator: true }
+            Platform.MenuItem { text: Tr.t("Quit"); onTriggered: Qt.quit() }
+        }
     }
 
     function openPage(name) {

@@ -305,5 +305,8 @@
   "Developer and EndeavourOS fan. Built to enhance the Linux experience.": "Разработчик и фанат EndeavourOS. Создано для улучшения работы в Linux.",
   "Notifications": "Уведомления",
   "Show a desktop notification when an install, removal or update finishes.": "Показывать уведомление на рабочем столе, когда установка, удаление или обновление завершены.",
-  "Copy": "Копировать"
+  "Copy": "Копировать",
+  "Behavior": "Поведение",
+  "Keep running in the tray": "Оставаться в трее",
+  "Closing the window hides it to the system tray instead of quitting. Quit from the tray menu.": "Закрытие окна сворачивает его в системный трей вместо выхода. Выйти можно из меню трея."
 }

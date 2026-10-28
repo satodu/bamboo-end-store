@@ -36,6 +36,8 @@ pub struct Settings {
     pub reduce_motion: bool,
     /// Show a desktop notification when an install, removal or update finishes.
     pub notifications: bool,
+    /// Closing the window hides it to the system tray instead of quitting.
+    pub close_to_tray: bool,
     /// Set after the first launch's sidebar intro (runes turning into text) has played once.
     pub intro_seen: bool,
     /// Keys this version does not know, kept so they survive a save.
@@ -65,6 +67,7 @@ impl Default for Settings {
             reduce_motion: false,
             intro_seen: false,
             notifications: true,
+            close_to_tray: false,
             extra: Map::new(),
         }
     }

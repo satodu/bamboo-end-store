@@ -56,6 +56,11 @@ the palette, the shapes and motion come from Galdr.
   (`Store::console_commands`, `CommandBox`, with a copy button) before anything else, and the app runs the same kind of command in
   a visible terminal. Never hide what a button does.
 
+- The system tray icon is in `Main.qml` (`Qt.labs.platform` `SystemTrayIcon`; Open Store, Update System, Quit). The program no longer ends
+  with its last window (`app/src/app_shim.cpp` turns `quitOnLastWindowClosed` off, Qt exposes it nowhere else), so `Main.qml` quits or
+  hides to the tray itself in `onClosing`. Qt registers the tray item under the bus's unique name, so look for `/StatusNotifierItem`
+  in `busctl --user tree`, not for a `StatusNotifierItem-<pid>` name.
+
 ## QML rules
 
 - **Never name a property `on<Capital>...`** (for example `onSurface`): QML reads it as a signal handler and returns
@@ -117,5 +122,5 @@ binary reach `Qt.application.arguments` (the screenshot scripts use this with `g
 ## Not done yet
 
 The PHP app's features are all ported. What is left is polish: icons for the installed pacman and AUR apps whose icon lives in a theme
-other than hicolor (they fall back to a letter tile), a tray icon, and removing the legacy PHP/Electron code once the Rust app has been
+other than hicolor (they fall back to a letter tile), and removing the legacy PHP/Electron code once the Rust app has been
 used for a while. See the git log for what is already ported.

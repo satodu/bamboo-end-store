@@ -60,7 +60,9 @@ fn main() {
         "icons/winboat.svg",
         "icons/linuxtoys.svg",
         "icons/davinci-resolve.svg",
+        "icons/app-icon.png",
     ])
+    .cpp_file("src/app_shim.cpp")
     .files(["src/backend.rs", "src/theme_bridge.rs", "src/i18n_bridge.rs"])
     .build();
 }

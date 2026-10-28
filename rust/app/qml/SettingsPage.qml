@@ -371,13 +371,18 @@ Item {
     Component {
         id: sec_terminal
             SettingsSection {
-                title: Tr.t("Terminal")
+                title: Tr.t("Behavior")
                 rune: "active"
                 delay: 140
                 SettingRow {
                     title: Tr.t("Terminal Auto-close")
                     description: Tr.t("Automatically close the terminal window after the process completes.")
                     Toggle { checked: root.s.auto_close_terminal; onToggled: v => root.set("auto_close_terminal", v) }
+                }
+                SettingRow {
+                    title: Tr.t("Keep running in the tray")
+                    description: Tr.t("Closing the window hides it to the system tray instead of quitting. Quit from the tray menu.")
+                    Toggle { checked: root.s.close_to_tray; onToggled: v => root.set("close_to_tray", v) }
                 }
                 SettingRow {
                     title: Tr.t("Notifications")

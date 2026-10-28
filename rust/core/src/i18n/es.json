@@ -305,5 +305,8 @@
   "Developer and EndeavourOS fan. Built to enhance the Linux experience.": "Desarrollador y fan de EndeavourOS. Creado para mejorar la experiencia en Linux.",
   "Notifications": "Notificaciones",
   "Show a desktop notification when an install, removal or update finishes.": "Muestra una notificación de escritorio cuando termina una instalación, eliminación o actualización.",
-  "Copy": "Copiar"
+  "Copy": "Copiar",
+  "Behavior": "Comportamiento",
+  "Keep running in the tray": "Seguir en la bandeja",
+  "Closing the window hides it to the system tray instead of quitting. Quit from the tray menu.": "Cerrar la ventana la oculta en la bandeja del sistema en lugar de salir. Para salir, usa el menú de la bandeja."
 }

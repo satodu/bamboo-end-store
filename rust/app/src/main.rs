@@ -4,6 +4,10 @@ mod theme_bridge;
 
 use cxx_qt_lib::{QGuiApplication, QQmlApplicationEngine, QUrl};
 
+extern "C" {
+    fn bamboo_set_quit_on_last_window_closed(quit: bool);
+}
+
 fn main() {
     // Qt-Wayland logs a harmless warning on every focus change of a text field.
     if std::env::var_os("QT_LOGGING_RULES").is_none() {
@@ -11,6 +15,8 @@ fn main() {
     }
 
     let mut app = QGuiApplication::new();
+    // The tray keeps the app alive with no window; QML quits explicitly (see Main.qml).
+    unsafe { bamboo_set_quit_on_last_window_closed(false) };
     let mut engine = QQmlApplicationEngine::new();
 
     // Dev aid: BAMBOO_QML=path/to/file.qml loads that file instead of the embedded Main.qml.
