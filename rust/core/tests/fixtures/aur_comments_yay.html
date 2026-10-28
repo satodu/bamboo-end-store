@@ -1,0 +1,176 @@
+<html><body>
+
+        
+            
+
+
+
+
+
+
+
+	<h4 id="comment-1051655" class="comment-header">
+		
+		
+		jguer commented on <a href="#comment-1051655" class="date">2025-12-14 20:11 (UTC)</a>
+		
+
+        
+
+
+    
+
+    
+
+    
+
+    </h4>
+
+    
+
+
+
+<div id="comment-1051655-content" class="article-content">
+    <div>
+        
+            <p>yay: error while loading shared libraries: libalpm.so.15: cannot open shared object file: No such file or directory</p>
+<p>all v12.5.7 binaries are compiled against pacman's 7.1 libalpm.</p>
+<p>If you updated pacman separately from yay you'll need to run either of these (yay or yay-bin)</p>
+<pre><code>sudo pacman -S --needed git base-devel
+git clone https://aur.archlinux.org/yay.git
+cd yay
+makepkg -si
+</code></pre>
+<p>or</p>
+<pre><code>sudo pacman -S --needed git base-devel
+git clone https://aur.archlinux.org/yay-bin.git
+cd yay-bin
+makepkg -si
+</code></pre>
+        
+    </div>
+</div>
+
+
+
+        
+            
+
+
+
+
+
+
+
+	<h4 id="comment-690375" class="comment-header">
+		
+		
+		jguer commented on <a href="#comment-690375" class="date">2019-04-16 14:08 (UTC)</a>
+		
+
+        
+
+
+    
+
+    
+
+    
+
+    </h4>
+
+    
+
+
+
+<div id="comment-690375-content" class="article-content">
+    <div>
+        
+            <p>I cannot delete the spam comments appearing regularly in this page, which has also led me to disable notifications from here. I remind that the best way to receive support or report a problem is through the Upstream URL.</p>
+        
+    </div>
+</div>
+
+        
+            
+
+
+
+
+
+
+
+	<h4 id="comment-1089321" class="comment-header">
+		
+		
+		the-k commented on <a href="#comment-1089321" class="date">2026-10-28 16:47 (UTC)</a>
+		
+
+        
+
+
+    
+
+    
+
+    
+
+    </h4>
+
+    
+
+
+
+<div id="comment-1089321-content" class="article-content">
+    <div>
+        
+            <p>@jguer, could you please integrate <a href="https://github.com/Jguer/pkgbuilds/pull/8">https://github.com/Jguer/pkgbuilds/pull/8</a>?</p>
+        
+    </div>
+</div>
+
+
+
+        
+            
+
+
+
+
+
+
+
+	<h4 id="comment-1075900" class="comment-header">
+		
+		
+		kseistrup commented on <a href="#comment-1075900" class="date">2026-06-19 07:04 (UTC)</a>
+		
+
+        
+
+
+    
+
+    
+
+    
+
+    </h4>
+
+    
+
+
+
+<div id="comment-1075900-content" class="article-content">
+    <div>
+        
+            <p>Now that yay can be scriptet with Lua, wouldn't it be appropriate to include the example <code>doc/init.lua</code> in <code>/usr/share/doc/yay/</code>?</p>
+<p>See e.g.:</p>
+<ul>
+<li><a href="https://github.com/Jguer/yay/blob/next/doc/init.lua">https://github.com/Jguer/yay/blob/next/doc/init.lua</a></li>
+<li><a href="https://jguer.space/blog/2026-06-15-yay-v13">https://jguer.space/blog/2026-06-15-yay-v13</a></li>
+</ul>
+        
+    </div>
+</div>
+</body></html>

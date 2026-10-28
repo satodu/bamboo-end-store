@@ -293,5 +293,13 @@
   "Download Size": "Download Size",
   "Reset filters": "Reset filters",
   "Add": "Add",
-  "Checking...": "Checking..."
+  "Checking...": "Checking...",
+  "Details": "Details",
+  "Comments": "Comments",
+  "Community Comments": "Community Comments",
+  "AUR page": "AUR page",
+  "Load more": "Load more",
+  "No comments yet.": "No comments yet.",
+  "Could not load comments.": "Could not load comments.",
+  "Loading comments...": "Loading comments..."
 }

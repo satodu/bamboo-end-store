@@ -36,6 +36,8 @@ pub mod qobject {
         #[qproperty(QString, categories)]
         /// JSON list of official EndeavourOS tools found on this system (empty elsewhere).
         #[qproperty(QString, essentials)]
+        /// JSON `{loaded, failed, items:[{id, author, date, content, url}]}` for the AUR package last asked about.
+        #[qproperty(QString, comments)]
         type Backend = super::BackendRust;
 
         /// 1-based `page`; the page size is the `search_limit` setting.
@@ -51,6 +53,11 @@ pub mod qobject {
         #[qinvokable]
         #[cxx_name = "loadBambooInstalls"]
         fn load_bamboo_installs(self: Pin<&mut Backend>);
+
+        /// Fetch the AUR community comments of `name` into `comments` (the page is scraped, cached half an hour).
+        #[qinvokable]
+        #[cxx_name = "loadComments"]
+        fn load_comments(self: Pin<&mut Backend>, name: &QString);
 
         /// Fill `categories` (downloads the EndeavourOS list the first time).
         #[qinvokable]
@@ -175,6 +182,7 @@ pub struct BackendRust {
     flatpak: QString,
     categories: QString,
     essentials: QString,
+    comments: QString,
     store: Arc<Store>,
     /// Bumped per search; a slow older search must not overwrite a newer one.
     search_gen: Arc<AtomicU64>,
@@ -199,6 +207,7 @@ impl Default for BackendRust {
             flatpak: QString::from("{}"),
             categories: QString::from("[]"),
             essentials: QString::from("[]"),
+            comments: QString::from("{\"loaded\":false}"),
             store,
             search_gen: Arc::new(AtomicU64::new(0)),
         }
@@ -347,6 +356,20 @@ impl qobject::Backend {
                     this.as_mut().set_busy(false);
                 }
             });
+        });
+    }
+
+    fn load_comments(mut self: Pin<&mut Self>, name: &QString) {
+        let store = self.rust().store.clone();
+        let name = name.to_string();
+        let thread = self.qt_thread();
+        self.as_mut().set_comments(QString::from("{\"loaded\":false}"));
+        std::thread::spawn(move || {
+            let json = match store.aur_comments(&name) {
+                Some(items) => serde_json::json!({ "loaded": true, "failed": false, "items": items }),
+                None => serde_json::json!({ "loaded": true, "failed": true, "items": [] }),
+            };
+            let _ = thread.queue(move |mut this| this.as_mut().set_comments(QString::from(&json.to_string())));
         });
     }
 

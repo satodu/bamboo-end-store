@@ -131,6 +131,8 @@ Item {
             sourceComponent: DetailsPanel {
                 pkg: root.current
                 info: root.info
+                comments: JSON.parse(backend.comments)
+                onCommentsRequested: backend.loadComments(root.current.name)
                 status: root.status
                 busy: backend.busy
                 onClosed: root.current = null

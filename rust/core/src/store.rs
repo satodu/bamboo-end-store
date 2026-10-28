@@ -141,6 +141,7 @@ pub struct Store {
     installed: TtlCache<Vec<Package>>,
     categories: TtlCache<Vec<Category>>,
     category_packages: TtlCache<Vec<Package>>,
+    comments: TtlCache<Option<Vec<crate::comments::Comment>>>,
     pub state: UserStateMachine,
 }
 
@@ -171,6 +172,7 @@ impl Store {
             installed: TtlCache::new(),
             categories: TtlCache::new(),
             category_packages: TtlCache::new(),
+            comments: TtlCache::new(),
             state: UserStateMachine::new(),
         }
     }
@@ -253,6 +255,11 @@ impl Store {
         self.details.remember(&key, DETAILS_TTL, || self.manager(source).details(name))
     }
 
+    /// AUR comments for a package, cached for half an hour. `None` means the page could not be loaded.
+    pub fn aur_comments(&self, package: &str) -> Option<Vec<crate::comments::Comment>> {
+        self.comments.remember(package, Duration::from_secs(1800), || crate::comments::fetch(package))
+    }
+
     /// The Bamboo Installs catalogue with installed flags.
     pub fn bamboo_installs(&self) -> Vec<Package> {
         crate::bamboo::packages(&crate::pacman::installed_names())
@@ -312,6 +319,7 @@ impl Store {
         self.installed.clear();
         self.categories.clear();
         self.category_packages.clear();
+        self.comments.clear();
     }
 
     pub fn command(&self, op: Op, name: &str, source: PackageSource) -> String {

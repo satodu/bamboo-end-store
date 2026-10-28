@@ -293,5 +293,13 @@
   "Download Size": "Размер загрузки",
   "Reset filters": "Сбросить фильтры",
   "Add": "Добавить",
-  "Checking...": "Проверка..."
+  "Checking...": "Проверка...",
+  "Details": "Сведения",
+  "Comments": "Комментарии",
+  "Community Comments": "Комментарии сообщества",
+  "AUR page": "Страница в AUR",
+  "Load more": "Показать ещё",
+  "No comments yet.": "Комментариев пока нет.",
+  "Could not load comments.": "Не удалось загрузить комментарии.",
+  "Loading comments...": "Загрузка комментариев..."
 }

@@ -293,5 +293,13 @@
   "Download Size": "Tamaño de descarga",
   "Reset filters": "Restablecer filtros",
   "Add": "Añadir",
-  "Checking...": "Comprobando..."
+  "Checking...": "Comprobando...",
+  "Details": "Detalles",
+  "Comments": "Comentarios",
+  "Community Comments": "Comentarios de la comunidad",
+  "AUR page": "Página en el AUR",
+  "Load more": "Cargar más",
+  "No comments yet.": "Aún no hay comentarios.",
+  "Could not load comments.": "No se pudieron cargar los comentarios.",
+  "Loading comments...": "Cargando comentarios..."
 }

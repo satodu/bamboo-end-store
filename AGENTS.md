@@ -106,4 +106,4 @@ binary reach `Qt.application.arguments` (the screenshot scripts use this with `g
 
 ## Not done yet
 
-AUR comments, system notifications, brand icons for installed pacman and AUR packages (Flatpak and Bamboo Installs have them). See the git log for what is already ported.
+system notifications, brand icons for installed pacman and AUR packages (Flatpak and Bamboo Installs have them). See the git log for what is already ported.
