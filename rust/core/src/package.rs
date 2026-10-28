@@ -7,6 +7,8 @@ use crate::PackageSource;
 pub struct Package {
     pub repo: String,
     pub name: String,
+    /// Human name (Flatpak); empty when the source has none.
+    pub display_name: String,
     pub version: String,
     pub description: String,
     pub source: PackageSource,

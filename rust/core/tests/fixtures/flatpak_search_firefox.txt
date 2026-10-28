@@ -1,0 +1,4 @@
+Firefox	org.mozilla.firefox	159.0	Fast, Private & Safe Web Browser
+Add Water	dev.qwery.AddWater	1.3	Mantenha o Firefox no estilo
+Glate	com.ktechpit.glate	4.5.0	Offline translator, text to speech
+Floorp	one.ablaze.floorp	12.20.2	Customizable Firefox-based browser from Japan

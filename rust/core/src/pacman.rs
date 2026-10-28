@@ -37,6 +37,7 @@ impl PacmanManager {
                     description: d.remove("Description").unwrap_or_default(),
                     installed: installed.contains(&name),
                     source: PackageSource::Pacman,
+                    display_name: String::new(),
                     name,
                 }
             })
@@ -109,6 +110,7 @@ pub fn parse_search(output: &str) -> Vec<Package> {
         packages.push(Package {
             repo: repo.to_owned(),
             name: name.to_owned(),
+            display_name: String::new(),
             version: version.to_owned(),
             description,
             source: PackageSource::Pacman,

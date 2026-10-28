@@ -1,0 +1,4 @@
+AnyDesk	com.anydesk.Anydesk	8.0.4	Conectar com um computador remotamente
+Discord	com.discordapp.Discord	1.0.167	Talk, play, hang out
+Flatseal	com.github.tchx84.Flatseal	2.4.1	Manage Flatpak permissions
+Fred TV	dev.fredol.open-tv	1.9.1	Fast And Powerful IPTV App

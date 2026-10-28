@@ -1,19 +1,31 @@
-//! Manual check against the real system: `cargo run -p bamboo-core --example cli -- search firefox`
-use bamboo_core::{PackageManager, PacmanManager};
+//! Manual check against the real system:
+//! `cargo run -p bamboo-core --example cli -- <pacman|aur|flatpak> search <q>`
+//! `cargo run -p bamboo-core --example cli -- <pacman|aur|flatpak> info <name>`
+use bamboo_core::{AurManager, FlatpakManager, PackageManager, PacmanManager};
 
 fn main() {
     let args: Vec<String> = std::env::args().skip(1).collect();
-    let m = PacmanManager;
-    match args.iter().map(String::as_str).collect::<Vec<_>>().as_slice() {
-        ["search", q] => {
-            for p in m.search(q) {
-                println!("{}/{} {} {} {}", p.repo, p.name, p.version, if p.installed { "[installed]" } else { "" }, p.description);
+    let args: Vec<&str> = args.iter().map(String::as_str).collect();
+    let [source, cmd, arg] = args.as_slice() else {
+        return eprintln!("usage: cli <pacman|aur|flatpak> <search|info> <arg>");
+    };
+    let manager: Box<dyn PackageManager> = match *source {
+        "pacman" => Box::new(PacmanManager),
+        "aur" => Box::new(AurManager::default()),
+        "flatpak" => Box::new(FlatpakManager),
+        _ => return eprintln!("unknown source: {source}"),
+    };
+    match *cmd {
+        "search" => {
+            for p in manager.search(arg) {
+                let mark = if p.installed { " [installed]" } else { "" };
+                println!("{}/{} {}{} - {}", p.repo, p.name, p.version, mark, p.description);
             }
         }
-        ["info", n] => match m.details(n) {
+        "info" => match manager.details(arg) {
             Some(d) => d.iter().for_each(|(k, v)| println!("{k}: {v}")),
             None => eprintln!("not found"),
         },
-        _ => eprintln!("usage: cli search <q> | info <name>"),
+        _ => eprintln!("unknown command: {cmd}"),
     }
 }
