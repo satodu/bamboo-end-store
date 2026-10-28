@@ -1,0 +1,6 @@
+cachyos-v3/firefox-pure 157.0-1
+    Fast, Private & Safe Web Browser
+cachyos-v3/firefox-wayland-cachy-hg 161.0a1.r1006668.bcba64b-1
+    Standalone web browser from mozilla.org (mozilla-unified hg, release branding, targeting wayland)
+extra/firefox 159.0-1 [installed]
+    Fast, Private & Safe Web Browser

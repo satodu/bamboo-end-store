@@ -1,0 +1,22 @@
+Name            : bash
+Version         : 5.3.20-2
+Description     : The GNU Bourne Again shell
+Architecture    : x86_64_v3
+URL             : https://www.gnu.org/software/bash/bash.html
+Licenses        : GPL-3.0-or-later
+Groups          : None
+Provides        : sh
+Depends On      : readline  libreadline.so=8-64  glibc  ncurses
+Optional Deps   : bash-completion: for tab completion [installed]
+Required By     : 7zip  alsa-utils  antigravity-ide  at-spi2-core  audit  aurorae  autoconf  automake  avahi  base  bash-completion  bison  blesh  bzip2  ca-certificates-utils  cairo  curl-impersonate  db5.3  dconf  device-mapper  diffutils  dkms  dtc  e2fsprogs  ebook-tools  elfutils  fakeroot  fftw  figlet  firefox  firefox-developer-edition  flatpak  flex  fontconfig  fzf  gamemode  gawk  gdb  gdbm  gettext  ghostscript  glib2  gnupg  gpm  gpu-screen-recorder  gsl  gtk-update-icon-cache  gtk4  gzip  hdf5  hunspell  icu  ijs  iptables  java-runtime-common  kate  kde-cli-tools  keyutils  kio-extras  krb5  libassuan  libcups  libdca  libgpg-error  libgphoto2  libisoburn  libksba  libmakepkg-dropins  libmbim  libnet  libpcap  libpng  libpulse  libqmi  librewolf  libteam  libtool  libxml2  libxslt  limine-mkinitcpio-hook  limine-snapper-sync  linuxtoys-bin  lm_sensors  lsb-release  mbedtls3  mjpegtools  mkinitcpio  modemmanager  netpbm  networkmanager  npth  nspr  nss  ostree  pacman  pahole  pcre  penguin-burner  plasma-workspace  plymouth  rdma-core  rust  ryoku-palette-bridge  scx-scheds  sddm  source-highlight  spirv-tools  srt  steam  systemd  taglib  texinfo  translate-shell  umu-launcher  unzip  which  winetricks  wireless-regdb  wxwidgets-gtk3  xdg-utils  xorg-server  xorg-server-xvfb  xz
+Optional For    : kitty-shell-integration  mdadm  ncurses  niri  openssh  pcre2  tzdata  usbutils
+Conflicts With  : None
+Replaces        : None
+Installed Size  : 9.68 MiB
+Packager        : CachyOS <admin@cachyos.org>
+Build Date      : Sat Sep 26 08:53:47 2026
+Install Date    : Fri Oct 23 14:19:09 2026
+Install Reason  : Installed as a dependency for another package
+Install Script  : Yes
+Validated By    : Signature
+
