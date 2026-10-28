@@ -14,12 +14,40 @@ const SEARCH: &str = "https://flathub.org/api/v2/search";
 const API_RESULTS: usize = 20;
 const COLUMNS: &str = "--columns=name,application,version,description";
 
+/// Command the old app opened in a terminal to install Flatpak itself.
+pub const INSTALL_FLATPAK_COMMAND: &str = "sudo pacman -S --needed flatpak";
+/// ...and to add the Flathub remote.
+pub const ADD_FLATHUB_COMMAND: &str =
+    "flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo";
+
+/// What the Settings screen shows for Flatpak.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize)]
+pub struct FlatpakStatus {
+    /// The `flatpak` binary is on the PATH.
+    pub installed: bool,
+    /// The `flathub` remote is configured (system or user).
+    pub flathub: bool,
+}
+
+/// `flatpak remotes` prints one remote per line, name first, tab separated.
+pub fn remotes_include_flathub(output: &str) -> bool {
+    output.lines().any(|l| l.split('\t').next().is_some_and(|n| n.trim() == "flathub"))
+}
+
 #[derive(Default)]
 pub struct FlatpakManager;
 
 impl FlatpakManager {
     pub fn available(&self) -> bool {
         sys::command_exists("flatpak")
+    }
+
+    pub fn status(&self) -> FlatpakStatus {
+        let installed = self.available();
+        let flathub = installed
+            && sys::run("flatpak", &["remotes"], Some(Duration::from_secs(10)))
+                .is_some_and(|o| o.success && remotes_include_flathub(&o.stdout));
+        FlatpakStatus { installed, flathub }
     }
 
     pub fn installed_flatpaks(&self) -> Vec<Package> {
@@ -364,6 +392,15 @@ mod tests {
         assert_eq!(d["Version"], "159.0");
         assert_eq!(d["Licenses"], "MPL-2.0");
         assert_eq!(d["Architecture"], "x86_64");
+    }
+
+    #[test]
+    fn flathub_remote_detection() {
+        const REMOTES: &str = include_str!("../tests/fixtures/flatpak_remotes.txt");
+        assert!(remotes_include_flathub(REMOTES));
+        assert!(remotes_include_flathub("flathub\tuser\nfedora\tsystem\n"));
+        assert!(!remotes_include_flathub("flathub-beta\tsystem\nfedora\tsystem\n"), "only the exact name counts");
+        assert!(!remotes_include_flathub(""));
     }
 
     #[test]

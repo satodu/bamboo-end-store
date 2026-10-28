@@ -30,6 +30,8 @@ pub mod qobject {
         #[qproperty(QString, details)]
         /// The settings as JSON; changes after every successful `setSetting`.
         #[qproperty(QString, settings)]
+        /// JSON `{installed, flathub}`: is the flatpak binary there, and is the Flathub remote set up.
+        #[qproperty(QString, flatpak)]
         type Backend = super::BackendRust;
 
         /// 1-based `page`; the page size is the `search_limit` setting.
@@ -40,6 +42,21 @@ pub mod qobject {
         #[qinvokable]
         #[cxx_name = "loadInstalled"]
         fn load_installed(self: Pin<&mut Backend>, filter: &QString, page: i32);
+
+        /// Refresh `flatpak` (cheap: a PATH lookup and `flatpak remotes`).
+        #[qinvokable]
+        #[cxx_name = "checkFlatpak"]
+        fn check_flatpak(self: Pin<&mut Backend>);
+
+        /// Open a terminal and install Flatpak itself; `operationFinished("Flatpak", "installed", code)`.
+        #[qinvokable]
+        #[cxx_name = "installFlatpak"]
+        fn install_flatpak(self: Pin<&mut Backend>);
+
+        /// Open a terminal and add the Flathub remote; `operationFinished("Flathub", "configured", code)`.
+        #[qinvokable]
+        #[cxx_name = "addFlathub"]
+        fn add_flathub(self: Pin<&mut Backend>);
 
         /// Drop every cached search, detail and installed list.
         #[qinvokable]
@@ -131,6 +148,7 @@ pub struct BackendRust {
     results: QString,
     details: QString,
     settings: QString,
+    flatpak: QString,
     store: Arc<Store>,
     /// Bumped per search; a slow older search must not overwrite a newer one.
     search_gen: Arc<AtomicU64>,
@@ -152,6 +170,7 @@ impl Default for BackendRust {
             results: QString::from("[]"),
             details: QString::from("null"),
             settings: settings_json(&store),
+            flatpak: QString::from("{}"),
             store,
             search_gen: Arc::new(AtomicU64::new(0)),
         }
@@ -278,6 +297,49 @@ impl qobject::Backend {
                     ok,
                     QString::from(&message),
                 );
+            });
+        });
+    }
+
+    fn check_flatpak(self: Pin<&mut Self>) {
+        let store = self.rust().store.clone();
+        let thread = self.qt_thread();
+        std::thread::spawn(move || {
+            let json = serde_json::to_string(&store.flatpak_status()).unwrap_or_else(|_| "{}".into());
+            let _ = thread.queue(move |mut this| this.as_mut().set_flatpak(QString::from(&json)));
+        });
+    }
+
+    fn install_flatpak(self: Pin<&mut Self>) {
+        self.run_setup("Flatpak", "installed", |store| store.install_flatpak());
+    }
+
+    fn add_flathub(self: Pin<&mut Self>) {
+        self.run_setup("Flathub", "configured", |store| store.add_flathub());
+    }
+
+    /// Run a Flatpak setup command in a terminal, then refresh the status and report the exit code.
+    fn run_setup<F>(mut self: Pin<&mut Self>, name: &'static str, action: &'static str, run: F)
+    where
+        F: FnOnce(&Store) -> OpOutcome + Send + 'static,
+    {
+        let store = self.rust().store.clone();
+        if store.state.is_busy() {
+            return;
+        }
+        let thread = self.qt_thread();
+        self.as_mut().set_busy(true);
+        std::thread::spawn(move || {
+            let code = match run(&store) {
+                OpOutcome::Finished(code) => code,
+                OpOutcome::NoTerminal => -1,
+                OpOutcome::Aborted => -2,
+            };
+            let json = serde_json::to_string(&store.flatpak_status()).unwrap_or_else(|_| "{}".into());
+            let _ = thread.queue(move |mut this| {
+                this.as_mut().set_flatpak(QString::from(&json));
+                this.as_mut().set_busy(false);
+                this.as_mut().operation_finished(QString::from(name), QString::from(action), code);
             });
         });
     }

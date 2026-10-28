@@ -5,6 +5,7 @@ use crate::cache::TtlCache;
 use crate::manager::PackageManager;
 use crate::state::{UserState, UserStateMachine};
 use crate::terminal::TerminalJob;
+use crate::flatpak::{FlatpakStatus, ADD_FLATHUB_COMMAND, INSTALL_FLATPAK_COMMAND};
 use crate::{AurManager, Details, FlatpakManager, Package, PacmanManager, PackageSource, Settings};
 
 const SEARCH_TTL: Duration = Duration::from_secs(300);
@@ -263,16 +264,33 @@ impl Store {
     /// Call from a worker thread. Clears the caches that the change invalidates.
     pub fn run(&self, op: Op, name: &str, source: PackageSource) -> OpOutcome {
         let state = if op == Op::Install { UserState::Installing } else { UserState::Uninstalling };
-        self.state.transition_to(state, Some(name));
+        self.run_command(&self.command(op, name, source), state, name)
+    }
 
-        let outcome = match TerminalJob::spawn(&self.command(op, name, source), &self.settings()) {
+    /// Run any command in an external terminal and wait for its exit code.
+    fn run_command(&self, command: &str, state: UserState, label: &str) -> OpOutcome {
+        self.state.transition_to(state, Some(label));
+        let outcome = match TerminalJob::spawn(command, &self.settings()) {
             None => OpOutcome::NoTerminal,
             Some(job) => job.wait().map_or(OpOutcome::Aborted, OpOutcome::Finished),
         };
-
         self.state.reset();
         self.clear_cache();
         outcome
+    }
+
+    pub fn flatpak_status(&self) -> FlatpakStatus {
+        FlatpakManager.status()
+    }
+
+    /// Install Flatpak itself (`pacman -S flatpak`) in a terminal.
+    pub fn install_flatpak(&self) -> OpOutcome {
+        self.run_command(INSTALL_FLATPAK_COMMAND, UserState::Installing, "flatpak")
+    }
+
+    /// Add the Flathub remote in a terminal.
+    pub fn add_flathub(&self) -> OpOutcome {
+        self.run_command(ADD_FLATHUB_COMMAND, UserState::Installing, "flathub")
     }
 }
 

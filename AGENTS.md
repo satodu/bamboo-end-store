@@ -75,8 +75,8 @@ the palette, the shapes and motion come from Galdr.
 - Settings keep the PHP app's key names and defaults so an old `settings.json` loads unchanged. Unknown keys are kept.
 - Matugen: the app generates palettes in-process (`material-colors`) and never runs the `matugen` binary. If that ever
   changes, it must use `--dry-run` and an empty config: Matugen with the user's config re-themes the whole desktop.
-- Installing and removing packages opens an external terminal and runs `sudo`. Never trigger that from tests or
-  automation. Registering an AppImage executes it (`--appimage-extract`); only do that with files you trust.
+- Installing and removing packages, and the Flatpak setup buttons in Settings (`installFlatpak`, `addFlathub`), open an
+  external terminal and run `sudo`. Never trigger that from tests or automation; reading the status (`checkFlatpak`) is safe. Registering an AppImage executes it (`--appimage-extract`); only do that with files you trust.
 - Filters follow the old app: repository (`all`, `official` = pacman, `aur`, `flatpak`) and sort (`relevance`, `name`)
   apply to the whole result before pagination; `search_limit` is the page size. Counts per repository come from the
   unfiltered result.
@@ -102,5 +102,5 @@ binary reach `Qt.application.arguments` (the screenshot scripts use this with `g
 
 ## Not done yet
 
-Flatpak/Flathub status and setup in Settings, AUR comments, the "Bamboo Installs" tab, the home page with
+AUR comments, the "Bamboo Installs" tab, the home page with
 categories, system notifications, brand icons for packages. See the git log for what is already ported.

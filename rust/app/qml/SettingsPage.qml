@@ -12,6 +12,21 @@ Item {
     property var backend
     readonly property var s: JSON.parse(backend.settings)
     property string note: ""
+    /// {installed, flathub}; empty until the first check finishes.
+    readonly property var flatpak: JSON.parse(backend.flatpak)
+    readonly property bool flatpakKnown: flatpak.installed !== undefined
+    property string flatpakError: ""
+
+    onVisibleChanged: if (visible) backend.checkFlatpak()
+    Component.onCompleted: backend.checkFlatpak()
+
+    Connections {
+        target: root.backend
+        function onOperationFinished(name, action, code) {
+            if (name !== "Flatpak" && name !== "Flathub") return
+            root.flatpakError = code === 0 ? "" : Tr.f("%s failed (exit %s)", name, code)
+        }
+    }
 
     function set(key, value) {
         backend.setSetting(key, JSON.stringify(value))
@@ -122,7 +137,74 @@ Item {
                 SettingRow {
                     title: Tr.t("Flatpak Integration")
                     description: Tr.t("Access Flathub's universal application ecosystem.")
-                    Toggle { checked: root.s.enable_flatpak; onToggled: v => root.set("enable_flatpak", v) }
+                    Toggle {
+                        checked: root.s.enable_flatpak
+                        onToggled: v => { root.set("enable_flatpak", v); if (v) backend.checkFlatpak() }
+                    }
+                }
+
+                // What Flatpak needs to work here, with a button to fix each missing piece.
+                Item {
+                    visible: root.s.enable_flatpak
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: status.implicitHeight + 36
+
+                    ChamferPanel {
+                        anchors.fill: parent
+                        padding: 18
+                        chamfer: Style.chamferSm
+                        fill: Theme.surfaceContainerHigh
+
+                        ColumnLayout {
+                            id: status
+                            anchors.left: parent.left
+                            anchors.right: parent.right
+                            anchors.top: parent.top
+                            spacing: 12
+
+                            Text {
+                                text: Tr.t("System Status")
+                                color: Theme.fgSurfaceVariant
+                                font.family: Style.mono
+                                font.pixelSize: 10
+                                font.letterSpacing: 2
+                                font.capitalization: Font.AllUppercase
+                            }
+                            StatusRow {
+                                Layout.fillWidth: true
+                                known: root.flatpakKnown
+                                ok: !!root.flatpak.installed
+                                okText: Tr.t("Flatpak instalado")
+                                badText: Tr.t("Flatpak não instalado")
+                                actionText: Tr.t("Install")
+                                busy: backend.busy
+                                onAction: backend.installFlatpak()
+                            }
+                            StatusRow {
+                                Layout.fillWidth: true
+                                known: root.flatpakKnown
+                                ok: !!root.flatpak.flathub
+                                okText: Tr.t("Flathub configurado")
+                                badText: Tr.t("Flathub remote não configurado")
+                                actionText: Tr.t("Add")
+                                actionEnabled: !!root.flatpak.installed
+                                busy: backend.busy
+                                onAction: backend.addFlathub()
+                            }
+                            RowLayout {
+                                visible: root.flatpakError.length > 0
+                                spacing: 8
+                                Rune { name: "error"; size: 16; color: Theme.error }
+                                Text {
+                                    Layout.fillWidth: true
+                                    text: root.flatpakError
+                                    color: Theme.fgSurface
+                                    font.pixelSize: 12
+                                    wrapMode: Text.Wrap
+                                }
+                            }
+                        }
+                    }
                 }
                 SettingRow {
                     title: Tr.t("Search Results Limit")
