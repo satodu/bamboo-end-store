@@ -96,6 +96,11 @@ QtObject {
         return ""
     }
 
+    /// Linear blend of two colours, `t` from 0 (a) to 1 (b).
+    function mix(a, b, t) {
+        return Qt.rgba(a.r + (b.r - a.r) * t, a.g + (b.g - a.g) * t, a.b + (b.b - a.b) * t, a.a + (b.a - a.a) * t)
+    }
+
     // The 24 runes of the Elder Futhark, for the ring.
     readonly property string futhark: "ᚠᚢᚦᚨᚱᚲᚷᚹᚺᚾᛁᛃᛇᛈᛉᛊᛏᛒᛖᛗᛚᛜᛞᛟ"
 }

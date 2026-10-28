@@ -29,10 +29,6 @@ Column {
         running: root.animated && !Style.still && root.visible
     }
 
-    function mix(a, b, t) {
-        return Qt.rgba(a.r + (b.r - a.r) * t, a.g + (b.g - a.g) * t, a.b + (b.b - a.b) * t, a.a + (b.a - a.a) * t)
-    }
-
     Repeater {
         model: root.runes.length
         Text {
@@ -45,7 +41,7 @@ Column {
             }
             readonly property color base: Qt.alpha(index === 0 ? Theme.primary : Theme.fgSurface, root.alpha)
             text: root.runes.charAt(index)
-            color: root.mix(base, Qt.alpha(Theme.primary, 0.95), lit)
+            color: Style.mix(base, Qt.alpha(Theme.primary, 0.95), lit)
             font.family: Style.runeFont
             font.pixelSize: root.size
             scale: 1 + 0.1 * lit

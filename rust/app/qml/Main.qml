@@ -116,13 +116,6 @@ ApplicationWindow {
                     // remembered, so the intro plays only once
                     onIntroFinished: { appBackend.setSetting("intro_seen", "true"); root.intro = false }
                 }
-
-                RuneRuler {
-                    Layout.alignment: Qt.AlignLeft
-                    Layout.leftMargin: 26
-                    Layout.bottomMargin: 22
-                    runes: "ᛒᚨᛗᛒᛟᛟ"
-                }
             }
         }
 

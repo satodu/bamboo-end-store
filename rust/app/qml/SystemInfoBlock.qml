@@ -3,6 +3,9 @@ import QtQuick.Layouts
 
 // Machine name, OS, kernel and app version, each led by a rune. On the very first launch the
 // values start as runes and settle into text (`intro`); afterwards they just show.
+//
+// The four runes keep a slow wave of light travelling down them, one after another, forever:
+// only a change of tone, calm, no pulsing. It stops when motion is reduced.
 ColumnLayout {
     id: root
 
@@ -23,6 +26,16 @@ ColumnLayout {
     ]
     property int done: 0
 
+    /// Where the wave is, in line units: starts above the first rune, ends below the last.
+    property real phase: -2
+    NumberAnimation on phase {
+        from: -2
+        to: root.rows.length + 1
+        duration: 7000
+        loops: Animation.Infinite
+        running: !Style.still && root.visible
+    }
+
     // With reduced motion nothing animates, so the intro is over the moment it is asked for.
     onIntroChanged: if (intro && Style.still) introFinished()
 
@@ -35,9 +48,17 @@ ColumnLayout {
             spacing: 8
 
             Rune {
+                id: icon
                 glyph: line.modelData.rune
                 size: 14
-                color: line.modelData.tone === 1 ? Theme.primary : Qt.alpha(Theme.fgSurface, 0.5)
+                // 0 away from the wave, 1 under its crest: a smooth bell about two lines wide
+                readonly property real lit: {
+                    const d = Math.abs(root.phase - line.index) / 1.6
+                    return d >= 1 ? 0 : 0.5 * (1 + Math.cos(Math.PI * d))
+                }
+                readonly property color base: line.modelData.tone === 1 ? Theme.primary : Qt.alpha(Theme.fgSurface, 0.5)
+                color: Style.mix(base, Qt.alpha(Theme.primary, 0.95), lit)
+                scale: 1 + 0.12 * lit
                 Layout.preferredWidth: 14
                 horizontalAlignment: Text.AlignHCenter
             }

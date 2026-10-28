@@ -115,13 +115,13 @@ Item {
     // is used instead of one stretched column with controls far from their labels.
     readonly property var sectionComponents: ({
         "repos": sec_repos, "appearance": sec_appearance, "terminal": sec_terminal,
-        "appimages": sec_appimages, "maintenance": sec_maintenance
+        "appimages": sec_appimages, "maintenance": sec_maintenance, "about": sec_about
     })
     readonly property var columnPlan: width < 1000
-        ? [["repos", "appearance", "terminal", "appimages", "maintenance"]]
+        ? [["repos", "appearance", "terminal", "appimages", "maintenance", "about"]]
         : width < 1650
-            ? [["repos", "terminal", "appimages", "maintenance"], ["appearance"]]
-            : [["repos", "terminal"], ["appearance"], ["appimages", "maintenance"]]
+            ? [["repos", "terminal", "appimages", "maintenance"], ["appearance", "about"]]
+            : [["repos", "terminal"], ["appearance"], ["appimages", "maintenance", "about"]]
 
     Component {
         id: sec_repos
@@ -448,5 +448,67 @@ Item {
                     }
                 }
             }
+    }
+
+    Component {
+        id: sec_about
+        SettingsSection {
+            title: Tr.t("About the Author")
+            rune: "text"
+            delay: 350
+
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: 18
+
+                // the author's mark: Berkanan (growth) on a chamfered tile
+                ChamferPanel {
+                    Layout.preferredWidth: 64
+                    Layout.preferredHeight: 64
+                    Layout.alignment: Qt.AlignTop
+                    padding: 0
+                    chamfer: 12
+                    fill: Theme.primaryContainer
+                    stroke: Theme.primary
+                    Rune { anchors.centerIn: parent; name: "bamboo"; size: 34; color: Theme.fgPrimaryContainer }
+                }
+
+                ColumnLayout {
+                    Layout.fillWidth: true
+                    spacing: 4
+                    Text {
+                        text: "Panda"
+                        color: Theme.fgSurface
+                        font.family: Style.displayFont
+                        font.pixelSize: 28
+                        font.weight: Font.ExtraBold
+                        font.capitalization: Font.AllUppercase
+                        font.letterSpacing: 1.5
+                    }
+                    Text {
+                        text: "Eduardo Sato — São Paulo, Brazil"
+                        color: Theme.fgSurfaceVariant
+                        font.family: Style.mono
+                        font.pixelSize: 10
+                        font.letterSpacing: 1.5
+                        font.capitalization: Font.AllUppercase
+                    }
+                    Text {
+                        Layout.fillWidth: true
+                        Layout.topMargin: 4
+                        text: Tr.t("Developer and EndeavourOS fan. Built to enhance the Linux experience.")
+                        color: Theme.fgSurface
+                        font.pixelSize: 13
+                        wrapMode: Text.Wrap
+                    }
+                }
+            }
+
+            Btn {
+                text: "GitHub"
+                variant: "outline"
+                onClicked: Qt.openUrlExternally("https://github.com/satodu")
+            }
+        }
     }
 }

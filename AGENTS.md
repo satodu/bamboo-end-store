@@ -48,7 +48,8 @@ the palette, the shapes and motion come from Galdr.
   - no bounce, no glitch, no pulsing neon;
   - respect reduced motion: use `Style.still` / the `reduce_motion` setting for anything that animates.
 - The sidebar shows the machine (`SystemInfoBlock`: host, OS, kernel, app version). On the very first launch (`intro_seen` unset) its
-  values start as runes and settle into text (`RuneDecode`); `RuneRuler` has a slow looping light wave. Both stop under reduced motion.
+  values start as runes and settle into text (`RuneDecode`), and the four runes beside the lines carry a slow looping wave of
+  light (only a change of tone). Both stop under reduced motion. No loose rune ruler in the sidebar: it looked out of place.
 - Empty states are a dashed plinth with the rune ring and a mono caption (`Plinth`, `FIG. — NO SHARD.`).
 
 ## QML rules
