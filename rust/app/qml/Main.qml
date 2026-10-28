@@ -10,6 +10,28 @@ ApplicationWindow {
     height: 720
     visible: true
     title: "Bamboo End Store"
+    color: Theme.surface
+
+    // Qt Quick Controls read these, so stock controls follow the Matugen palette.
+    palette {
+        window: Theme.surface
+        windowText: Theme.fgSurface
+        base: Theme.surfaceContainerLow
+        text: Theme.fgSurface
+        placeholderText: Theme.fgSurfaceVariant
+        button: Theme.surfaceContainerHigh
+        buttonText: Theme.fgSurface
+        highlight: Theme.primary
+        highlightedText: Theme.fgPrimary
+        light: Theme.surfaceContainerHighest
+        mid: Theme.outline
+        dark: Theme.outlineVariant
+    }
+
+    function setTheme(key, value) {
+        backend.setSetting(key, JSON.stringify(value))
+        Theme.reload()
+    }
 
     property var packages: JSON.parse(backend.results)
     property var info: JSON.parse(backend.details)
@@ -119,6 +141,34 @@ ApplicationWindow {
             }
             Label { text: root.lastEvent; Layout.fillWidth: true; wrapMode: Text.Wrap }
             Item { Layout.fillHeight: true }
+
+            Label {
+                text: "Theme: " + Theme.source + " / " + (Theme.dark ? "dark" : "light")
+                color: Theme.primary
+            }
+            Flow {
+                Layout.fillWidth: true
+                spacing: 6
+                Button { text: "System"; onClicked: root.setTheme("theme_source", "system") }
+                Button {
+                    text: "Bamboo"
+                    onClicked: { backend.setSetting("theme", '"theme-bamboo"'); root.setTheme("theme_source", "preset") }
+                }
+                Button {
+                    text: "Catppuccin"
+                    onClicked: { backend.setSetting("theme", '"theme-catppuccin"'); root.setTheme("theme_source", "preset") }
+                }
+                Button {
+                    text: "Nord"
+                    onClicked: { backend.setSetting("theme", '"theme-nord"'); root.setTheme("theme_source", "preset") }
+                }
+                Button {
+                    text: "Gruvbox"
+                    onClicked: { backend.setSetting("theme", '"theme-gruvbox"'); root.setTheme("theme_source", "preset") }
+                }
+                Button { text: "Dark"; onClicked: root.setTheme("theme_mode", "dark") }
+                Button { text: "Light"; onClicked: root.setTheme("theme_mode", "light") }
+            }
         }
     }
 }

@@ -1,4 +1,5 @@
 mod backend;
+mod theme_bridge;
 
 use cxx_qt_lib::{QGuiApplication, QQmlApplicationEngine, QUrl};
 

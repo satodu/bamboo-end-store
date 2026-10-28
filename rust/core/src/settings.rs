@@ -19,7 +19,16 @@ pub struct Settings {
     pub terminal_close_delay: u32,
     pub view_mode: String,
     pub appimages_view_mode: String,
+    /// Legacy preset id (`theme-bamboo`, `theme-catppuccin`, `theme-nord`, `theme-gruvbox`).
     pub theme: String,
+    /// Where the palette comes from: `auto`, `system`, `preset` or `seed`.
+    pub theme_source: String,
+    /// `#rrggbb` source colour for `theme_source = "seed"`.
+    pub theme_seed: String,
+    /// `dark` or `light`. Ignored by `system`, whose file is already one mode.
+    pub theme_mode: String,
+    /// Matugen scheme type, e.g. `scheme-tonal-spot`.
+    pub theme_scheme: String,
     /// Keys this version does not know, kept so they survive a save.
     #[serde(flatten)]
     pub extra: Map<String, Value>,
@@ -38,6 +47,10 @@ impl Default for Settings {
             view_mode: "grid".into(),
             appimages_view_mode: "grid".into(),
             theme: "theme-bamboo".into(),
+            theme_source: "auto".into(),
+            theme_seed: String::new(),
+            theme_mode: "dark".into(),
+            theme_scheme: "scheme-tonal-spot".into(),
             extra: Map::new(),
         }
     }

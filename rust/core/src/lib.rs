@@ -13,6 +13,7 @@ pub mod store;
 pub mod state;
 pub mod sys;
 pub mod terminal;
+pub mod theme;
 
 pub use aur::AurManager;
 pub use flatpak::FlatpakManager;
