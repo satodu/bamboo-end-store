@@ -1,11 +1,13 @@
 import QtQuick
 
-// Sidebar entry. The active one gets the 2 px primary fillet on its leading edge.
+// Sidebar entry led by a rune. The active one gets the 2 px primary fillet drawn down its
+// leading edge and its rune turns primary.
 Item {
     id: root
 
     property string text: ""
-    property string glyph: "◆"
+    /// Rune name from Style.runes
+    property string rune: "default"
     property bool active: false
     property int badge: 0
 
@@ -22,10 +24,11 @@ Item {
 
     Rectangle {
         width: Style.fillet
-        height: parent.height
+        height: root.active ? parent.height : 0
         color: Theme.primary
-        opacity: root.active ? 1 : 0
-        Behavior on opacity { NumberAnimation { duration: Style.quick } }
+        Behavior on height {
+            NumberAnimation { duration: Style.medium; easing.type: Easing.BezierSpline; easing.bezierCurve: Style.ease }
+        }
     }
 
     Row {
@@ -34,11 +37,14 @@ Item {
         anchors.leftMargin: 18
         spacing: 12
 
-        Text {
-            text: root.glyph
-            color: root.active ? Theme.primary : Theme.fgSurfaceVariant
-            font.pixelSize: 14
+        Rune {
+            name: root.rune
+            size: 21
+            width: 22
+            horizontalAlignment: Text.AlignHCenter
             anchors.verticalCenter: parent.verticalCenter
+            color: root.active ? Theme.primary : Qt.alpha(Theme.fgSurface, 0.45)
+            Behavior on color { ColorAnimation { duration: Style.quick } }
         }
         Text {
             text: root.text

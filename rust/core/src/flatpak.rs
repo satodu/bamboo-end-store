@@ -110,6 +110,10 @@ impl PackageManager for FlatpakManager {
         self.installed_ids().contains(name)
     }
 
+    fn installed(&self) -> Vec<Package> {
+        self.installed_flatpaks()
+    }
+
     fn install_command(&self, name: &str) -> String {
         format!("flatpak install -y flathub {}", shell_quote(name))
     }

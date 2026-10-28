@@ -7,6 +7,7 @@ Item {
 
     property var pkg: ({})
     property bool busy: false
+    property bool showInstalledTag: true
 
     signal opened()
     signal installRequested()
@@ -57,6 +58,7 @@ Item {
             }
             Text {
                 Layout.fillWidth: true
+                visible: text.length > 0
                 text: root.pkg.description || ""
                 color: Theme.fgSurfaceVariant
                 font.pixelSize: 12
@@ -73,7 +75,7 @@ Item {
             elide: Text.ElideRight
         }
         Tag { text: root.pkg.source || ""; tone: root.pkg.source === "aur" ? "tertiary" : "neutral" }
-        Tag { visible: !!root.pkg.installed; text: "installed"; tone: "primary" }
+        Tag { visible: root.showInstalledTag && !!root.pkg.installed; text: "installed"; tone: "primary" }
         Btn {
             text: root.pkg.installed ? "Remove" : "Install"
             variant: root.pkg.installed ? "outline" : "filled"

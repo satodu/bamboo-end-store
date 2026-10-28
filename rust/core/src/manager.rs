@@ -8,6 +8,10 @@ pub trait PackageManager: Send + Sync {
     fn search(&self, query: &str) -> Vec<Package>;
     fn details(&self, name: &str) -> Option<Details>;
     fn is_installed(&self, name: &str) -> bool;
+    /// Packages this source reports as installed. Sources that cannot list them return nothing.
+    fn installed(&self) -> Vec<Package> {
+        Vec::new()
+    }
     fn install_command(&self, name: &str) -> String;
     fn remove_command(&self, name: &str) -> String;
 }

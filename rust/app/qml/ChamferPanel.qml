@@ -3,6 +3,7 @@ import QtQuick.Shapes
 
 // Rectangle with the top-right and bottom-left corners cut at 45 degrees and a hairline
 // outline drawn inside the edge. Children go into the padded content area.
+// `details` adds the Galdr line work (brackets + ruler); `dashed` makes an empty plinth.
 Item {
     id: root
 
@@ -11,6 +12,8 @@ Item {
     property color stroke: Theme.outlineVariant
     property real strokeWidth: Style.border
     property real padding: Style.pad
+    property bool dashed: false
+    property bool details: false
 
     default property alias content: inner.data
     readonly property alias contentItem: inner
@@ -35,6 +38,8 @@ Item {
             fillColor: root.fill
             strokeColor: root.stroke
             strokeWidth: root.strokeWidth
+            strokeStyle: root.dashed ? ShapePath.DashLine : ShapePath.SolidLine
+            dashPattern: [4, 4]
             joinStyle: ShapePath.MiterJoin
 
             startX: o
@@ -46,6 +51,12 @@ Item {
             PathLine { x: path.o; y: path.o + path.h - path.c }
             PathLine { x: path.o; y: path.o }
         }
+    }
+
+    Loader {
+        anchors.fill: parent
+        active: root.details
+        source: "PanelDetails.qml"
     }
 
     Item {

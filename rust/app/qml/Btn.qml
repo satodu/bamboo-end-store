@@ -35,7 +35,9 @@ Item {
         }
     }
     // Material state layer: a translucent wash of the ink colour.
-    readonly property real wash: pressed ? 0.16 : hovered ? 0.08 : 0
+    readonly property real washTarget: pressed ? 0.16 : hovered ? 0.08 : 0
+    property real wash: washTarget
+    Behavior on wash { NumberAnimation { duration: Style.quick; easing.type: Easing.BezierSpline; easing.bezierCurve: Style.ease } }
 
     ChamferPanel {
         anchors.fill: parent

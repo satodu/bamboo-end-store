@@ -34,6 +34,7 @@ pub struct Store {
     settings: Mutex<Settings>,
     searches: TtlCache<Vec<Package>>,
     details: TtlCache<Option<Details>>,
+    installed: TtlCache<Vec<Package>>,
     pub state: UserStateMachine,
 }
 
@@ -60,6 +61,7 @@ impl Store {
             settings: Mutex::new(settings),
             searches: TtlCache::new(),
             details: TtlCache::new(),
+            installed: TtlCache::new(),
             state: UserStateMachine::new(),
         }
     }
@@ -121,9 +123,36 @@ impl Store {
         (all.len(), items)
     }
 
+    /// Installed packages: pacman and AUR (foreign) plus Flatpaks, cached for a minute. A non-empty
+    /// `filter` keeps names containing it (case-insensitive). Returns `(total, page items)`.
+    pub fn installed_page(&self, filter: &str, page: usize) -> (usize, Vec<Package>) {
+        let all = self.installed.remember("all", Duration::from_secs(60), || self.collect_installed());
+        let needle = filter.trim().to_lowercase();
+        let matching: Vec<&Package> = all
+            .iter()
+            .filter(|p| needle.is_empty() || p.name.to_lowercase().contains(&needle) || p.display_name.to_lowercase().contains(&needle))
+            .collect();
+        let limit = (self.settings().search_limit as usize).max(1);
+        let start = page.saturating_sub(1).saturating_mul(limit);
+        (matching.len(), matching.into_iter().skip(start).take(limit).cloned().collect())
+    }
+
+    fn collect_installed(&self) -> Vec<Package> {
+        let mut all = self.pacman.installed();
+        all.extend(self.flatpak.installed());
+        all
+    }
+
     pub fn details(&self, name: &str, source: PackageSource) -> Option<Details> {
         let key = format!("{source}:{name}");
         self.details.remember(&key, DETAILS_TTL, || self.manager(source).details(name))
+    }
+
+    /// Drop every cache (the settings screen's "Clear Cache").
+    pub fn clear_cache(&self) {
+        self.searches.clear();
+        self.details.clear();
+        self.installed.clear();
     }
 
     pub fn command(&self, op: Op, name: &str, source: PackageSource) -> String {
@@ -146,8 +175,7 @@ impl Store {
         };
 
         self.state.reset();
-        self.searches.clear();
-        self.details.clear();
+        self.clear_cache();
         outcome
     }
 }
@@ -177,6 +205,11 @@ mod tests {
         }
         fn is_installed(&self, _: &str) -> bool {
             false
+        }
+        fn installed(&self) -> Vec<Package> {
+            (0..self.1)
+                .map(|i| Package { installed: true, name: format!("{}-{i}", self.0), ..self.search("")[i].clone() })
+                .collect()
         }
         fn install_command(&self, name: &str) -> String {
             format!("{} install {name}", self.0)
@@ -217,6 +250,20 @@ mod tests {
         assert_eq!(names(&second), ["flatpak-0", "flatpak-1"]);
         assert!(st.search_page("x", 3).1.is_empty());
         assert_eq!(st.search_page("x", 0).1.len(), 4, "page 0 behaves like page 1");
+    }
+
+    #[test]
+    fn installed_merges_filters_and_pages() {
+        let s = Settings { search_limit: 3, ..Settings::default() };
+        let st = store(s);
+        let (total, first) = st.installed_page("", 1);
+        // pacman (which already covers AUR) + flatpak; the AUR manager is not queried separately
+        assert_eq!((total, first.len()), (4, 3));
+        assert!(first.iter().all(|p| p.installed));
+        assert_eq!(st.installed_page("", 2).1.len(), 1);
+        let (total, hits) = st.installed_page("FLAT", 1);
+        assert_eq!((total, names(&hits)), (2, vec!["flatpak-0", "flatpak-1"]));
+        st.clear_cache();
     }
 
     #[test]

@@ -16,6 +16,8 @@ QtObject {
     readonly property var c: JSON.parse(bridge.palette)
 
     readonly property bool dark: bridge.dark
+    /// Galdr: wipes, typing, drifting runes and the ring stop when this is on.
+    readonly property bool reduceMotion: bridge.reduceMotion
     /// "system", "preset" or "seed"
     readonly property string source: bridge.source
 

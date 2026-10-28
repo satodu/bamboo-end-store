@@ -80,6 +80,15 @@ impl PackageManager for PacmanManager {
         sys::run("pacman", &["-Qq", name], None).is_some_and(|o| o.success)
     }
 
+    /// Everything installed: `pacman -Q`, with foreign packages (`-Qm`) marked as AUR.
+    fn installed(&self) -> Vec<Package> {
+        let Some(all) = sys::run("pacman", &["-Q"], None).filter(|o| o.success) else {
+            return Vec::new();
+        };
+        let foreign = sys::run("pacman", &["-Qm"], None).filter(|o| o.success).map(|o| o.stdout).unwrap_or_default();
+        parse_installed(&all.stdout, &foreign)
+    }
+
     fn install_command(&self, name: &str) -> String {
         format!("sudo pacman -S --noconfirm {}", shell_quote(name))
     }
@@ -120,6 +129,26 @@ pub fn parse_search(output: &str) -> Vec<Package> {
     packages
 }
 
+/// `pacman -Q` lines (`name version`); names also listed by `pacman -Qm` are AUR/foreign.
+pub fn parse_installed(all: &str, foreign: &str) -> Vec<Package> {
+    let foreign: HashSet<&str> = foreign.lines().filter_map(|l| l.split_whitespace().next()).collect();
+    all.lines()
+        .filter_map(|line| {
+            let mut parts = line.split_whitespace();
+            let (name, version) = (parts.next()?, parts.next()?);
+            Some(Package {
+                repo: if foreign.contains(name) { "aur" } else { "local" }.into(),
+                name: name.to_owned(),
+                display_name: String::new(),
+                version: version.to_owned(),
+                description: String::new(),
+                source: if foreign.contains(name) { PackageSource::Aur } else { PackageSource::Pacman },
+                installed: true,
+            })
+        })
+        .collect()
+}
+
 /// Parse `Key : Value` lines. Continuation lines without ` : ` are dropped, as in the PHP.
 pub fn parse_info(output: &str) -> Details {
     output
@@ -155,6 +184,20 @@ mod tests {
         assert_eq!(p[0].version, "157.0-1");
         assert_eq!(p[2].name, "firefox");
         assert_eq!(p[2].description, "Fast, Private & Safe Web Browser");
+    }
+
+    #[test]
+    fn installed_marks_foreign_packages_as_aur() {
+        let all = include_str!("../tests/fixtures/pacman_Q.txt");
+        let foreign = include_str!("../tests/fixtures/pacman_Qm.txt");
+        let pkgs = parse_installed(all, foreign);
+        assert_eq!(pkgs.len(), 30);
+        assert!(pkgs.iter().all(|p| p.installed && !p.version.is_empty()));
+        let aur_names: Vec<&str> = foreign.lines().filter_map(|l| l.split_whitespace().next()).collect();
+        for p in &pkgs {
+            assert_eq!(p.source == PackageSource::Aur, aur_names.contains(&p.name.as_str()), "{}", p.name);
+        }
+        assert_eq!(parse_installed("a 1\nbroken\n", "")[0].name, "a");
     }
 
     #[test]

@@ -32,6 +32,8 @@ pub struct Settings {
     pub theme_mode: String,
     /// Matugen scheme type, e.g. `scheme-tonal-spot`.
     pub theme_scheme: String,
+    /// Turns off wipes, typing, drifting runes and the rotating ring (Galdr: respect reduced motion).
+    pub reduce_motion: bool,
     /// Keys this version does not know, kept so they survive a save.
     #[serde(flatten)]
     pub extra: Map<String, Value>,
@@ -56,6 +58,7 @@ impl Default for Settings {
             theme_tertiary: String::new(),
             theme_mode: "dark".into(),
             theme_scheme: "scheme-tonal-spot".into(),
+            reduce_motion: false,
             extra: Map::new(),
         }
     }

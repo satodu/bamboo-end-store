@@ -96,10 +96,10 @@ ApplicationWindow {
                     ColumnLayout {
                         anchors.fill: parent
                         spacing: 0
-                        NavItem { Layout.fillWidth: true; text: "Explore"; glyph: "◈"; active: true }
-                        NavItem { Layout.fillWidth: true; text: "Installed"; glyph: "◆"; badge: 128 }
-                        NavItem { Layout.fillWidth: true; text: "AppImages"; glyph: "▣" }
-                        NavItem { Layout.fillWidth: true; text: "Settings"; glyph: "✦" }
+                        NavItem { Layout.fillWidth: true; text: "Explore"; rune: "explore"; active: true }
+                        NavItem { Layout.fillWidth: true; text: "Installed"; rune: "installed"; badge: 128 }
+                        NavItem { Layout.fillWidth: true; text: "AppImages"; rune: "appimages" }
+                        NavItem { Layout.fillWidth: true; text: "Settings"; rune: "settings" }
                     }
                 }
             }

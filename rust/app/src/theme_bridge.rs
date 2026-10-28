@@ -22,6 +22,7 @@ pub mod qobject {
         #[qproperty(QString, palette)]
         #[qproperty(bool, dark)]
         #[qproperty(QString, source)]
+        #[qproperty(bool, reduce_motion, cxx_name = "reduceMotion")]
         type ThemeBridge = super::ThemeBridgeRust;
 
         /// Re-read the settings and the palette. Call after changing a `theme_*` setting.
@@ -37,6 +38,7 @@ pub struct ThemeBridgeRust {
     palette: QString,
     dark: bool,
     source: QString,
+    reduce_motion: bool,
 }
 
 fn source_name(s: Source) -> &'static str {
@@ -47,6 +49,11 @@ fn source_name(s: Source) -> &'static str {
     }
 }
 
+/// The setting, or `BAMBOO_REDUCE_MOTION=1` for a one-off run.
+fn reduce_motion(s: &Settings) -> bool {
+    s.reduce_motion || std::env::var("BAMBOO_REDUCE_MOTION").is_ok_and(|v| v == "1")
+}
+
 fn palette_json(t: &Theme) -> QString {
     QString::from(&serde_json::to_string(&t.palette).unwrap_or_else(|_| "{}".into()))
 }
@@ -55,7 +62,12 @@ impl Default for ThemeBridgeRust {
     /// Resolved synchronously so the first frame already has the right colours.
     fn default() -> Self {
         let t = theme::resolve(&Settings::load());
-        Self { palette: palette_json(&t), dark: t.dark, source: QString::from(source_name(t.source)) }
+        Self {
+            palette: palette_json(&t),
+            dark: t.dark,
+            source: QString::from(source_name(t.source)),
+            reduce_motion: reduce_motion(&Settings::load()),
+        }
     }
 }
 
@@ -86,6 +98,7 @@ impl cxx_qt::Initialize for qobject::ThemeBridge {
 
 fn apply(mut this: Pin<&mut qobject::ThemeBridge>, t: Theme) {
     // `palette` last: QML bindings run on its change signal and must already see the new mode.
+    this.as_mut().set_reduce_motion(reduce_motion(&Settings::load()));
     this.as_mut().set_dark(t.dark);
     this.as_mut().set_source(QString::from(source_name(t.source)));
     this.as_mut().set_palette(palette_json(&t));
