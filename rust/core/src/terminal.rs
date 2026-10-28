@@ -61,13 +61,13 @@ impl TerminalJob {
     pub fn spawn_with(terminal: &str, command: &str, settings: &Settings) -> Option<Self> {
         let status_file = status_path();
         let script = script(command, status_file.to_str()?, settings, i18n::language_for(&settings.locale));
-        let child = Command::new(terminal)
+        let mut command = Command::new(terminal);
+        command
             .args(invocation(terminal, &script))
             .stdin(Stdio::null())
             .stdout(Stdio::null())
-            .stderr(Stdio::null())
-            .spawn()
-            .ok()?;
+            .stderr(Stdio::null());
+        let child = crate::sys::spawn_retrying_busy(&mut command)?;
         Some(Self { child, status_file, started: Instant::now() })
     }
 

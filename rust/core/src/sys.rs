@@ -20,14 +20,13 @@ pub fn run_in(cwd: Option<&std::path::Path>, program: &str, args: &[&str], timeo
     if let Some(dir) = cwd {
         command.current_dir(dir);
     }
-    let mut child = command
+    command
         .args(args)
         .env("LC_ALL", "C")
         .stdin(Stdio::null())
         .stdout(Stdio::piped())
-        .stderr(Stdio::null())
-        .spawn()
-        .ok()?;
+        .stderr(Stdio::null());
+    let mut child = spawn_retrying_busy(&mut command)?;
 
     let mut stdout = child.stdout.take()?;
     let reader = thread::spawn(move || {
@@ -56,6 +55,22 @@ pub fn run_in(cwd: Option<&std::path::Path>, program: &str, args: &[&str], timeo
         stdout: String::from_utf8_lossy(&bytes).into_owned(),
         success: status.success(),
     })
+}
+
+/// Start a process, retrying briefly on `ETXTBSY` ("text file busy"). Linux refuses to execute a
+/// file that any process still has open for writing, and a `fork` elsewhere in this process (a
+/// terminal being opened, another worker thread) holds a copy of a just-written file's descriptor for
+/// an instant. This matters for scripts and AppImages that were copied or written right before running.
+pub(crate) fn spawn_retrying_busy(command: &mut Command) -> Option<std::process::Child> {
+    const ETXTBSY: i32 = 26;
+    for _ in 0..100 {
+        match command.spawn() {
+            Ok(child) => return Some(child),
+            Err(e) if e.raw_os_error() == Some(ETXTBSY) => thread::sleep(Duration::from_millis(20)),
+            Err(_) => return None,
+        }
+    }
+    None
 }
 
 /// `command -v` equivalent without spawning a shell.

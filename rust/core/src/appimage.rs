@@ -211,12 +211,9 @@ impl AppImages {
             return Err(AppImageError::NotFound);
         }
         make_executable(path)?;
-        Command::new(path)
-            .stdin(Stdio::null())
-            .stdout(Stdio::null())
-            .stderr(Stdio::null())
-            .process_group(0)
-            .spawn()?;
+        let mut command = Command::new(path);
+        command.stdin(Stdio::null()).stdout(Stdio::null()).stderr(Stdio::null()).process_group(0);
+        sys::spawn_retrying_busy(&mut command).ok_or_else(|| io::Error::other("could not start the AppImage"))?;
         Ok(())
     }
 
@@ -439,16 +436,32 @@ mod tests {
             let png = "\\211PNG\\r\\n\\032\\n";
             let icon = if with_icon { format!("printf '{png}fakepng' > squashfs-root/.DirIcon") } else { ":".into() };
             let script = format!(
-                "#!/bin/sh\nif [ \"$1\" = \"--appimage-extract\" ]; then\n mkdir -p squashfs-root\n case \"$2\" in\n  .DirIcon) {icon} ;;\n  '*.desktop') printf '[Desktop Entry]\\nName=Fake App\\nCategories=Graphics;\\nComment=Hello\\nStartupWMClass=fakeapp\\n[Desktop Action x]\\nName=Nope\\n' > squashfs-root/fake.desktop ;;\n esac\n exit 0\nfi\necho launched > \"$(dirname \"$0\")/launched.txt\"\n"
+                "#!/bin/sh\n[ \"$1\" = \"--probe\" ] && exit 0\nif [ \"$1\" = \"--appimage-extract\" ]; then\n mkdir -p squashfs-root\n case \"$2\" in\n  .DirIcon) {icon} ;;\n  '*.desktop') printf '[Desktop Entry]\\nName=Fake App\\nCategories=Graphics;\\nComment=Hello\\nStartupWMClass=fakeapp\\n[Desktop Action x]\\nName=Nope\\n' > squashfs-root/fake.desktop ;;\n esac\n exit 0\nfi\necho launched > \"$(dirname \"$0\")/launched.txt\"\n"
             );
             let path = self.root.join("src").join(name);
             fs::write(&path, script).unwrap();
+            make_executable(&path).unwrap();
+            wait_until_executable(&path);
             path
         }
 
         fn target(&self) -> PathBuf {
             self.root.join("target")
         }
+    }
+
+    /// Linux refuses to execute a file some process still has open for writing (ETXTBSY). Tests run in
+    /// parallel, and another test's `fork` briefly holds a copy of our just-closed writer, so wait
+    /// until the fake AppImage can really be started.
+    fn wait_until_executable(path: &Path) {
+        for _ in 0..500 {
+            match Command::new(path).arg("--probe").status() {
+                Ok(_) => return,
+                Err(e) if e.raw_os_error() == Some(26) => std::thread::sleep(Duration::from_millis(10)),
+                Err(e) => panic!("cannot run the fake AppImage: {e}"),
+            }
+        }
+        panic!("the fake AppImage stayed busy");
     }
 
     impl Drop for Sandbox {
