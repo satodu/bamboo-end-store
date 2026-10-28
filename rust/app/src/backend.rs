@@ -1,3 +1,11 @@
+use core::pin::Pin;
+use std::sync::atomic::{AtomicU64, Ordering};
+use std::sync::Arc;
+
+use bamboo_core::{Op, OpOutcome, PackageSource, Settings, Store};
+use cxx_qt::{CxxQtType, Threading};
+use cxx_qt_lib::QString;
+
 #[cxx_qt::bridge]
 pub mod qobject {
     unsafe extern "C++" {
@@ -6,35 +14,162 @@ pub mod qobject {
     }
 
     extern "RustQt" {
+        /// Single entry point QML talks to. Lists and details cross as JSON strings.
         #[qobject]
         #[qml_element]
-        #[qproperty(QString, status)]
+        #[qproperty(bool, busy)]
+        #[qproperty(i32, total)]
+        #[qproperty(QString, results)]
+        #[qproperty(QString, details)]
         type Backend = super::BackendRust;
 
+        /// 1-based `page`; the page size is the `search_limit` setting.
         #[qinvokable]
-        fn sources(self: &Backend) -> QString;
+        fn search(self: Pin<&mut Backend>, query: &QString, page: i32);
+
+        #[qinvokable]
+        #[cxx_name = "loadDetails"]
+        fn load_details(self: Pin<&mut Backend>, name: &QString, source: &QString);
+
+        #[qinvokable]
+        fn install(self: Pin<&mut Backend>, name: &QString, source: &QString);
+
+        #[qinvokable]
+        fn remove(self: Pin<&mut Backend>, name: &QString, source: &QString);
+
+        #[qinvokable]
+        #[cxx_name = "settingsJson"]
+        fn settings_json(self: &Backend) -> QString;
+
+        /// `value` is a JSON scalar (`true`, `50`, `"list"`).
+        #[qinvokable]
+        #[cxx_name = "setSetting"]
+        fn set_setting(self: Pin<&mut Backend>, key: &QString, value: &QString) -> bool;
+
+        /// `code` is the command's exit code, or -1 when no terminal was available
+        /// and -2 when the terminal was closed early.
+        #[qsignal]
+        #[cxx_name = "operationFinished"]
+        fn operation_finished(self: Pin<&mut Backend>, name: QString, action: QString, code: i32);
     }
+
+    impl cxx_qt::Threading for Backend {}
 }
 
-use core::pin::Pin;
-use cxx_qt_lib::QString;
-
 pub struct BackendRust {
-    status: QString,
+    busy: bool,
+    total: i32,
+    results: QString,
+    details: QString,
+    store: Arc<Store>,
+    /// Bumped per search; a slow older search must not overwrite a newer one.
+    search_gen: Arc<AtomicU64>,
 }
 
 impl Default for BackendRust {
     fn default() -> Self {
-        Self { status: QString::from("rust core online") }
+        Self {
+            busy: false,
+            total: 0,
+            results: QString::from("[]"),
+            details: QString::from("null"),
+            store: Arc::new(Store::new(Settings::load())),
+            search_gen: Arc::new(AtomicU64::new(0)),
+        }
     }
+}
+
+fn parse_source(s: &QString) -> Option<PackageSource> {
+    s.to_string().parse().ok()
 }
 
 impl qobject::Backend {
-    fn sources(self: &Self) -> QString {
-        use bamboo_core::PackageSource::*;
-        QString::from(format!("{}, {}, {}", Pacman, Aur, Flatpak))
+    fn search(mut self: Pin<&mut Self>, query: &QString, page: i32) {
+        let store = self.rust().store.clone();
+        let generation = self.rust().search_gen.clone();
+        let mine = generation.fetch_add(1, Ordering::SeqCst) + 1;
+        let query = query.to_string();
+        let thread = self.qt_thread();
+
+        self.as_mut().set_busy(true);
+        std::thread::spawn(move || {
+            let (total, items) = store.search_page(&query, page.max(1) as usize);
+            let json = serde_json::to_string(&items).unwrap_or_else(|_| "[]".into());
+            let _ = thread.queue(move |mut this| {
+                if generation.load(Ordering::SeqCst) == mine {
+                    this.as_mut().set_total(total as i32);
+                    this.as_mut().set_results(QString::from(&json));
+                    this.as_mut().set_busy(false);
+                }
+            });
+        });
+    }
+
+    fn load_details(self: Pin<&mut Self>, name: &QString, source: &QString) {
+        let Some(source) = parse_source(source) else {
+            return;
+        };
+        let store = self.rust().store.clone();
+        let name = name.to_string();
+        let thread = self.qt_thread();
+
+        std::thread::spawn(move || {
+            let json = serde_json::to_string(&store.details(&name, source)).unwrap_or_else(|_| "null".into());
+            let _ = thread.queue(move |mut this| this.as_mut().set_details(QString::from(&json)));
+        });
+    }
+
+    fn install(self: Pin<&mut Self>, name: &QString, source: &QString) {
+        self.run_op(Op::Install, name, source);
+    }
+
+    fn remove(self: Pin<&mut Self>, name: &QString, source: &QString) {
+        self.run_op(Op::Remove, name, source);
+    }
+
+    fn run_op(mut self: Pin<&mut Self>, op: Op, name: &QString, source: &QString) {
+        let Some(source) = parse_source(source) else {
+            return;
+        };
+        let store = self.rust().store.clone();
+        if store.state.is_busy() {
+            return;
+        }
+        let name = name.to_string();
+        let action = if op == Op::Install { "installed" } else { "removed" };
+        let thread = self.qt_thread();
+
+        self.as_mut().set_busy(true);
+        std::thread::spawn(move || {
+            let code = match store.run(op, &name, source) {
+                OpOutcome::Finished(code) => code,
+                OpOutcome::NoTerminal => -1,
+                OpOutcome::Aborted => -2,
+            };
+            let _ = thread.queue(move |mut this| {
+                this.as_mut().set_busy(false);
+                this.as_mut().operation_finished(QString::from(&name), QString::from(action), code);
+            });
+        });
+    }
+
+    fn settings_json(&self) -> QString {
+        let json = serde_json::to_string(&self.rust().store.settings()).unwrap_or_else(|_| "{}".into());
+        QString::from(&json)
+    }
+
+    fn set_setting(self: Pin<&mut Self>, key: &QString, value: &QString) -> bool {
+        let Ok(value) = serde_json::from_str::<serde_json::Value>(&value.to_string()) else {
+            return false;
+        };
+        let store = &self.rust().store;
+        let Ok(serde_json::Value::Object(mut map)) = serde_json::to_value(store.settings()) else {
+            return false;
+        };
+        map.insert(key.to_string(), value);
+        let Ok(updated) = serde_json::from_value::<Settings>(serde_json::Value::Object(map)) else {
+            return false;
+        };
+        store.update_settings(updated).is_ok()
     }
 }
-
-#[allow(unused)]
-fn _pin(_: Pin<&mut qobject::Backend>) {}

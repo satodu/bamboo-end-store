@@ -1,8 +1,11 @@
 use std::fmt;
+
+use serde::Serialize;
 use std::str::FromStr;
 
 /// Where a package comes from. Mirrors `App\Enums\PackageSource`.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize)]
+#[serde(rename_all = "lowercase")]
 pub enum PackageSource {
     Pacman,
     Aur,

@@ -1,9 +1,11 @@
 use std::collections::BTreeMap;
 
+use serde::Serialize;
+
 use crate::PackageSource;
 
 /// One row in a search result or list. Mirrors the arrays built by the PHP managers.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct Package {
     pub repo: String,
     pub name: String,

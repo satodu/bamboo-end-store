@@ -4,7 +4,7 @@ use crate::{Details, Package};
 ///
 /// Install and remove return the shell command to run, not a PID: terminal
 /// spawning is a separate concern (see the terminal module).
-pub trait PackageManager {
+pub trait PackageManager: Send + Sync {
     fn search(&self, query: &str) -> Vec<Package>;
     fn details(&self, name: &str) -> Option<Details>;
     fn is_installed(&self, name: &str) -> bool;
