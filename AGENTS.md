@@ -121,5 +121,5 @@ binary reach `Qt.application.arguments` (the screenshot scripts use this with `g
 ## Not done yet
 
 - The website in `docs/index.html` still describes the 1.x (Laravel/Electron) app and uses its screenshots; it needs a rewrite.
-- Icons for installed pacman and AUR apps whose icon lives in a theme other than hicolor fall back to the origin rune.
+- Icons for installed pacman and AUR apps whose icon lives in a theme other than hicolor fall back to the name's initial as a rune.
 - No 2.x package (AUR, AppImage, `.deb`) is published yet.

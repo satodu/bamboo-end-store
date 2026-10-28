@@ -79,7 +79,7 @@ QtObject {
     }
 
     // Icon for a package: bundled brand icons for the Bamboo Installs, the Flathub icon for Flatpaks,
-    // nothing for the rest (PackageIcon then draws the rune of the origin).
+    // nothing for the rest (PackageIcon then draws the name's initial as a rune).
     readonly property var customIcons: ({
         "steam": "https://upload.wikimedia.org/wikipedia/commons/8/83/Steam_icon_logo.svg",
         "winboat": Qt.resolvedUrl("../icons/winboat.svg"),
@@ -103,14 +103,23 @@ QtObject {
         return Qt.rgba(a.r + (b.r - a.r) * t, a.g + (b.g - a.g) * t, a.b + (b.b - a.b) * t, a.a + (b.a - a.a) * t)
     }
 
-    // Stand-in icon for a package whose own icon was not found: the rune of where it comes from.
-    readonly property var originRunes: ({
-        "pacman": "ᛟ",      // Othala, heritage: the official repositories, the house
-        "aur": "ᚷ",         // Gebo, the gift: what the community offers
-        "flatpak": "ᛈ",     // Perthro, the lot-cup: the sealed, sandboxed package
-        "custom": "ᛒ",      // Berkanan, growth: the Bamboo scripts
-        "appimage": "ᛏ"     // Tiwaz, the arrow: standalone, one file
+    // A name written in runes, as in the rune ruler of the Galdr plates: each Latin letter becomes the
+    // Elder Futhark rune with its sound. The first one stands in for a package whose icon was not found,
+    // so every package gets its own carved initial instead of one rune repeated down the list.
+    readonly property var transliteration: ({
+        "a": "ᚨ", "b": "ᛒ", "c": "ᚲ", "d": "ᛞ", "e": "ᛖ", "f": "ᚠ", "g": "ᚷ", "h": "ᚺ", "i": "ᛁ",
+        "j": "ᛃ", "k": "ᚲ", "l": "ᛚ", "m": "ᛗ", "n": "ᚾ", "o": "ᛟ", "p": "ᛈ", "q": "ᚲ", "r": "ᚱ",
+        "s": "ᛊ", "t": "ᛏ", "u": "ᚢ", "v": "ᚹ", "w": "ᚹ", "x": "ᛉ", "y": "ᛃ", "z": "ᛉ"
     })
+    /// The rune for the first letter of `name`. Digits and symbols are skipped; nothing usable gives Isa.
+    function initialRune(name) {
+        const s = (name || "").toLowerCase()
+        for (let i = 0; i < s.length; i++) {
+            const r = transliteration[s.charAt(i)]
+            if (r) return r
+        }
+        return runes["default"]
+    }
 
     // The 24 runes of the Elder Futhark, for the ring.
     readonly property string futhark: "ᚠᚢᚦᚨᚱᚲᚷᚹᚺᚾᛁᛃᛇᛈᛉᛊᛏᛒᛖᛗᛚᛜᛞᛟ"
