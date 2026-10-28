@@ -35,7 +35,7 @@ Item {
 
         ColumnLayout {
             x: 28
-            width: Math.min(scroll.availableWidth - 56, 820)
+            width: scroll.availableWidth - 56
             spacing: 18
 
             Item { Layout.preferredHeight: 10 }
@@ -63,6 +63,53 @@ Item {
                 }
             }
 
+            RowLayout {
+                Layout.fillWidth: true
+                Layout.alignment: Qt.AlignTop
+                spacing: 18
+
+                Repeater {
+                    model: root.columnPlan
+                    delegate: ColumnLayout {
+                        id: column
+                        required property var modelData
+                        Layout.fillWidth: true
+                        Layout.preferredWidth: 1
+                        Layout.alignment: Qt.AlignTop
+                        spacing: 18
+
+                        Repeater {
+                            model: column.modelData
+                            delegate: Loader {
+                                required property string modelData
+                                Layout.fillWidth: true
+                                sourceComponent: root.sectionComponents[modelData]
+                                onLoaded: item.width = Qt.binding(() => width)
+                            }
+                        }
+                    }
+                }
+            }
+
+
+            Item { Layout.preferredHeight: 24 }
+        }
+    }
+
+    // Sections are laid out in 1, 2 or 3 columns by window width, so a big or full-screen window
+    // is used instead of one stretched column with controls far from their labels.
+    readonly property var sectionComponents: ({
+        "repos": sec_repos, "appearance": sec_appearance, "terminal": sec_terminal,
+        "appimages": sec_appimages, "maintenance": sec_maintenance
+    })
+    readonly property var columnPlan: width < 1000
+        ? [["repos", "appearance", "terminal", "appimages", "maintenance"]]
+        : width < 1650
+            ? [["repos", "terminal", "appimages", "maintenance"], ["appearance"]]
+            : [["repos", "terminal"], ["appearance"], ["appimages", "maintenance"]]
+
+    Component {
+        id: sec_repos
             SettingsSection {
                 title: Tr.t("Repositories")
                 rune: "appimages"
@@ -89,7 +136,10 @@ Item {
                     }
                 }
             }
+    }
 
+    Component {
+        id: sec_appearance
             SettingsSection {
                 title: Tr.t("Appearance")
                 rune: "light"
@@ -111,6 +161,7 @@ Item {
 
                 SettingRow {
                     title: Tr.t("Color source")
+                    stacked: true
                     description: Tr.t("Follow the desktop palette, pick a preset, or choose your own main color.")
                     Segmented {
                         options: [{ label: Tr.t("System"), value: "auto" }, { label: Tr.t("Preset"), value: "preset" }, { label: Tr.t("Custom"), value: "seed" }]
@@ -122,6 +173,7 @@ Item {
                 SettingRow {
                     visible: root.s.theme_source === "preset"
                     title: Tr.t("Color Palette")
+                    stacked: true
                     description: Tr.t("Choose an accent color theme for the store.")
                     Row {
                         spacing: 8
@@ -158,6 +210,7 @@ Item {
                 SettingRow {
                     visible: root.s.theme_source === "seed"
                     title: Tr.t("Main color")
+                    stacked: true
                     description: Tr.t("Any #rrggbb. Everything else is derived from it, Material You style.")
                     Row {
                         spacing: 10
@@ -180,6 +233,7 @@ Item {
                 SettingRow {
                     visible: root.s.theme_source === "seed"
                     title: Tr.t("Secondary and tertiary")
+                    stacked: true
                     description: Tr.t("Optional. Leave empty to derive them from the main color.")
                     Row {
                         spacing: 10
@@ -230,7 +284,10 @@ Item {
                     Toggle { checked: root.s.reduce_motion; onToggled: v => root.set("reduce_motion", v) }
                 }
             }
+    }
 
+    Component {
+        id: sec_terminal
             SettingsSection {
                 title: Tr.t("Terminal")
                 rune: "active"
@@ -252,19 +309,23 @@ Item {
                     }
                 }
             }
+    }
 
+    Component {
+        id: sec_appimages
             SettingsSection {
                 title: Tr.t("AppImages")
                 rune: "bamboo"
                 delay: 210
                 SettingRow {
                     title: Tr.t("AppImage Storage Directory")
+                    stacked: true
                     description: Tr.t("Where your AppImages are stored and managed.")
                     Row {
                         spacing: 10
                         Field {
                             id: dirField
-                            width: 300
+                            width: 260
                             placeholder: "~/Applications"
                             text: root.s.appimage_path
                             onEdited: root.set("appimage_path", text)
@@ -272,8 +333,21 @@ Item {
                         Btn { text: Tr.t("Change"); variant: "outline"; onClicked: folder.open() }
                     }
                 }
-            }
 
+                FolderDialog {
+                    id: folder
+                    title: Tr.t("AppImage Storage Directory")
+                    onAccepted: {
+                        const p = decodeURIComponent(selectedFolder.toString().replace("file://", ""))
+                        dirField.text = p
+                        root.set("appimage_path", p)
+                    }
+                }
+            }
+    }
+
+    Component {
+        id: sec_maintenance
             SettingsSection {
                 title: Tr.t("Maintenance")
                 rune: "loading"
@@ -292,18 +366,5 @@ Item {
                     }
                 }
             }
-
-            Item { Layout.preferredHeight: 24 }
-        }
-    }
-
-    FolderDialog {
-        id: folder
-        title: Tr.t("AppImage Storage Directory")
-        onAccepted: {
-            const p = decodeURIComponent(selectedFolder.toString().replace("file://", ""))
-            dirField.text = p
-            root.set("appimage_path", p)
-        }
     }
 }

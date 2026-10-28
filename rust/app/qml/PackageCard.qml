@@ -7,6 +7,7 @@ Item {
 
     property var pkg: ({})
     property bool busy: false
+    property bool showInstalledTag: true
 
     signal opened()
     signal installRequested()
@@ -71,7 +72,7 @@ Item {
                 spacing: 6
 
                 Tag { text: root.pkg.source || ""; tone: root.pkg.source === "aur" ? "tertiary" : "neutral" }
-                Tag { visible: !!root.pkg.installed; text: Tr.t("Installed"); tone: "primary" }
+                Tag { visible: root.showInstalledTag && !!root.pkg.installed; text: Tr.t("Installed"); tone: "primary" }
                 Item { Layout.fillWidth: true }
                 Btn {
                     text: root.pkg.installed ? Tr.t("Remove") : Tr.t("Install")

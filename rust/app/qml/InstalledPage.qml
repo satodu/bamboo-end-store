@@ -8,6 +8,8 @@ Item {
     id: root
 
     property var appSettings: ({ search_limit: 50 })
+    property var settingsBackend
+    readonly property string viewMode: appSettings.view_mode === "list" ? "list" : "grid"
 
     property var packages: JSON.parse(backend.results)
     property var info: JSON.parse(backend.details)
@@ -57,6 +59,11 @@ Item {
                     onTextChanged: debounce.restart()
                 }
                 RuneSpinner { running: backend.busy }
+                Segmented {
+                    options: [{ label: Tr.t("Grid"), value: "grid" }, { label: Tr.t("List"), value: "list" }]
+                    current: root.viewMode
+                    onActivated: v => root.settingsBackend.setSetting("view_mode", JSON.stringify(v))
+                }
                 Text {
                     visible: !backend.busy
                     text: Tr.f("%s packages installed", backend.total)
@@ -83,38 +90,14 @@ Item {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
 
-                ListView {
-                    id: list
+                PackageResults {
                     anchors.fill: parent
-                    clip: true
-                    visible: root.packages.length > 0
-                    model: root.packages
-                    boundsBehavior: Flickable.StopAtBounds
-                    ScrollBar.vertical: ScrollBar {}
-
-                    delegate: Item {
-                        id: rowItem
-                        required property var modelData
-                        required property int index
-                        width: list.width
-                        height: 64
-
-                        Reveal {
-                            anchors.fill: parent
-                            autoPlay: rowItem.index < 14
-                            delay: Math.min(rowItem.index, 13) * 24
-                            slide: 6
-
-                            PackageRow {
-                                anchors.fill: parent
-                                pkg: rowItem.modelData
-                                showInstalledTag: false
-                                busy: backend.busy
-                                onOpened: { root.current = rowItem.modelData; backend.loadDetails(rowItem.modelData.name, rowItem.modelData.source) }
-                                onRemoveRequested: backend.remove(rowItem.modelData.name, rowItem.modelData.source)
-                            }
-                        }
-                    }
+                    packages: root.packages
+                    viewMode: root.viewMode
+                    busy: backend.busy
+                    showInstalledTag: false
+                    onOpened: pkg => { root.current = pkg; backend.loadDetails(pkg.name, pkg.source) }
+                    onRemoveRequested: pkg => backend.remove(pkg.name, pkg.source)
                 }
 
                 Plinth {

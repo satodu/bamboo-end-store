@@ -60,6 +60,10 @@ the palette, the shapes and motion come from Galdr.
 - Lists and details cross the Rust bridge as JSON strings. Each screen owns its own `Backend` instance
   (own results and busy state); the `Store` underneath is shared, and so are its caches.
 - Register every new QML file in `rust/app/build.rs`.
+- **Layouts must adapt to the window, up to full screen.** No fixed page widths. Grids add columns as the window grows
+  (`PackageResults`, `AppImagesPage`). List rows are capped (about 820 px) so an action button stays next to the name it
+  belongs to. Settings flows into 1, 2 or 3 columns (`SettingsPage.columnPlan`); wide controls use
+  `SettingRow { stacked: true }`. Check new screens at 1280, 1400 and 1920 px wide.
 
 ## Rust rules
 

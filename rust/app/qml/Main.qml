@@ -128,11 +128,11 @@ ApplicationWindow {
                     anchors.fill: parent
                     currentIndex: root.pages.indexOf(root.page)
 
-                    ExplorePage { id: explore; appSettings: root.appSettings }
+                    ExplorePage { id: explore; appSettings: root.appSettings; settingsBackend: appBackend }
 
                     Loader {
                         active: !!root.visited["installed"]
-                        sourceComponent: InstalledPage { appSettings: root.appSettings }
+                        sourceComponent: InstalledPage { appSettings: root.appSettings; settingsBackend: appBackend }
                     }
 
                     Loader {

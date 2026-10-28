@@ -195,7 +195,8 @@ Item {
                     width: list.width
                     height: 64
                     Reveal {
-                        anchors.fill: parent
+                        width: Math.min(rowItem.width, 820)
+                        height: rowItem.height
                         autoPlay: rowItem.index < 14
                         delay: Math.min(rowItem.index, 13) * 24
                         slide: 6

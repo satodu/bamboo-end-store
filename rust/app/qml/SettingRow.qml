@@ -1,24 +1,30 @@
 import QtQuick
 import QtQuick.Layouts
 
-// A setting: title and description on the left, the control on the right.
+// A setting: title and description on the left, the control on the right. `stacked` puts the
+// control under the text instead, for wide controls in a narrow column.
 Item {
     id: root
 
     property string title: ""
     property string description: ""
+    property bool stacked: false
     default property alias control: slot.data
 
-    implicitHeight: Math.max(44, labels.implicitHeight)
+    implicitHeight: Math.max(44, grid.implicitHeight)
     Layout.fillWidth: true
 
-    RowLayout {
-        anchors.fill: parent
-        spacing: 24
+    GridLayout {
+        id: grid
+        anchors.left: parent.left
+        anchors.right: parent.right
+        columns: root.stacked ? 1 : 2
+        columnSpacing: 24
+        rowSpacing: 10
 
         ColumnLayout {
-            id: labels
             Layout.fillWidth: true
+            Layout.alignment: Qt.AlignTop
             spacing: 3
             Text {
                 text: root.title
@@ -38,8 +44,9 @@ Item {
 
         Item {
             id: slot
-            Layout.alignment: Qt.AlignVCenter
-            Layout.preferredWidth: childrenRect.width
+            Layout.alignment: root.stacked ? Qt.AlignLeft | Qt.AlignTop : Qt.AlignVCenter
+            Layout.fillWidth: root.stacked
+            Layout.preferredWidth: root.stacked ? -1 : childrenRect.width
             Layout.preferredHeight: childrenRect.height
         }
     }

@@ -9,6 +9,9 @@ Item {
 
     /// Settings object (parsed JSON) from the app's settings backend.
     property var appSettings: ({ search_limit: 50 })
+    /// The app's settings Backend, to save the grid/list choice.
+    property var settingsBackend
+    readonly property string viewMode: appSettings.view_mode === "list" ? "list" : "grid"
 
     property var packages: JSON.parse(backend.results)
     property var info: JSON.parse(backend.details)
@@ -75,6 +78,11 @@ Item {
                     onTextChanged: debounce.restart()
                 }
                 RuneSpinner { running: backend.busy }
+                Segmented {
+                    options: [{ label: Tr.t("Grid"), value: "grid" }, { label: Tr.t("List"), value: "list" }]
+                    current: root.viewMode
+                    onActivated: v => root.settingsBackend.setSetting("view_mode", JSON.stringify(v))
+                }
                 Text {
                     visible: !backend.busy
                     text: Tr.f("%s results", backend.total)
@@ -101,41 +109,14 @@ Item {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
 
-                GridView {
-                    id: grid
+                PackageResults {
                     anchors.fill: parent
-                    clip: true
-                    visible: root.packages.length > 0
-                    model: root.packages
-                    readonly property int columns: Math.max(1, Math.floor(width / 300))
-                    cellWidth: Math.floor(width / columns)
-                    cellHeight: 200
-                    boundsBehavior: Flickable.StopAtBounds
-                    ScrollBar.vertical: ScrollBar {}
-
-                    delegate: Item {
-                        id: cell
-                        required property var modelData
-                        required property int index
-                        width: grid.cellWidth
-                        height: grid.cellHeight
-
-                        Reveal {
-                            anchors.fill: parent
-                            anchors.margins: 8
-                            autoPlay: cell.index < 18
-                            delay: Math.min(cell.index, 17) * 28
-
-                            PackageCard {
-                                anchors.fill: parent
-                                pkg: cell.modelData
-                                busy: backend.busy
-                                onOpened: { root.current = cell.modelData; backend.loadDetails(cell.modelData.name, cell.modelData.source) }
-                                onInstallRequested: backend.install(cell.modelData.name, cell.modelData.source)
-                                onRemoveRequested: backend.remove(cell.modelData.name, cell.modelData.source)
-                            }
-                        }
-                    }
+                    packages: root.packages
+                    viewMode: root.viewMode
+                    busy: backend.busy
+                    onOpened: pkg => { root.current = pkg; backend.loadDetails(pkg.name, pkg.source) }
+                    onInstallRequested: pkg => backend.install(pkg.name, pkg.source)
+                    onRemoveRequested: pkg => backend.remove(pkg.name, pkg.source)
                 }
 
                 Plinth {
