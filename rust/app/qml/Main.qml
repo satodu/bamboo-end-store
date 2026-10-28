@@ -32,7 +32,7 @@ ApplicationWindow {
     readonly property var pages: ["explore", "installed", "appimages", "settings"]
     property string page: "explore"
     property var visited: ({ "explore": true })
-    readonly property var appSettings: JSON.parse(settingsBackend.settings)
+    readonly property var appSettings: JSON.parse(appBackend.settings)
 
     function openPage(name) {
         if (name === page) return
@@ -43,7 +43,7 @@ ApplicationWindow {
     }
 
     // Owns the settings JSON for the whole app; each screen has its own Backend for data.
-    Backend { id: settingsBackend }
+    Backend { id: appBackend }
 
     RowLayout {
         anchors.fill: parent
@@ -135,16 +135,12 @@ ApplicationWindow {
                         sourceComponent: InstalledPage { appSettings: root.appSettings }
                     }
 
-                    Item {
-                        Plinth {
-                            anchors.centerIn: parent
-                            width: 420
-                            height: 320
-                            caption: "FIG. — APPIMAGES: NEXT."
-                        }
+                    Loader {
+                        active: !!root.visited["appimages"]
+                        sourceComponent: AppImagesPage { settingsBackend: appBackend }
                     }
 
-                    SettingsPage { backend: settingsBackend }
+                    SettingsPage { backend: appBackend }
                 }
             }
         }

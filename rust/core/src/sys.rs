@@ -11,7 +11,16 @@ pub struct Output {
 /// Run `program args...` with `LC_ALL=C`, killing it after `timeout` if given.
 /// Returns `None` when the program cannot start or times out.
 pub fn run(program: &str, args: &[&str], timeout: Option<Duration>) -> Option<Output> {
-    let mut child = Command::new(program)
+    run_in(None, program, args, timeout)
+}
+
+/// Like [`run`], in directory `cwd` when given.
+pub fn run_in(cwd: Option<&std::path::Path>, program: &str, args: &[&str], timeout: Option<Duration>) -> Option<Output> {
+    let mut command = Command::new(program);
+    if let Some(dir) = cwd {
+        command.current_dir(dir);
+    }
+    let mut child = command
         .args(args)
         .env("LC_ALL", "C")
         .stdin(Stdio::null())

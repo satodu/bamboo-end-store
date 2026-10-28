@@ -4,6 +4,11 @@ mod theme_bridge;
 use cxx_qt_lib::{QGuiApplication, QQmlApplicationEngine, QUrl};
 
 fn main() {
+    // Qt-Wayland logs a harmless warning on every focus change of a text field.
+    if std::env::var_os("QT_LOGGING_RULES").is_none() {
+        std::env::set_var("QT_LOGGING_RULES", "qt.qpa.wayland.textinput=false");
+    }
+
     let mut app = QGuiApplication::new();
     let mut engine = QQmlApplicationEngine::new();
 

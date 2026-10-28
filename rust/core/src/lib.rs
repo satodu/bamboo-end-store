@@ -1,5 +1,6 @@
 //! Bamboo End Store core: package sources and managers, no Qt dependency.
 
+pub mod appimage;
 pub mod aur;
 pub mod cache;
 pub mod flatpak;
@@ -15,6 +16,7 @@ pub mod sys;
 pub mod terminal;
 pub mod theme;
 
+pub use appimage::{AppImage, AppImages};
 pub use aur::AurManager;
 pub use flatpak::FlatpakManager;
 pub use manager::PackageManager;

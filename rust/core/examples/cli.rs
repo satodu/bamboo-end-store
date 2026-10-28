@@ -11,6 +11,15 @@ fn main() {
         let p = bamboo_core::theme::generate(&opts, *mode == "dark");
         return println!("{}", serde_json::to_string(&p).unwrap());
     }
+    if args == ["appimages"] {
+        // read-only: lists the configured directory, never registers or removes anything
+        let dir = bamboo_core::AppImages::directory_for(&bamboo_core::Settings::load().appimage_path);
+        println!("dir: {}", dir.display());
+        for a in bamboo_core::AppImages::default().list(&dir) {
+            println!("{:<48} {:>10}  integrated={} icon={}", a.name, a.size, a.has_desktop, !a.icon_url.is_empty());
+        }
+        return;
+    }
     if args == ["settings"] {
         return println!("{:#?}", bamboo_core::Settings::load());
     }

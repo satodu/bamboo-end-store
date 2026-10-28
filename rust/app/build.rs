@@ -32,6 +32,10 @@ fn main() {
             .qml_file("qml/SettingRow.qml")
             .qml_file("qml/SettingsSection.qml")
             .qml_file("qml/SettingsPage.qml")
+            .qml_file("qml/Confirm.qml")
+            .qml_file("qml/AppImageCard.qml")
+            .qml_file("qml/AppImageRow.qml")
+            .qml_file("qml/AppImagesPage.qml")
             .qml_file(QmlFile::from("qml/Theme.qml").singleton(true))
             .qml_file(QmlFile::from("qml/Style.qml").singleton(true)),
     )

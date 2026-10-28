@@ -1,8 +1,9 @@
 use core::pin::Pin;
+use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::{Arc, OnceLock};
 
-use bamboo_core::{Op, OpOutcome, PackageSource, Settings, Store};
+use bamboo_core::{AppImages, Op, OpOutcome, PackageSource, Settings, Store};
 use cxx_qt::{CxxQtType, Threading};
 use cxx_qt_lib::QString;
 
@@ -58,6 +59,29 @@ pub mod qobject {
         #[cxx_name = "setSetting"]
         fn set_setting(self: Pin<&mut Backend>, key: &QString, value: &QString) -> bool;
 
+        /// The AppImages in the configured directory; fills `results` and `total`.
+        #[qinvokable]
+        #[cxx_name = "loadAppImages"]
+        fn load_app_images(self: Pin<&mut Backend>);
+
+        /// Copy into the AppImage directory, make executable, create the menu entry and icon.
+        #[qinvokable]
+        #[cxx_name = "registerAppImage"]
+        fn register_app_image(self: Pin<&mut Backend>, path: &QString);
+
+        #[qinvokable]
+        #[cxx_name = "removeAppImage"]
+        fn remove_app_image(self: Pin<&mut Backend>, path: &QString);
+
+        #[qinvokable]
+        #[cxx_name = "launchAppImage"]
+        fn launch_app_image(self: Pin<&mut Backend>, path: &QString);
+
+        /// `action` is register, remove or launch; `message` carries the error when `ok` is false.
+        #[qsignal]
+        #[cxx_name = "appImageFinished"]
+        fn app_image_finished(self: Pin<&mut Backend>, action: QString, name: QString, ok: bool, message: QString);
+
         /// `code` is the command's exit code, or -1 when no terminal was available
         /// and -2 when the terminal was closed early.
         #[qsignal]
@@ -74,6 +98,22 @@ static STORE: OnceLock<Arc<Store>> = OnceLock::new();
 
 fn shared_store() -> Arc<Store> {
     STORE.get_or_init(|| Arc::new(Store::new(Settings::load()))).clone()
+}
+
+static APPIMAGES: OnceLock<Arc<AppImages>> = OnceLock::new();
+
+fn app_images() -> Arc<AppImages> {
+    APPIMAGES.get_or_init(|| Arc::new(AppImages::default())).clone()
+}
+
+/// QML hands over plain paths; accept a `file://` URL too.
+fn local_path(s: &QString) -> PathBuf {
+    let s = s.to_string();
+    PathBuf::from(s.strip_prefix("file://").unwrap_or(&s))
+}
+
+fn file_name(p: &Path) -> String {
+    p.file_name().map(|n| n.to_string_lossy().into_owned()).unwrap_or_default()
 }
 
 pub struct BackendRust {
@@ -149,6 +189,70 @@ impl qobject::Backend {
                     this.as_mut().set_results(QString::from(&json));
                     this.as_mut().set_busy(false);
                 }
+            });
+        });
+    }
+
+    fn load_app_images(mut self: Pin<&mut Self>) {
+        let store = self.rust().store.clone();
+        let generation = self.rust().search_gen.clone();
+        let mine = generation.fetch_add(1, Ordering::SeqCst) + 1;
+        let thread = self.qt_thread();
+
+        self.as_mut().set_busy(true);
+        std::thread::spawn(move || {
+            let dir = AppImages::directory_for(&store.settings().appimage_path);
+            let items = app_images().list(&dir);
+            let json = serde_json::to_string(&items).unwrap_or_else(|_| "[]".into());
+            let _ = thread.queue(move |mut this| {
+                if generation.load(Ordering::SeqCst) == mine {
+                    this.as_mut().set_total(items.len() as i32);
+                    this.as_mut().set_results(QString::from(&json));
+                    this.as_mut().set_busy(false);
+                }
+            });
+        });
+    }
+
+    fn register_app_image(self: Pin<&mut Self>, path: &QString) {
+        let source = local_path(path);
+        self.app_image_op("register", source, |svc, store, path| {
+            let dir = AppImages::directory_for(&store.settings().appimage_path);
+            svc.register(path, &dir)
+        });
+    }
+
+    fn remove_app_image(self: Pin<&mut Self>, path: &QString) {
+        self.app_image_op("remove", local_path(path), |svc, _, path| svc.remove(path));
+    }
+
+    fn launch_app_image(self: Pin<&mut Self>, path: &QString) {
+        self.app_image_op("launch", local_path(path), |svc, _, path| svc.launch(path));
+    }
+
+    /// Run one AppImage operation on a worker thread and report through `appImageFinished`.
+    fn app_image_op<F>(mut self: Pin<&mut Self>, action: &'static str, path: PathBuf, op: F)
+    where
+        F: FnOnce(&AppImages, &Store, &Path) -> Result<(), bamboo_core::appimage::AppImageError> + Send + 'static,
+    {
+        let store = self.rust().store.clone();
+        let thread = self.qt_thread();
+        self.as_mut().set_busy(true);
+        std::thread::spawn(move || {
+            let name = file_name(&path);
+            let result = op(&app_images(), &store, &path);
+            let (ok, message) = match result {
+                Ok(()) => (true, String::new()),
+                Err(e) => (false, e.to_string()),
+            };
+            let _ = thread.queue(move |mut this| {
+                this.as_mut().set_busy(false);
+                this.as_mut().app_image_finished(
+                    QString::from(action),
+                    QString::from(&name),
+                    ok,
+                    QString::from(&message),
+                );
             });
         });
     }
