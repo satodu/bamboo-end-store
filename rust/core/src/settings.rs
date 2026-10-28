@@ -25,6 +25,9 @@ pub struct Settings {
     pub theme_source: String,
     /// `#rrggbb` source colour for `theme_source = "seed"`.
     pub theme_seed: String,
+    /// Optional `#rrggbb` overrides for the secondary and tertiary colours; empty = derived.
+    pub theme_secondary: String,
+    pub theme_tertiary: String,
     /// `dark` or `light`. Ignored by `system`, whose file is already one mode.
     pub theme_mode: String,
     /// Matugen scheme type, e.g. `scheme-tonal-spot`.
@@ -49,6 +52,8 @@ impl Default for Settings {
             theme: "theme-bamboo".into(),
             theme_source: "auto".into(),
             theme_seed: String::new(),
+            theme_secondary: String::new(),
+            theme_tertiary: String::new(),
             theme_mode: "dark".into(),
             theme_scheme: "scheme-tonal-spot".into(),
             extra: Map::new(),

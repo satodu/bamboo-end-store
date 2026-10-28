@@ -8,26 +8,12 @@ use std::path::PathBuf;
 use serde_json::Value;
 
 use crate::settings::Settings;
-use crate::sys;
 
 /// Role name (`surfaceContainerHigh`) to `#rrggbb`.
 pub type Palette = BTreeMap<String, String>;
 
 const FALLBACK_DARK: &str = include_str!("theme/fallback_dark.json");
 const FALLBACK_LIGHT: &str = include_str!("theme/fallback_light.json");
-
-const SCHEMES: [&str; 10] = [
-    "scheme-content",
-    "scheme-expressive",
-    "scheme-fidelity",
-    "scheme-fruit-salad",
-    "scheme-monochrome",
-    "scheme-neutral",
-    "scheme-rainbow",
-    "scheme-tonal-spot",
-    "scheme-vibrant",
-    "scheme-smart",
-];
 
 /// Source colours of the four legacy presets (from `resources/css/app.css`).
 const PRESETS: [(&str, &str); 4] = [
@@ -151,38 +137,79 @@ pub fn system_palette_path() -> PathBuf {
     cache.join("ryoku").join("colors.json")
 }
 
-/// A Matugen config with no templates. Running Matugen with the user's own config would
-/// re-theme their whole desktop, so the app always passes this one plus `--dry-run`.
-fn empty_matugen_config() -> Option<PathBuf> {
-    let path = std::env::temp_dir().join(format!("bamboo-matugen-empty-{}.toml", std::process::id()));
-    if !path.exists() {
-        fs::write(&path, "[config]\n\n[templates]\n").ok()?;
+/// Material You palette from a source colour, computed in-process with the same library
+/// Matugen is built on, so it matches `matugen color hex` without needing the binary.
+/// `primary`/`secondary`/`tertiary` override the roles' own colours (empty or invalid = derived).
+pub fn generate(opts: &GenOptions, dark: bool) -> Option<Palette> {
+    use material_colors::color::Rgb;
+    use material_colors::theme::ThemeBuilder;
+
+    let rgb = |h: &str| is_hex(h).then(|| h.parse::<Rgb>().ok()).flatten();
+    let mut builder = ThemeBuilder::with_source(rgb(&opts.seed)?).variant(variant(&opts.scheme));
+    if let Some(c) = rgb(&opts.secondary) {
+        builder = builder.secondary(c);
     }
-    Some(path)
+    if let Some(c) = rgb(&opts.tertiary) {
+        builder = builder.tertiary(c);
+    }
+    let theme = builder.build();
+    let scheme = if dark { theme.schemes.dark } else { theme.schemes.light };
+    let mut palette = scheme_to_palette(&scheme);
+    if !dark {
+        match_matugen_light(&mut palette);
+    }
+    Some(palette)
 }
 
-/// Ask Matugen for a palette from `seed`. `None` if Matugen is missing or fails.
-pub fn generate(seed: &str, dark: bool, scheme: &str) -> Option<Palette> {
-    if !is_hex(seed) || !SCHEMES.contains(&scheme) || !sys::command_exists("matugen") {
-        return None;
+/// The library returns tone 30 for the light `on*Container` roles; the Material spec, and so
+/// Matugen, uses tone 10. The `on*Fixed` roles already hold that tone for the same palette
+/// (so they follow secondary/tertiary overrides); error is the fixed M3 constant.
+fn match_matugen_light(p: &mut Palette) {
+    for family in ["Primary", "Secondary", "Tertiary"] {
+        if let Some(tone10) = p.get(&format!("on{family}Fixed")).cloned() {
+            p.insert(format!("on{family}Container"), tone10);
+        }
     }
-    let config = empty_matugen_config()?;
-    let args = [
-        "--config",
-        config.to_str()?,
-        "--dry-run",
-        "--type",
-        scheme,
-        "--mode",
-        if dark { "dark" } else { "light" },
-        "--json",
-        "hex",
-        "color",
-        "hex",
-        seed,
-    ];
-    let out = sys::run("matugen", &args, Some(std::time::Duration::from_secs(10))).filter(|o| o.success)?;
-    parse_matugen(&out.stdout, dark)
+    p.insert("onErrorContainer".into(), "#410002".into());
+}
+
+/// Inputs for [`generate`].
+#[derive(Debug, Clone, Default)]
+pub struct GenOptions {
+    pub seed: String,
+    pub secondary: String,
+    pub tertiary: String,
+    /// Matugen scheme name, e.g. `scheme-tonal-spot`.
+    pub scheme: String,
+}
+
+/// Schemes the built-in generator reproduces exactly as `matugen` does (checked on several
+/// seeds in both modes). `fidelity`, `vibrant`, `content` and `monochrome` differ in the library,
+/// so they are not offered.
+pub const SCHEMES: [&str; 5] =
+    ["scheme-tonal-spot", "scheme-expressive", "scheme-fruit-salad", "scheme-neutral", "scheme-rainbow"];
+
+/// Unknown or unsupported names use `tonal-spot`, Matugen's default.
+fn variant(scheme: &str) -> material_colors::dynamic_color::Variant {
+    use material_colors::dynamic_color::Variant::*;
+    match scheme {
+        "scheme-expressive" => Expressive,
+        "scheme-fruit-salad" => FruitSalad,
+        "scheme-neutral" => Neutral,
+        "scheme-rainbow" => Rainbow,
+        _ => TonalSpot,
+    }
+}
+
+fn scheme_to_palette(s: &material_colors::scheme::Scheme) -> Palette {
+    let mut p = Palette::new();
+    macro_rules! roles {
+        ($($f:ident),* $(,)?) => {$(
+            p.insert(camel(stringify!($f)), format!("#{:02x}{:02x}{:02x}", s.$f.red, s.$f.green, s.$f.blue));
+        )*};
+    }
+    roles!(primary, on_primary, primary_container, on_primary_container, inverse_primary, primary_fixed, primary_fixed_dim, on_primary_fixed, on_primary_fixed_variant, secondary, on_secondary, secondary_container, on_secondary_container, secondary_fixed, secondary_fixed_dim, on_secondary_fixed, on_secondary_fixed_variant, tertiary, on_tertiary, tertiary_container, on_tertiary_container, tertiary_fixed, tertiary_fixed_dim, on_tertiary_fixed, on_tertiary_fixed_variant, error, on_error, error_container, on_error_container, surface_dim, surface, surface_tint, surface_bright, surface_container_lowest, surface_container_low, surface_container, surface_container_high, surface_container_highest, on_surface, on_surface_variant, outline, outline_variant, inverse_surface, inverse_on_surface, surface_variant, background, on_background, shadow, scrim);
+    p
 }
 
 fn effective_source(s: &Settings, system_exists: bool) -> Source {
@@ -209,8 +236,14 @@ pub fn resolve(s: &Settings) -> Theme {
         }
     }
 
-    let seed = if source == Source::Seed { s.theme_seed.as_str() } else { preset_seed(&s.theme) };
-    let palette = generate(seed, dark_pref, &s.theme_scheme).unwrap_or_else(|| fallback(dark_pref));
+    let from_seed = source == Source::Seed;
+    let opts = GenOptions {
+        seed: if from_seed { s.theme_seed.clone() } else { preset_seed(&s.theme).to_owned() },
+        secondary: if from_seed { s.theme_secondary.clone() } else { String::new() },
+        tertiary: if from_seed { s.theme_tertiary.clone() } else { String::new() },
+        scheme: s.theme_scheme.clone(),
+    };
+    let palette = generate(&opts, dark_pref).unwrap_or_else(|| fallback(dark_pref));
     let source = if source == Source::Seed { Source::Seed } else { Source::Preset };
     Theme { palette: complete(palette, dark_pref), dark: dark_pref, source }
 }
@@ -296,18 +329,63 @@ mod tests {
         assert_eq!(effective_source(&bad_seed, true), Source::Preset);
     }
 
-    #[test]
-    fn generate_rejects_bad_arguments() {
-        assert!(generate("--help", true, "scheme-tonal-spot").is_none());
-        assert!(generate("#7c3aed", true, "--config=/etc/passwd").is_none());
+    fn opts(seed: &str) -> GenOptions {
+        GenOptions { seed: seed.into(), scheme: "scheme-tonal-spot".into(), ..GenOptions::default() }
     }
 
     #[test]
-    fn matugen_generate_matches_fixture_when_installed() {
-        if !sys::command_exists("matugen") {
-            return;
+    fn builtin_generator_matches_matugen_output() {
+        for dark in [true, false] {
+            let ours = generate(&opts("#7c3aed"), dark).unwrap();
+            let theirs = parse_matugen(MATUGEN, dark).unwrap();
+            assert_eq!(ours, theirs, "dark={dark}");
         }
-        let p = generate("#7c3aed", true, "scheme-tonal-spot").unwrap();
-        assert_eq!(p["primary"], "#d2bcfd");
+    }
+
+    #[test]
+    fn generator_rejects_bad_input() {
+        assert!(generate(&opts("--help"), true).is_none());
+        assert!(generate(&opts(""), true).is_none());
+    }
+
+    #[test]
+    fn unsupported_scheme_uses_tonal_spot() {
+        let base = generate(&opts("#7c3aed"), true).unwrap();
+        for name in ["scheme-vibrant", "scheme-smart-ish", ""] {
+            let p = generate(&GenOptions { scheme: name.into(), ..opts("#7c3aed") }, true).unwrap();
+            assert_eq!(p, base, "{name}");
+        }
+        let expressive = generate(&GenOptions { scheme: "scheme-expressive".into(), ..opts("#7c3aed") }, true).unwrap();
+        assert_ne!(expressive["primary"], base["primary"]);
+        assert!(SCHEMES.contains(&"scheme-expressive"));
+    }
+
+    #[test]
+    fn different_seeds_give_different_palettes() {
+        let a = generate(&opts("#7c3aed"), true).unwrap();
+        let b = generate(&opts("#fe8019"), true).unwrap();
+        assert_ne!(a["primary"], b["primary"]);
+        assert!(is_hex(&b["surfaceContainerHigh"]));
+    }
+
+    #[test]
+    fn secondary_override_changes_only_the_secondary_family() {
+        let base = generate(&opts("#7c3aed"), true).unwrap();
+        let over = generate(&GenOptions { secondary: "#00aa55".into(), ..opts("#7c3aed") }, true).unwrap();
+        assert_eq!(base["primary"], over["primary"]);
+        assert_ne!(base["secondary"], over["secondary"]);
+    }
+
+    #[test]
+    fn every_preset_resolves_without_matugen() {
+        for (id, _) in PRESETS {
+            let s = Settings { theme: id.into(), theme_source: "preset".into(), ..Settings::default() };
+            let t = resolve(&s);
+            assert_eq!(t.source, Source::Preset);
+            assert!(is_hex(&t.palette["primary"]), "{id}");
+        }
+        let nord = resolve(&Settings { theme: "theme-nord".into(), theme_source: "preset".into(), ..Settings::default() });
+        let gruv = resolve(&Settings { theme: "theme-gruvbox".into(), theme_source: "preset".into(), ..Settings::default() });
+        assert_ne!(nord.palette["primary"], gruv.palette["primary"]);
     }
 }
