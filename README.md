@@ -77,7 +77,7 @@ Then:
 ```bash
 git clone https://github.com/satodu/bamboo-end-store.git
 cd bamboo-end-store
-cargo run --release -p bamboo-end-store
+./run.sh --release     # or: cargo run --release -p bamboo-end-store
 ```
 
 The first build takes a few minutes. Settings live in `~/.config/bamboo-end-store/settings.json`; an old 1.x settings file is read automatically.
@@ -91,6 +91,7 @@ The `bamboo-end-store-bin` AUR package still ships the 1.x (Electron) release. A
 ## 🛠️ Development
 
 ```bash
+./run.sh                             # debug build; --clean (throwaway settings), --still, --gallery, --test
 cargo test -p bamboo-core            # unit tests, parsers on real captured output, i18n checks
 cargo run -p bamboo-end-store        # the app
 cargo run -p bamboo-core --example cli -- aur search yay    # the core without the UI

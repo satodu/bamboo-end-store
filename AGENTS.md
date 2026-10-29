@@ -9,7 +9,9 @@ Bamboo End Store, a console-first store for EndeavourOS / Arch (pacman, AUR, Fla
 
 - `core/` : the **Rust core** (no Qt): package managers, store, settings, cache, terminal, AppImages, themes, i18n.
 - `app/` : the **Qt/QML app** (cxx-qt): QObject bridges in `src/`, QML in `qml/`, bundled fonts and icons.
-- `docs/` : the project website (GitHub Pages) and the README screenshots.
+- `docs/` : the project website (GitHub Pages, one static `index.html`, no build step) and the README screenshots. The site is Galdr-styled,
+  keeps the four-preset theme switcher (`data-theme`, `?theme=`), and presents the app as a storefront whose buttons are shortcuts to the terminal.
+  Theme screenshots are `docs/imgs/theme/<preset>.png`.
 - The old PHP/Laravel/NativePHP app (1.x) was removed from the tree. It lives in the git history and under the tag `v1.4.2-php`;
   several things here say "the PHP app" or "the old app" because they were ported from it (settings keys, translations, tables).
 - Work happens on the `rust-qml` branch.
@@ -120,6 +122,5 @@ binary reach `Qt.application.arguments` (the screenshot scripts use this with `g
 
 ## Not done yet
 
-- The website in `docs/index.html` still describes the 1.x (Laravel/Electron) app and uses its screenshots; it needs a rewrite.
 - Icons for installed pacman and AUR apps whose icon lives in a theme other than hicolor fall back to the name's initial as a rune.
 - No 2.x package (AUR, AppImage, `.deb`) is published yet.
