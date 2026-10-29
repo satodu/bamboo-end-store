@@ -56,6 +56,8 @@ fn main() {
             .qml_file(QmlFile::from("qml/Tr.qml").singleton(true)),
     )
     .qt_module("Quick")
+    .qt_module("Widgets")
+    .qt_module("QuickControls2")
     .qrc_resources([
         "fonts/NotoSansRunic-Regular.ttf",
         "fonts/BigShouldersDisplay.ttf",
