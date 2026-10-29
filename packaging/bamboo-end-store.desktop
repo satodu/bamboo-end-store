@@ -1,0 +1,11 @@
+[Desktop Entry]
+Name=Bamboo End Store
+GenericName=Software Store
+Comment=Console-first software store for EndeavourOS and Arch: pacman, AUR, Flatpak and AppImage
+Exec=bamboo-end-store
+Icon=bamboo-end-store
+Terminal=false
+Type=Application
+StartupWMClass=bamboo-end-store
+Categories=System;PackageManager;
+Keywords=pacman;aur;flatpak;appimage;store;packages;
