@@ -44,7 +44,7 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html { scroll-behavior: smooth; }
 body {
-  background: var(--bg); color: var(--text); font: 400 16px/1.6 var(--body);
+  background: radial-gradient(ellipse at 50% 10%, var(--bg3), var(--bg) 70%) fixed, var(--bg); color: var(--text); font: 400 16px/1.6 var(--body);
   overflow-x: hidden; transition: background .4s var(--ease), color .4s var(--ease);
 }
 a { color: inherit; text-decoration: none; }
@@ -57,15 +57,24 @@ a { color: inherit; text-decoration: none; }
   clip-path: polygon(0 0, calc(100% - var(--c)) 0, 100% var(--c), 100% 100%, var(--c) 100%, 0 calc(100% - var(--c)));
 }
 .panel {
-  position: relative; background: var(--bg2); padding: 28px; isolation: isolate;
+  --c: var(--cut);
+  position: relative; background: var(--bg2); padding: 28px; box-shadow: inset 0 0 0 1px var(--line);
+  transition: box-shadow .26s var(--ease);
 }
-.panel::before { /* hairline that follows the chamfer */
-  content: ""; position: absolute; inset: 0; z-index: -1; background: var(--line);
-  clip-path: polygon(0 0, calc(100% - var(--cut)) 0, 100% var(--cut), 100% 100%, var(--cut) 100%, 0 calc(100% - var(--cut)));
+.panel:hover { box-shadow: inset 0 0 0 1px var(--line2), inset 2px 0 0 var(--primary); }
+.panel::before { /* targeting brackets, top-left and bottom-right */
+  content: ""; position: absolute; inset: 0; pointer-events: none; opacity: .55;
+  background:
+    linear-gradient(var(--primary), var(--primary)) left 10px top 10px / 14px 1.5px no-repeat,
+    linear-gradient(var(--primary), var(--primary)) left 10px top 10px / 1.5px 14px no-repeat,
+    linear-gradient(var(--primary), var(--primary)) right 10px bottom 10px / 14px 1.5px no-repeat,
+    linear-gradient(var(--primary), var(--primary)) right 10px bottom 10px / 1.5px 14px no-repeat;
 }
-.panel::after {
-  content: ""; position: absolute; inset: 1px; z-index: -1; background: var(--bg2);
-  clip-path: polygon(0 0, calc(100% - var(--cut) + .5px) 0, 100% calc(var(--cut) - .5px), 100% 100%, calc(var(--cut) - .5px) 100%, 0 calc(100% - var(--cut) + .5px));
+.panel::after { /* the two chamfer edges drawn as hairlines */
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background:
+    linear-gradient(to top right, transparent calc(50% - 1.5px), var(--line2) calc(50% - 1.5px) 50%, transparent 50%) top right / var(--c) var(--c) no-repeat,
+    linear-gradient(to top right, transparent calc(50% - .5px), var(--line2) calc(50% - .5px) calc(50% + .5px), transparent calc(50% + .5px)) bottom left / var(--c) var(--c) no-repeat;
 }
 
 .eyebrow { font: 500 12px/1 var(--mono); letter-spacing: .18em; text-transform: uppercase; color: var(--muted); }
@@ -77,7 +86,7 @@ h2 .dot, h1 .dot { color: var(--primary); }
 /* Buttons: chamfered, flat, never rounded. */
 .btn {
   display: inline-flex; align-items: center; gap: 10px; padding: 14px 24px; cursor: pointer; border: 0;
-  font: 600 13px/1 var(--mono); letter-spacing: .12em; text-transform: uppercase;
+  font: 800 19px/1 var(--display); letter-spacing: .16em; text-transform: uppercase;
   background: var(--primary); color: var(--on-primary);
   clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px));
   transition: filter .26s var(--ease), transform .26s var(--ease);
@@ -87,6 +96,40 @@ h2 .dot, h1 .dot { color: var(--primary); }
 .btn.ghost span { background: var(--bg); position: absolute; inset: 1px; z-index: 0;
   clip-path: polygon(0 0, calc(100% - 10px + .5px) 0, 100% calc(10px - .5px), 100% 100%, calc(10px - .5px) 100%, 0 calc(100% - 10px + .5px)); }
 .btn.ghost b { position: relative; z-index: 1; font: inherit; }
+.btn small { font: 500 10px/1 var(--mono); letter-spacing: .12em; padding: 4px 6px; background: var(--on-primary); color: var(--primary); }
+
+/* Atmosphere: three ghost runes, corner brackets, the name written down the edge. */
+.orn { position: fixed; inset: 0; pointer-events: none; z-index: -1; overflow: hidden; }
+.orn i { position: absolute; font: normal 400 clamp(120px, 16vw, 240px)/1 var(--rune); color: var(--text); opacity: .035; }
+.orn i.p { color: var(--primary); opacity: .04; }
+.orn .br { position: absolute; inset: 18px; opacity: .35;
+  background:
+    linear-gradient(var(--primary), var(--primary)) left top / 22px 1.5px no-repeat, linear-gradient(var(--primary), var(--primary)) left top / 1.5px 22px no-repeat,
+    linear-gradient(var(--primary), var(--primary)) right top / 22px 1.5px no-repeat, linear-gradient(var(--primary), var(--primary)) right top / 1.5px 22px no-repeat,
+    linear-gradient(var(--primary), var(--primary)) left bottom / 22px 1.5px no-repeat, linear-gradient(var(--primary), var(--primary)) left bottom / 1.5px 22px no-repeat,
+    linear-gradient(var(--primary), var(--primary)) right bottom / 22px 1.5px no-repeat, linear-gradient(var(--primary), var(--primary)) right bottom / 1.5px 22px no-repeat; }
+.tate { position: absolute; right: 28px; top: 120px; writing-mode: vertical-rl; text-orientation: upright; font: 400 22px/1.5 var(--rune);
+  color: var(--primary); opacity: .5; letter-spacing: .3em; }
+@media (max-width: 1100px) { .tate { display: none; } }
+
+/* Rune terminal: type "galdr" or press ` (same easter egg as panda-me). */
+.gterm { position: fixed; z-index: 200; left: 50%; bottom: 7vh; transform: translateX(-50%); width: min(720px, calc(100vw - 32px)); height: min(420px, 62vh);
+  filter: drop-shadow(0 28px 40px rgba(0,0,0,.6)); font: 13px/1.6 var(--mono); color: var(--text); animation: gpop .3s var(--ease) both; }
+@keyframes gpop { from { opacity: 0; transform: translateX(-50%) translateY(14px); } to { opacity: 1; transform: translateX(-50%); } }
+.gterm[hidden] { display: none; }
+.gterm .fr { height: 100%; padding: 1px; background: var(--primary);
+  clip-path: polygon(0 0, calc(100% - 22px) 0, 100% 22px, 100% 100%, 22px 100%, 0 calc(100% - 22px)); animation: gin .5s cubic-bezier(.7,0,.2,1) both; }
+@keyframes gin { from { clip-path: polygon(0 49%, 100% 49%, 100% 51%, 22px 51%, 0 51%); } }
+.gterm .pn { height: 100%; display: flex; flex-direction: column; background: color-mix(in srgb, var(--bg) 97%, transparent);
+  clip-path: polygon(0 0, calc(100% - 21px) 0, 100% 21px, 100% 100%, 21px 100%, 0 calc(100% - 21px)); }
+.gterm .bar { display: flex; justify-content: space-between; padding: 10px 18px; border-bottom: 1px solid var(--line2); color: var(--primary); letter-spacing: .14em; font-size: 11px; text-transform: uppercase; }
+.gterm .bar button { background: none; border: 0; color: var(--muted); font: inherit; cursor: pointer; }
+.gterm .out { flex: 1; overflow-y: auto; padding: 14px 18px; white-space: pre-wrap; word-break: break-word; scrollbar-width: thin; }
+.gterm .out div:first-child { color: var(--primary); }
+.gterm form { display: flex; gap: 10px; padding: 12px 18px; border-top: 1px solid var(--line); }
+.gterm form span { color: var(--primary); }
+.gterm input { flex: 1; background: none; border: 0; outline: 0; color: var(--text); font: inherit; caret-color: var(--primary); }
+.rain { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 150; pointer-events: none; }
 
 /* Nav */
 nav { position: fixed; inset: 0 0 auto 0; z-index: 50; background: color-mix(in srgb, var(--bg) 82%, transparent);
@@ -138,7 +181,7 @@ section.alt { background: var(--bg2); border-block: 1px solid var(--line); }
 .map .btnname { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; font: 800 22px/1 var(--display); text-transform: uppercase; }
 .map .btnname .rune { font-size: 22px; }
 .cmd { display: flex; align-items: center; justify-content: space-between; gap: 12px; background: var(--bg); padding: 12px 14px;
-  font: 400 13px/1.5 var(--mono); color: var(--text); border-left: 2px solid var(--primary); word-break: break-all; }
+  font: 400 13px/1.5 var(--mono); color: var(--text); border-left: 2px solid var(--primary); overflow-wrap: anywhere; }
 .cmd button { flex: none; background: none; border: 1px solid var(--line2); color: var(--muted); font: 500 10px/1 var(--mono);
   letter-spacing: .14em; text-transform: uppercase; padding: 7px 9px; cursor: pointer; }
 .cmd button:hover { color: var(--primary); border-color: var(--primary); }
@@ -174,6 +217,7 @@ section.alt { background: var(--bg2); border-block: 1px solid var(--line); }
 
 /* Install */
 .steps { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); }
+.tag-soon { font: 500 10px/1 var(--mono); letter-spacing: .14em; padding: 4px 8px; background: var(--soft); color: var(--primary); vertical-align: middle; margin-left: 8px; }
 .note { margin-top: 22px; color: var(--muted); font-size: 15px; }
 .note code, .head code { font: 400 13px var(--mono); background: var(--bg3); padding: 2px 7px; color: var(--text); }
 
@@ -201,6 +245,12 @@ footer a:hover { color: var(--primary); }
 </style>
 </head>
 <body>
+
+<div class="orn" aria-hidden="true">
+  <div class="br"></div>
+  <i style="left:6%;top:18%">ᚦ</i><i class="p" style="right:8%;top:8%">ᛟ</i><i style="left:38%;bottom:4%">ᚱ</i>
+</div>
+<div class="tate" aria-hidden="true">ᛒᚨᛗᛒᛟᛟ</div>
 
 <nav>
   <div class="wrap">
@@ -330,28 +380,38 @@ footer a:hover { color: var(--primary); }
     <div class="head rv">
       <span class="eyebrow">Install</span>
       <h2>Build it, run it<span class="dot">.</span></h2>
-      <p>Version 2 is a rewrite and has no package yet. Build from source on Arch or EndeavourOS.</p>
+      <p>Version 2 is a rewrite. The AUR package takes the 2.x release when it is published; until then, build from source on Arch or EndeavourOS.</p>
     </div>
     <div class="steps">
-      <div class="panel cut rv"><div class="btnname" style="font:800 22px var(--display);text-transform:uppercase;margin-bottom:14px">1 · Dependencies</div>
+      <div class="panel cut rv"><div class="btnname" style="font:800 22px var(--display);text-transform:uppercase;margin-bottom:14px">AUR · yay or paru <span class="tag-soon">2.x soon</span></div>
+        <div class="cmd"><code>yay -S bamboo-end-store-bin</code><button data-copy="yay -S bamboo-end-store-bin">Copy</button></div>
+        <div class="cmd" style="margin-top:8px"><code>paru -S bamboo-end-store-bin</code><button data-copy="paru -S bamboo-end-store-bin">Copy</button></div></div>
+      <div class="panel cut rv"><div class="btnname" style="font:800 22px var(--display);text-transform:uppercase;margin-bottom:14px">Source · dependencies</div>
         <div class="cmd"><code>sudo pacman -S --needed base-devel rust qt6-base qt6-declarative qt6-svg qt6-wayland</code><button data-copy="sudo pacman -S --needed base-devel rust qt6-base qt6-declarative qt6-svg qt6-wayland">Copy</button></div></div>
-      <div class="panel cut rv"><div class="btnname" style="font:800 22px var(--display);text-transform:uppercase;margin-bottom:14px">2 · Get it</div>
-        <div class="cmd"><code>git clone https://github.com/satodu/bamboo-end-store.git &amp;&amp; cd bamboo-end-store</code><button data-copy="git clone https://github.com/satodu/bamboo-end-store.git && cd bamboo-end-store">Copy</button></div></div>
-      <div class="panel cut rv"><div class="btnname" style="font:800 22px var(--display);text-transform:uppercase;margin-bottom:14px">3 · Run</div>
-        <div class="cmd"><code>./run.sh --release</code><button data-copy="./run.sh --release">Copy</button></div></div>
+      <div class="panel cut rv"><div class="btnname" style="font:800 22px var(--display);text-transform:uppercase;margin-bottom:14px">Source · get and run</div>
+        <div class="cmd"><code>git clone https://github.com/satodu/bamboo-end-store.git &amp;&amp; cd bamboo-end-store &amp;&amp; ./run.sh --release</code><button data-copy="git clone https://github.com/satodu/bamboo-end-store.git && cd bamboo-end-store && ./run.sh --release">Copy</button></div></div>
     </div>
-    <p class="note rv">The first build takes a few minutes. <code>./run.sh --clean</code> starts with throwaway settings. The <code>bamboo-end-store-bin</code> AUR package still ships the old 1.x (Electron) release, kept under the tag <code>v1.4.2-php</code>.</p>
+    <p class="note rv">The first source build takes a few minutes. <code>./run.sh --clean</code> starts with throwaway settings. Until the 2.x release is published, <code>bamboo-end-store-bin</code> on the AUR still ships the old 1.x (Electron) app, kept under the tag <code>v1.4.2-php</code>.</p>
   </div>
 </section>
 
 <footer>
   <div class="wrap">
     <span class="brand"><img src="imgs/logo-without-background.png" alt="">Bamboo End Store</span>
+    <span style="font-family:var(--mono);font-size:12px;letter-spacing:.1em">press <b class="rune" style="font-family:var(--mono)">`</b> for the rune terminal</span>
     <span>Unofficial fan project by <a href="https://github.com/satodu"><b>Panda</b></a> · MIT · look by <b>Galdr</b></span>
     <span><a href="https://github.com/satodu/bamboo-end-store">GitHub</a> · <a href="https://github.com/satodu/bamboo-end-store/releases">Releases</a></span>
   </div>
 </footer>
 
+<canvas class="rain" id="rain" hidden aria-hidden="true"></canvas>
+<div class="gterm" id="gterm" role="dialog" aria-label="Rune terminal" hidden>
+  <div class="fr"><div class="pn">
+    <div class="bar"><span>ᚷᚨᛚᛞᚱ://bamboo</span><button type="button" id="gclose" aria-label="Close">esc ×</button></div>
+    <div class="out" id="gout"></div>
+    <form id="gform"><span>ᚷ&gt;</span><input id="gin" spellcheck="false" autocomplete="off" aria-label="command"></form>
+  </div></div>
+</div>
 <div class="toast" id="toast">Command copied</div>
 
 <script>
@@ -445,6 +505,68 @@ footer a:hover { color: var(--primary); }
   if (still) render(lines.length);
   else new IntersectionObserver((es, o) => { if (es[0].isIntersecting) { o.disconnect(); type(); } }, { threshold: .4 }).observe(term);
   if (!still) render(0);
+
+  // Rune terminal.
+  const RUNES = 'ᚠᚢᚦᚨᚱᚲᚷᚹᚺᚾᛁᛃᛇᛈᛉᛊᛏᛒᛖᛗᛚᛜᛞᛟ';
+  const MAP = { a:'ᚨ', b:'ᛒ', c:'ᚲ', d:'ᛞ', e:'ᛖ', f:'ᚠ', g:'ᚷ', h:'ᚺ', i:'ᛁ', j:'ᛃ', k:'ᚲ', l:'ᛚ', m:'ᛗ', n:'ᚾ', o:'ᛟ', p:'ᛈ', q:'ᚲ', r:'ᚱ', s:'ᛊ', t:'ᛏ', u:'ᚢ', v:'ᚹ', w:'ᚹ', x:'ᚲᛊ', y:'ᛃ', z:'ᛉ' };
+  const toRunes = t => [...t.toLowerCase()].map(c => MAP[c] ?? c).join('');
+  const gterm = $('#gterm'), gout = $('#gout'), gin = $('#gin'), rain = $('#rain');
+  const hist = []; let hi = -1;
+  const say = (...l) => { gout.append(...l.map(t => Object.assign(document.createElement('div'), { textContent: t || ' ' }))); gout.scrollTop = gout.scrollHeight; };
+  function openTerm() {
+    if (!gterm.hidden) return;
+    gterm.hidden = false; gout.textContent = '';
+    say('ᚷᚨᛚᛞᚱ // rune terminal', 'type "help". esc closes.', '');
+    setTimeout(() => gin.focus(), 80);
+  }
+  const closeTerm = () => { gterm.hidden = true; };
+  function matrix() {
+    const ctx = rain.getContext('2d'), w = rain.width = innerWidth, h = rain.height = innerHeight;
+    const drops = Array.from({ length: Math.floor(w / 22) }, () => Math.random() * -40);
+    const color = getComputedStyle(document.documentElement).getPropertyValue('--primary').trim();
+    rain.hidden = false; const t0 = performance.now();
+    (function tick(now) {
+      ctx.fillStyle = 'rgba(12,12,11,.12)'; ctx.fillRect(0, 0, w, h); ctx.font = '18px "Noto Sans Runic", serif';
+      drops.forEach((y, i) => { ctx.fillStyle = Math.random() < .04 ? '#fff' : color;
+        ctx.fillText(RUNES[Math.floor(Math.random() * RUNES.length)], i * 22, y * 22); drops[i] = y * 22 > h && Math.random() > .975 ? 0 : y + .6; });
+      if (now - t0 > 6000) { ctx.clearRect(0, 0, w, h); rain.hidden = true; return; }
+      requestAnimationFrame(tick);
+    })(t0);
+  }
+  function run(raw) {
+    const [cmd = '', ...rest] = raw.trim().split(/\s+/), arg = rest.join(' ');
+    say('ᚷ> ' + raw);
+    switch (cmd.toLowerCase()) {
+      case '': break;
+      case 'help': say('about        what Bamboo is', 'install      how to get it', 'runes <txt>  write in Elder Futhark', 'theme <bamboo|catppuccin|nord|gruvbox>', 'matrix       let it rain', 'clear · exit'); break;
+      case 'about': say('Bamboo End Store: a console-first store for EndeavourOS and Arch.', 'The window is the front. The terminal is the star.'); break;
+      case 'install': say('yay -S bamboo-end-store-bin     (when 2.x is published)', 'git clone https://github.com/satodu/bamboo-end-store.git', './run.sh --release'); break;
+      case 'runes': say(arg ? toRunes(arg) : 'usage: runes <text>'); break;
+      case 'theme': if (themes.includes(arg)) { setTheme(arg); say('theme: ' + arg); } else say('usage: theme <' + themes.join('|') + '>'); break;
+      case 'matrix': say('ᚦ the runes fall.'); if (!still) matrix(); break;
+      case 'sudo': say('permission denied. the runes do not obey you. (the app asks for sudo in its own terminal, never here)'); break;
+      case 'clear': gout.textContent = ''; break;
+      case 'exit': closeTerm(); break;
+      default: say('ᚦ command not found: ' + cmd + '. try "help".');
+    }
+    say('');
+  }
+  $('#gform').addEventListener('submit', e => { e.preventDefault(); const v = gin.value; if (v.trim()) { hist.unshift(v); hi = -1; } run(v); gin.value = ''; });
+  gin.addEventListener('keydown', e => {
+    if (e.key === 'ArrowUp') { e.preventDefault(); hi = Math.min(hi + 1, hist.length - 1); gin.value = hist[hi] ?? ''; }
+    if (e.key === 'ArrowDown') { e.preventDefault(); hi = Math.max(hi - 1, -1); gin.value = hist[hi] ?? ''; }
+  });
+  $('#gclose').addEventListener('click', closeTerm);
+  gterm.addEventListener('click', () => gin.focus());
+  let buf = '';
+  document.addEventListener('keydown', e => {
+    const el = e.target, typing = el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.isContentEditable;
+    if (e.key === 'Escape') return closeTerm();
+    if (typing) return;
+    if (e.key === '`') { e.preventDefault(); gterm.hidden ? openTerm() : closeTerm(); return; }
+    buf = (buf + e.key.toLowerCase()).slice(-5);
+    if (buf === 'galdr') { openTerm(); buf = ''; }
+  });
 })();
 </script>
 </body>
