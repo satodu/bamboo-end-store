@@ -5,8 +5,8 @@ each one would matter to a user or a maintainer. Nothing here blocks the release
 
 ## Release and packaging
 
-- **No 2.x package on the AUR yet.** `packaging/aur/PKGBUILD` builds 2.x from source (package `bamboo-end-store`, new AUR repo needed; it
-  conflicts with `bamboo-end-store-bin`, which still ships 1.x). It was built with `makepkg` from a local tarball only. A prebuilt
+- **AUR package is source-only.** `bamboo-end-store` (2.0.0) builds with cargo on the user's machine, which takes minutes; its `PKGBUILD` is in
+  `packaging/aur/` and must be copied to the AUR repo with a new `.SRCINFO` and `sha256sums` for each release. A prebuilt
   `-bin` package, an AppImage and a `.deb` do not exist.
 - **Tested by hand on one machine** (CachyOS) and, next, a fresh EndeavourOS install. There is no CI: tests run locally with
   `cargo test -p bamboo-core`.

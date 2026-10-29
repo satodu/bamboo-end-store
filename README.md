@@ -84,7 +84,7 @@ The first build takes a few minutes. Settings live in `~/.config/bamboo-end-stor
 
 ### AUR
 
-A `PKGBUILD` that builds 2.x from source is in `packaging/aur/`. It is not published on the AUR yet. The old `bamboo-end-store-bin` package still ships the 1.x (Electron) release.
+From the AUR (builds from source, a few minutes): `yay -S bamboo-end-store` or `paru -S bamboo-end-store`. Its `PKGBUILD` is in `packaging/aur/`. The old `bamboo-end-store-bin` package still ships the 1.x (Electron) release.
 
 ---
 

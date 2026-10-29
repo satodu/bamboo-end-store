@@ -125,4 +125,4 @@ binary reach `Qt.application.arguments` (the screenshot scripts use this with `g
 The full list of known debt is in [`TECH_DEBT.md`](TECH_DEBT.md); keep it current when you add or remove a shortcut.
 
 - Icons for installed pacman and AUR apps whose icon lives in a theme other than hicolor fall back to the name's initial as a rune.
-- The 2.x package is not published: `packaging/aur/PKGBUILD` (source build) is ready; AppImage and `.deb` do not exist.
+- The AUR package `bamboo-end-store` (source build, `packaging/aur/PKGBUILD`) is published for 2.0.0; update `.SRCINFO` and `sha256sums` per release. AppImage and `.deb` do not exist.

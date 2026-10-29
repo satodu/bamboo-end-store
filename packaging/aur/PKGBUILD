@@ -15,11 +15,10 @@ optdepends=('paru: AUR support'
             'konsole: terminal used for installs'
             'kitty: terminal used for installs'
             'fuse2: run AppImages')
-provides=('bamboo-end-store')
 conflicts=('bamboo-end-store-bin')
 options=('!lto')
 source=("${pkgname}-${pkgver}.tar.gz::${url}/archive/refs/tags/${pkgver}.tar.gz")
-sha256sums=('SKIP')
+sha256sums=('33b7b9796d3a5b8007c9ae6a8b4f9364348d0e30f86c564fe3a87d4423b7919f')
 
 prepare() {
     cd "${pkgname}-${pkgver}"
