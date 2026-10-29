@@ -5,9 +5,9 @@ each one would matter to a user or a maintainer. Nothing here blocks the release
 
 ## Release and packaging
 
-- **AUR package is source-only.** `bamboo-end-store` (2.0.0) builds with cargo on the user's machine, which takes minutes; its `PKGBUILD` is in
-  `packaging/aur/` and must be copied to the AUR repo with a new `.SRCINFO` and `sha256sums` for each release. A prebuilt
-  `-bin` package, an AppImage and a `.deb` do not exist.
+- **AUR packages are updated by hand.** `bamboo-end-store-bin` (prebuilt tarball attached to the GitHub release, built on the maintainer's CachyOS
+  and linked to its Qt 6.12) and `bamboo-end-store` (source build, `packaging/aur/PKGBUILD`). Each release needs a new tarball, `sha256sums`,
+  `.SRCINFO` and a push to both AUR repos. A Qt major/minor bump on Arch can need a rebuilt tarball. No AppImage or `.deb` yet.
 - **Tested by hand on one machine** (CachyOS) and, next, a fresh EndeavourOS install. There is no CI: tests run locally with
   `cargo test -p bamboo-core`.
 - **The QML layer has no automated tests.** The Rust core has 123 tests; the interface is checked with screenshots and by reading
