@@ -40,7 +40,25 @@ pub fn script(command: &str, status_file: &str, settings: &Settings, lang: &str)
     } else {
         format!("echo ''; read -p {}", shell_quote(&i18n::tr(lang, "console_press_enter")))
     };
-    format!("({command}); echo $? > {}; {post}", shell_quote(status_file))
+    format!(
+        "echo $$ > {}; ({command}); echo $? > {}; {post}",
+        shell_quote(&pid_path(status_file)),
+        shell_quote(status_file)
+    )
+}
+
+/// File where the script records its own shell PID, so closing the window can be noticed even
+/// when the terminal handed it to a server process and its own exit says nothing.
+fn pid_path(status_file: &str) -> String {
+    format!("{status_file}.pid")
+}
+
+fn pid_alive(pid: u32) -> bool {
+    match fs::read_to_string(format!("/proc/{pid}/stat")) {
+        // The state letter follows the last ')' (the command name may contain one).
+        Ok(stat) => stat.rsplit(')').next().is_some_and(|rest| !rest.trim_start().starts_with('Z')),
+        Err(_) => false,
+    }
 }
 
 /// A command running in an external terminal window.
@@ -78,29 +96,36 @@ impl TerminalJob {
     /// Block until the command finishes and return its exit code, without waiting for the
     /// window to close. `None` if the terminal was closed before the command ended.
     pub fn wait(mut self) -> Option<i32> {
+        let mut child_gone: Option<Instant> = None;
         let result = loop {
             if let Some(code) = self.read_status() {
                 break Some(code);
             }
-            if let Ok(Some(_)) = self.child.try_wait() {
-                let daemonized = self.started.elapsed() < DAEMONIZE_WINDOW;
-                break if daemonized { self.poll_detached() } else { self.read_status() };
+            if let Some(pid) = self.read_pid() {
+                // The shell is the truth: when it is gone the window was closed or killed.
+                if !pid_alive(pid) {
+                    break self.read_status();
+                }
+            } else if let Ok(Some(_)) = self.child.try_wait() {
+                // No PID yet and the terminal already exited: a server-style terminal is still
+                // starting the shell, or nothing ever started. Give it a short grace period.
+                let since = *child_gone.get_or_insert_with(Instant::now);
+                if since.elapsed() > DAEMONIZE_WINDOW * 4 {
+                    break self.read_status();
+                }
+            }
+            if self.started.elapsed() > DAEMONIZED_MAX_WAIT && self.read_pid().is_none() {
+                break None;
             }
             sleep(POLL);
         };
         let _ = fs::remove_file(&self.status_file);
+        let _ = fs::remove_file(pid_path(self.status_file.to_str().unwrap_or_default()));
         result
     }
 
-    fn poll_detached(&self) -> Option<i32> {
-        let deadline = Instant::now() + DAEMONIZED_MAX_WAIT;
-        while Instant::now() < deadline {
-            if let Some(code) = self.read_status() {
-                return Some(code);
-            }
-            sleep(POLL);
-        }
-        None
+    fn read_pid(&self) -> Option<u32> {
+        fs::read_to_string(pid_path(self.status_file.to_str()?)).ok()?.trim().parse().ok()
     }
 
     fn read_status(&self) -> Option<i32> {
@@ -137,7 +162,7 @@ mod tests {
         let s = script("pacman -S 'x'", "/tmp/s", &Settings::default(), "en");
         assert_eq!(
             s,
-            "(pacman -S 'x'); echo $? > '/tmp/s'; echo ''; echo 'Closing terminal in 10 seconds...'; sleep 10"
+            "echo $$ > '/tmp/s.pid'; (pacman -S 'x'); echo $? > '/tmp/s'; echo ''; echo 'Closing terminal in 10 seconds...'; sleep 10"
         );
         let pt = script("true", "/tmp/s", &Settings::default(), "pt");
         assert!(pt.contains("Fechando terminal em 10 segundos..."), "{pt}");
@@ -175,6 +200,30 @@ mod tests {
         let term = fake_terminal("fail");
         let job = TerminalJob::spawn_with(term.to_str().unwrap(), "exit 7", &quick()).unwrap();
         assert_eq!(job.wait(), Some(7));
+    }
+
+    #[test]
+    fn closing_the_window_ends_the_wait() {
+        // The fake terminal runs the script, then the "window" is killed mid-command.
+        let term = fake_terminal("closed");
+        let job = TerminalJob::spawn_with(term.to_str().unwrap(), "sleep 5", &quick()).unwrap();
+        let status = job.status_file.to_str().unwrap().to_owned();
+        let started = Instant::now();
+        let killer = std::thread::spawn(move || {
+            let pid_file = pid_path(&status);
+            loop {
+                if let Ok(p) = fs::read_to_string(&pid_file) {
+                    if let Ok(pid) = p.trim().parse::<u32>() {
+                        let _ = Command::new("kill").arg("-9").arg(pid.to_string()).status();
+                        return;
+                    }
+                }
+                sleep(Duration::from_millis(50));
+            }
+        });
+        assert_eq!(job.wait(), None);
+        killer.join().unwrap();
+        assert!(started.elapsed() < Duration::from_secs(20));
     }
 
     #[test]
