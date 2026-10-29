@@ -4,6 +4,7 @@ use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::{Arc, OnceLock};
 
 use bamboo_core::{AppImages, Filter, Op, OpOutcome, PackageSource, Settings, Store};
+use bamboo_core::store::Page;
 use cxx_qt::{CxxQtType, Threading};
 use cxx_qt_lib::QString;
 
@@ -203,8 +204,30 @@ pub struct BackendRust {
     search_gen: Arc<AtomicU64>,
 }
 
+/// `value` as a JSON string for QML, or `fallback` (itself valid JSON) if it cannot be serialized.
+fn json<T: serde::Serialize>(value: &T, fallback: &str) -> QString {
+    QString::from(&serde_json::to_string(value).unwrap_or_else(|_| fallback.into()))
+}
+
 fn settings_json(store: &Store) -> QString {
-    QString::from(&serde_json::to_string(&store.settings()).unwrap_or_else(|_| "{}".into()))
+    json(&store.settings(), "{}")
+}
+
+/// A page of packages already serialized on the worker thread, ready to hand to the UI thread.
+struct PageView {
+    results: String,
+    facets: String,
+    total: i32,
+}
+
+impl From<Page> for PageView {
+    fn from(page: Page) -> Self {
+        Self {
+            results: bamboo_core::icons::packages_json(&page.items),
+            facets: serde_json::to_string(&page.counts).unwrap_or_else(|_| "{}".into()),
+            total: page.total as i32,
+        }
+    }
 }
 
 impl Default for BackendRust {
@@ -239,75 +262,89 @@ impl qobject::Backend {
         Filter::parse(&self.rust().repo.to_string(), &self.rust().sort.to_string())
     }
 
-    fn search(mut self: Pin<&mut Self>, query: &QString, page: i32) {
+    /// Run `fetch` on a worker thread and, if no newer load started meanwhile, hand its result to
+    /// `apply` on the UI thread. The busy flag spans the load. A slow older load never overwrites a newer one.
+    fn load_latest<R, F, A>(mut self: Pin<&mut Self>, fetch: F, apply: A)
+    where
+        R: Send + 'static,
+        F: FnOnce(&Store) -> R + Send + 'static,
+        A: FnOnce(Pin<&mut qobject::Backend>, R) + Send + 'static,
+    {
         let store = self.rust().store.clone();
         let generation = self.rust().search_gen.clone();
         let mine = generation.fetch_add(1, Ordering::SeqCst) + 1;
+        let thread = self.qt_thread();
+
+        self.as_mut().set_busy(true);
+        std::thread::spawn(move || {
+            let value = fetch(&store);
+            let _ = thread.queue(move |mut this| {
+                if generation.load(Ordering::SeqCst) == mine {
+                    apply(this.as_mut(), value);
+                    this.as_mut().set_busy(false);
+                }
+            });
+        });
+    }
+
+    /// `load_latest` for the screens that show a filtered, paginated list.
+    fn load_page<F>(self: Pin<&mut Self>, fetch: F)
+    where
+        F: FnOnce(&Store) -> Page + Send + 'static,
+    {
+        self.load_latest(
+            |store| PageView::from(fetch(store)),
+            |mut this, view| {
+                this.as_mut().set_facets(QString::from(&view.facets));
+                this.as_mut().set_total(view.total);
+                this.as_mut().set_results(QString::from(&view.results));
+            },
+        );
+    }
+
+    fn search(self: Pin<&mut Self>, query: &QString, page: i32) {
         let query = query.to_string();
         let filter = self.filter();
-        let thread = self.qt_thread();
-
-        self.as_mut().set_busy(true);
-        std::thread::spawn(move || {
-            let result = store.search_page(&query, page.max(1) as usize, filter);
-            let json = bamboo_core::icons::packages_json(&result.items);
-            let facets = serde_json::to_string(&result.counts).unwrap_or_else(|_| "{}".into());
-            let total = result.total;
-            let _ = thread.queue(move |mut this| {
-                if generation.load(Ordering::SeqCst) == mine {
-                    this.as_mut().set_facets(QString::from(&facets));
-                    this.as_mut().set_total(total as i32);
-                    this.as_mut().set_results(QString::from(&json));
-                    this.as_mut().set_busy(false);
-                }
-            });
-        });
+        self.load_page(move |store| store.search_page(&query, page.max(1) as usize, filter));
     }
 
-    fn load_installed(mut self: Pin<&mut Self>, filter: &QString, page: i32) {
-        let store = self.rust().store.clone();
-        let generation = self.rust().search_gen.clone();
-        let mine = generation.fetch_add(1, Ordering::SeqCst) + 1;
-        let text = filter.to_string();
+    fn load_installed(self: Pin<&mut Self>, text: &QString, page: i32) {
+        let text = text.to_string();
         let filter = self.filter();
-        let thread = self.qt_thread();
-
-        self.as_mut().set_busy(true);
-        std::thread::spawn(move || {
-            let result = store.installed_page(&text, page.max(1) as usize, filter);
-            let json = bamboo_core::icons::packages_json(&result.items);
-            let facets = serde_json::to_string(&result.counts).unwrap_or_else(|_| "{}".into());
-            let total = result.total;
-            let _ = thread.queue(move |mut this| {
-                if generation.load(Ordering::SeqCst) == mine {
-                    this.as_mut().set_facets(QString::from(&facets));
-                    this.as_mut().set_total(total as i32);
-                    this.as_mut().set_results(QString::from(&json));
-                    this.as_mut().set_busy(false);
-                }
-            });
-        });
+        self.load_page(move |store| store.installed_page(&text, page.max(1) as usize, filter));
     }
 
-    fn load_app_images(mut self: Pin<&mut Self>) {
-        let store = self.rust().store.clone();
-        let generation = self.rust().search_gen.clone();
-        let mine = generation.fetch_add(1, Ordering::SeqCst) + 1;
-        let thread = self.qt_thread();
+    fn load_category(self: Pin<&mut Self>, name: &QString, page: i32) {
+        let name = name.to_string();
+        let filter = self.filter();
+        self.load_page(move |store| store.category_page(&name, page.max(1) as usize, filter));
+    }
 
-        self.as_mut().set_busy(true);
-        std::thread::spawn(move || {
-            let dir = AppImages::directory_for(&store.settings().appimage_path);
-            let items = app_images().list(&dir);
-            let json = serde_json::to_string(&items).unwrap_or_else(|_| "[]".into());
-            let _ = thread.queue(move |mut this| {
-                if generation.load(Ordering::SeqCst) == mine {
-                    this.as_mut().set_total(items.len() as i32);
-                    this.as_mut().set_results(QString::from(&json));
-                    this.as_mut().set_busy(false);
-                }
-            });
-        });
+    fn load_app_images(self: Pin<&mut Self>) {
+        self.load_latest(
+            |store| {
+                let dir = AppImages::directory_for(&store.settings().appimage_path);
+                let items = app_images().list(&dir);
+                (items.len() as i32, serde_json::to_string(&items).unwrap_or_else(|_| "[]".into()))
+            },
+            |mut this, (total, results)| {
+                this.as_mut().set_total(total);
+                this.as_mut().set_results(QString::from(&results));
+            },
+        );
+    }
+
+    fn load_bamboo_installs(self: Pin<&mut Self>) {
+        self.load_latest(
+            |store| {
+                let items = store.bamboo_installs();
+                (items.len() as i32, bamboo_core::icons::packages_json(&items))
+            },
+            |mut this, (total, results)| {
+                this.as_mut().set_total(total);
+                this.as_mut().set_results(QString::from(&results));
+            },
+        );
     }
 
     fn register_app_image(self: Pin<&mut Self>, path: &QString) {
@@ -353,27 +390,6 @@ impl qobject::Backend {
         });
     }
 
-    fn load_bamboo_installs(mut self: Pin<&mut Self>) {
-        let store = self.rust().store.clone();
-        let generation = self.rust().search_gen.clone();
-        let mine = generation.fetch_add(1, Ordering::SeqCst) + 1;
-        let thread = self.qt_thread();
-
-        self.as_mut().set_busy(true);
-        std::thread::spawn(move || {
-            let items = store.bamboo_installs();
-            let json = bamboo_core::icons::packages_json(&items);
-            let total = items.len();
-            let _ = thread.queue(move |mut this| {
-                if generation.load(Ordering::SeqCst) == mine {
-                    this.as_mut().set_total(total as i32);
-                    this.as_mut().set_results(QString::from(&json));
-                    this.as_mut().set_busy(false);
-                }
-            });
-        });
-    }
-
     fn load_comments(mut self: Pin<&mut Self>, name: &QString) {
         let store = self.rust().store.clone();
         let name = name.to_string();
@@ -389,7 +405,7 @@ impl qobject::Backend {
     }
 
     fn system_info(&self) -> QString {
-        QString::from(&serde_json::to_string(&bamboo_core::sysinfo::read()).unwrap_or_else(|_| "{}".into()))
+        json(&bamboo_core::sysinfo::read(), "{}")
     }
 
     fn load_categories(self: Pin<&mut Self>) {
@@ -407,31 +423,6 @@ impl qobject::Backend {
         std::thread::spawn(move || {
             let json = bamboo_core::icons::packages_json(&store.essentials());
             let _ = thread.queue(move |mut this| this.as_mut().set_essentials(QString::from(&json)));
-        });
-    }
-
-    fn load_category(mut self: Pin<&mut Self>, name: &QString, page: i32) {
-        let store = self.rust().store.clone();
-        let generation = self.rust().search_gen.clone();
-        let mine = generation.fetch_add(1, Ordering::SeqCst) + 1;
-        let name = name.to_string();
-        let filter = self.filter();
-        let thread = self.qt_thread();
-
-        self.as_mut().set_busy(true);
-        std::thread::spawn(move || {
-            let result = store.category_page(&name, page.max(1) as usize, filter);
-            let json = bamboo_core::icons::packages_json(&result.items);
-            let facets = serde_json::to_string(&result.counts).unwrap_or_else(|_| "{}".into());
-            let total = result.total;
-            let _ = thread.queue(move |mut this| {
-                if generation.load(Ordering::SeqCst) == mine {
-                    this.as_mut().set_facets(QString::from(&facets));
-                    this.as_mut().set_total(total as i32);
-                    this.as_mut().set_results(QString::from(&json));
-                    this.as_mut().set_busy(false);
-                }
-            });
         });
     }
 
@@ -468,11 +459,7 @@ impl qobject::Backend {
         let thread = self.qt_thread();
         self.as_mut().set_busy(true);
         std::thread::spawn(move || {
-            let code = match run(&store) {
-                OpOutcome::Finished(code) => code,
-                OpOutcome::NoTerminal => -1,
-                OpOutcome::Aborted => -2,
-            };
+            let code = run(&store).code();
             bamboo_core::notify::operation_finished(&store.settings(), name, action, code);
             let json = serde_json::to_string(&store.flatpak_status()).unwrap_or_else(|_| "{}".into());
             let _ = thread.queue(move |mut this| {
@@ -518,7 +505,7 @@ impl qobject::Backend {
             return QString::from("{\"install\":\"\",\"remove\":\"\"}");
         };
         let c = self.rust().store.console_commands(&name.to_string(), source);
-        QString::from(&serde_json::to_string(&c).unwrap_or_else(|_| "{}".into()))
+        json(&c, "{}")
     }
 
     fn install(self: Pin<&mut Self>, name: &QString, source: &QString) {
@@ -543,11 +530,7 @@ impl qobject::Backend {
 
         self.as_mut().set_busy(true);
         std::thread::spawn(move || {
-            let code = match store.run(op, &name, source) {
-                OpOutcome::Finished(code) => code,
-                OpOutcome::NoTerminal => -1,
-                OpOutcome::Aborted => -2,
-            };
+            let code = store.run(op, &name, source).code();
             bamboo_core::notify::operation_finished(&store.settings(), &name, action, code);
             let _ = thread.queue(move |mut this| {
                 this.as_mut().set_busy(false);

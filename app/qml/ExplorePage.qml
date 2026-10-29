@@ -204,16 +204,14 @@ Item {
                 }
             }
 
-            RowLayout {
+            Pager {
                 Layout.fillWidth: true
                 visible: root.mode !== "home" && root.pageCount > 1
-                spacing: 12
-                Item { Layout.fillWidth: true }
-                Btn { text: Tr.t("Prev"); variant: "outline"; enabled: root.page > 1 && !backend.busy
-                      onClicked: root.fetch(--root.page) }
-                Text { text: root.page + " / " + root.pageCount; color: Theme.fgSurface; font.family: Style.mono; font.pixelSize: 12 }
-                Btn { text: Tr.t("Next"); variant: "outline"; enabled: root.page < root.pageCount && !backend.busy
-                      onClicked: root.fetch(++root.page) }
+                page: root.page
+                pageCount: root.pageCount
+                busy: backend.busy
+                onPreviousRequested: root.fetch(--root.page)
+                onNextRequested: root.fetch(++root.page)
             }
         }
 

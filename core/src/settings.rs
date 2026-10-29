@@ -183,8 +183,7 @@ pub(crate) mod tests {
     fn save_then_load() {
         let dir = tempdir("save");
         let path = dir.join("nested").join("settings.json");
-        let mut s = Settings::default();
-        s.view_mode = "list".into();
+        let s = Settings { view_mode: "list".into(), ..Settings::default() };
         s.save_to(&path).unwrap();
         assert_eq!(Settings::load_from(&path), s);
         assert!(!path.with_extension("json.tmp").exists());

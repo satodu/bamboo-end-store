@@ -158,6 +158,17 @@ pub enum OpOutcome {
     Aborted,
 }
 
+impl OpOutcome {
+    /// Exit code reported to the UI: the command's own, `-1` without a terminal, `-2` when aborted.
+    pub fn code(self) -> i32 {
+        match self {
+            Self::Finished(code) => code,
+            Self::NoTerminal => -1,
+            Self::Aborted => -2,
+        }
+    }
+}
+
 /// Everything the UI talks to: the three package sources plus settings, cache and busy state.
 /// Port of `App\Services\PackageService`.
 pub struct Store {
