@@ -9,6 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600&family=Noto+Sans+Runic&display=swap" rel="stylesheet">
+<script>document.documentElement.classList.add('js')</script>
 <style>
 /* Palettes mirror the app presets (Material You, tonal spot). Colour lives here only. */
 :root, [data-theme="bamboo"] {
@@ -185,6 +186,7 @@ section.alt { background: var(--bg2); border-block: 1px solid var(--line); }
 .cmd button { flex: none; background: none; border: 1px solid var(--line2); color: var(--muted); font: 500 10px/1 var(--mono);
   letter-spacing: .14em; text-transform: uppercase; padding: 7px 9px; cursor: pointer; }
 .cmd button:hover { color: var(--primary); border-color: var(--primary); }
+.two { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 8px; }
 .map small { display: block; margin-top: 12px; color: var(--muted); font-size: 14px; }
 
 /* Features */
@@ -227,10 +229,10 @@ footer .brand { font-size: 20px; color: var(--text); }
 footer a:hover { color: var(--primary); }
 
 /* Entrance: diagonal chamfer wipe plus a short slide, never a fade alone. */
-.rv { opacity: 0; transform: translateY(14px); clip-path: polygon(0 0, 0 0, 0 0, 0 100%);
-  transition: clip-path .42s var(--ease), transform .42s var(--ease), opacity .14s linear; }
-.rv.in { opacity: 1; transform: none; clip-path: polygon(0 0, 150% 0, 100% 100%, 0 150%); }
-.rv.in.done { clip-path: none; }
+.js .rv { opacity: 0; transform: translateY(14px); }
+.js .rv.in { opacity: 1; transform: none; transition: transform .42s var(--ease), opacity .26s linear; }
+.rv.wipe { animation: wipe .42s var(--ease) both; }
+@keyframes wipe { from { clip-path: polygon(0 0, 0 0, 0 0, 0 100%); } to { clip-path: polygon(0 0, 150% 0, 100% 100%, 0 150%); } }
 
 .toast { position: fixed; right: 24px; bottom: 24px; background: var(--primary); color: var(--on-primary); padding: 12px 18px;
   font: 600 12px/1 var(--mono); letter-spacing: .12em; text-transform: uppercase; opacity: 0; transform: translateY(12px);
@@ -239,7 +241,8 @@ footer a:hover { color: var(--primary); }
 
 @media (prefers-reduced-motion: reduce) {
   .ring svg, .caret { animation: none; }
-  .rv { opacity: 1; transform: none; clip-path: none; transition: none; }
+  .js .rv { opacity: 1; transform: none; transition: none; }
+  .rv.wipe { animation: none; }
   html { scroll-behavior: auto; }
 }
 </style>
@@ -290,7 +293,7 @@ footer a:hover { color: var(--primary); }
 
     <div class="term panel cut rv" id="terminal">
       <div class="term-bar"><span>bamboo — console first</span><span class="rune">ᚨᛗᛖᚦᛁᛊᛏ</span></div>
-      <div class="term-body" id="term" aria-live="off"></div>
+      <div class="term-body" id="term" aria-live="off"><div><span class="p">$ </span>yay -Ss firefox</div></div>
     </div>
   </div>
 </header>
@@ -303,6 +306,14 @@ footer a:hover { color: var(--primary); }
       <p>Bamboo never hides what it does. Pressing Install opens a visible terminal and runs the same line you see in the details, with a copy button. Prefer your own shell? Copy it and go.</p>
     </div>
     <div class="map">
+      <div class="panel cut rv" style="grid-column:1/-1">
+        <div class="btnname"><span class="rune">ᛒ</span>Install Bamboo End Store <span class="tag-soon">AUR · 2.x soon</span></div>
+        <div class="two">
+          <div class="cmd"><code>yay -S bamboo-end-store-bin</code><button data-copy="yay -S bamboo-end-store-bin">Copy</button></div>
+          <div class="cmd"><code>paru -S bamboo-end-store-bin</code><button data-copy="paru -S bamboo-end-store-bin">Copy</button></div>
+        </div>
+        <small>Either helper works. The package takes the 2.x release when it is published; today it still ships the old 1.x app. Until then, <a href="#install" style="color:var(--primary)">build from source</a>.</small>
+      </div>
       <div class="panel cut rv"><div class="btnname"><span class="rune">ᛊ</span>Install · official</div>
         <div class="cmd"><code>sudo pacman -S firefox</code><button data-copy="sudo pacman -S firefox">Copy</button></div>
         <small>Opens in your terminal with sudo, asks for your password there.</small></div>
@@ -380,12 +391,9 @@ footer a:hover { color: var(--primary); }
     <div class="head rv">
       <span class="eyebrow">Install</span>
       <h2>Build it, run it<span class="dot">.</span></h2>
-      <p>Version 2 is a rewrite. The AUR package takes the 2.x release when it is published; until then, build from source on Arch or EndeavourOS.</p>
+      <p>Version 2 is a rewrite. Prefer the AUR (yay or paru, above) once the 2.x package is out; until then, build from source on Arch or EndeavourOS.</p>
     </div>
     <div class="steps">
-      <div class="panel cut rv"><div class="btnname" style="font:800 22px var(--display);text-transform:uppercase;margin-bottom:14px">AUR · yay or paru <span class="tag-soon">2.x soon</span></div>
-        <div class="cmd"><code>yay -S bamboo-end-store-bin</code><button data-copy="yay -S bamboo-end-store-bin">Copy</button></div>
-        <div class="cmd" style="margin-top:8px"><code>paru -S bamboo-end-store-bin</code><button data-copy="paru -S bamboo-end-store-bin">Copy</button></div></div>
       <div class="panel cut rv"><div class="btnname" style="font:800 22px var(--display);text-transform:uppercase;margin-bottom:14px">Source · dependencies</div>
         <div class="cmd"><code>sudo pacman -S --needed base-devel rust qt6-base qt6-declarative qt6-svg qt6-wayland</code><button data-copy="sudo pacman -S --needed base-devel rust qt6-base qt6-declarative qt6-svg qt6-wayland">Copy</button></div></div>
       <div class="panel cut rv"><div class="btnname" style="font:800 22px var(--display);text-transform:uppercase;margin-bottom:14px">Source · get and run</div>
@@ -470,12 +478,14 @@ footer a:hover { color: var(--primary); }
     toast.classList.add('on'); setTimeout(() => toast.classList.remove('on'), 1400);
   }));
 
-  // Entrances.
-  const io = new IntersectionObserver(es => es.forEach(e => {
-    if (!e.isIntersecting) return;
-    e.target.classList.add('in'); setTimeout(() => e.target.classList.add('done'), 520); io.unobserve(e.target);
-  }), { threshold: .12 });
-  $$('.rv').forEach(el => io.observe(el));
+  // Entrances. Content is visible without JS or IntersectionObserver; the wipe is only decoration.
+  const reveal = el => { el.classList.add('in'); if (!still) { el.classList.add('wipe'); setTimeout(() => el.classList.remove('wipe'), 520); } };
+  if ('IntersectionObserver' in window) {
+    const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { reveal(e.target); io.unobserve(e.target); } }), { threshold: .05 });
+    $$('.rv').forEach(el => io.observe(el));
+    // Safety net: anything already on screen after a moment is shown, whatever the observer did.
+    setTimeout(() => $$('.rv:not(.in)').forEach(el => { if (el.getBoundingClientRect().top < innerHeight) reveal(el); }), 1200);
+  } else $$('.rv').forEach(el => el.classList.add('in'));
 
   // The terminal types its lines in, once.
   const lines = [
@@ -502,9 +512,9 @@ footer a:hover { color: var(--primary); }
     }
     render(lines.length);
   }
-  if (still) render(lines.length);
+  if (still || !('IntersectionObserver' in window)) render(lines.length);
   else new IntersectionObserver((es, o) => { if (es[0].isIntersecting) { o.disconnect(); type(); } }, { threshold: .4 }).observe(term);
-  if (!still) render(0);
+  if (!still && 'IntersectionObserver' in window) render(0);
 
   // Rune terminal.
   const RUNES = 'ᚠᚢᚦᚨᚱᚲᚷᚹᚺᚾᛁᛃᛇᛈᛉᛊᛏᛒᛖᛗᛚᛜᛞᛟ';
