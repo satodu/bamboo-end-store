@@ -122,5 +122,7 @@ binary reach `Qt.application.arguments` (the screenshot scripts use this with `g
 
 ## Not done yet
 
+The full list of known debt is in [`TECH_DEBT.md`](TECH_DEBT.md); keep it current when you add or remove a shortcut.
+
 - Icons for installed pacman and AUR apps whose icon lives in a theme other than hicolor fall back to the name's initial as a rune.
 - No 2.x package (AUR, AppImage, `.deb`) is published yet.
