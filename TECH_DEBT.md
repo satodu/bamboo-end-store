@@ -5,8 +5,9 @@ each one would matter to a user or a maintainer. Nothing here blocks the release
 
 ## Release and packaging
 
-- **No 2.x package.** The AUR package `bamboo-end-store-bin` (repo `panda-bamboo-store-aur`) still builds the 1.x Electron release.
-  Its `PKGBUILD` needs new dependencies (Qt 6, no `fuse2`/`gtk3`/`nss`) and the Rust binary. An AppImage or `.deb` does not exist either.
+- **No 2.x package on the AUR yet.** `packaging/aur/PKGBUILD` builds 2.x from source (package `bamboo-end-store`, new AUR repo needed; it
+  conflicts with `bamboo-end-store-bin`, which still ships 1.x). It was built with `makepkg` from a local tarball only. A prebuilt
+  `-bin` package, an AppImage and a `.deb` do not exist.
 - **Tested by hand on one machine** (CachyOS) and, next, a fresh EndeavourOS install. There is no CI: tests run locally with
   `cargo test -p bamboo-core`.
 - **The QML layer has no automated tests.** The Rust core has 123 tests; the interface is checked with screenshots and by reading

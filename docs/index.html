@@ -307,12 +307,12 @@ footer a:hover { color: var(--primary); }
     </div>
     <div class="map">
       <div class="panel cut rv" style="grid-column:1/-1">
-        <div class="btnname"><span class="rune">ᛒ</span>Install Bamboo End Store <span class="tag-soon">AUR · 2.x soon</span></div>
+        <div class="btnname"><span class="rune">ᛒ</span>Install Bamboo End Store <span class="tag-soon">AUR · soon</span></div>
         <div class="two">
-          <div class="cmd"><code>yay -S bamboo-end-store-bin</code><button data-copy="yay -S bamboo-end-store-bin">Copy</button></div>
-          <div class="cmd"><code>paru -S bamboo-end-store-bin</code><button data-copy="paru -S bamboo-end-store-bin">Copy</button></div>
+          <div class="cmd"><code>yay -S bamboo-end-store</code><button data-copy="yay -S bamboo-end-store">Copy</button></div>
+          <div class="cmd"><code>paru -S bamboo-end-store</code><button data-copy="paru -S bamboo-end-store">Copy</button></div>
         </div>
-        <small>Either helper works. The package takes the 2.x release when it is published; today it still ships the old 1.x app. Until then, <a href="#install" style="color:var(--primary)">build from source</a>.</small>
+        <small>Either helper works. The package builds Bamboo from source with Rust and Qt, so the first install takes a few minutes. It is not on the AUR yet: until then, <a href="#install" style="color:var(--primary)">build from source</a> yourself.</small>
       </div>
       <div class="panel cut rv"><div class="btnname"><span class="rune">ᛊ</span>Install · official</div>
         <div class="cmd"><code>sudo pacman -S firefox</code><button data-copy="sudo pacman -S firefox">Copy</button></div>
@@ -391,7 +391,7 @@ footer a:hover { color: var(--primary); }
     <div class="head rv">
       <span class="eyebrow">Install</span>
       <h2>Build it, run it<span class="dot">.</span></h2>
-      <p>Version 2 is a rewrite. Prefer the AUR (yay or paru, above) once the 2.x package is out; until then, build from source on Arch or EndeavourOS.</p>
+      <p>Version 2 is a rewrite. Prefer the AUR (yay or paru, above) once the package is published; until then, build from source on Arch or EndeavourOS.</p>
     </div>
     <div class="steps">
       <div class="panel cut rv"><div class="btnname" style="font:800 22px var(--display);text-transform:uppercase;margin-bottom:14px">Source · dependencies</div>
@@ -399,7 +399,7 @@ footer a:hover { color: var(--primary); }
       <div class="panel cut rv"><div class="btnname" style="font:800 22px var(--display);text-transform:uppercase;margin-bottom:14px">Source · get and run</div>
         <div class="cmd"><code>git clone https://github.com/satodu/bamboo-end-store.git &amp;&amp; cd bamboo-end-store &amp;&amp; ./run.sh --release</code><button data-copy="git clone https://github.com/satodu/bamboo-end-store.git && cd bamboo-end-store && ./run.sh --release">Copy</button></div></div>
     </div>
-    <p class="note rv">The first source build takes a few minutes. <code>./run.sh --clean</code> starts with throwaway settings. Until the 2.x release is published, <code>bamboo-end-store-bin</code> on the AUR still ships the old 1.x (Electron) app, kept under the tag <code>v1.4.2-php</code>.</p>
+    <p class="note rv">The first source build takes a few minutes. <code>./run.sh --clean</code> starts with throwaway settings. The old 1.x app (Laravel and Electron) is kept under the tag <code>v1.4.2-php</code>.</p>
   </div>
 </section>
 
@@ -550,7 +550,7 @@ footer a:hover { color: var(--primary); }
       case '': break;
       case 'help': say('about        what Bamboo is', 'install      how to get it', 'runes <txt>  write in Elder Futhark', 'theme <bamboo|catppuccin|nord|gruvbox>', 'matrix       let it rain', 'clear · exit'); break;
       case 'about': say('Bamboo End Store: a console-first store for EndeavourOS and Arch.', 'The window is the front. The terminal is the star.'); break;
-      case 'install': say('yay -S bamboo-end-store-bin     (when 2.x is published)', 'git clone https://github.com/satodu/bamboo-end-store.git', './run.sh --release'); break;
+      case 'install': say('yay -S bamboo-end-store     (soon on the AUR)', 'git clone https://github.com/satodu/bamboo-end-store.git', './run.sh --release'); break;
       case 'runes': say(arg ? toRunes(arg) : 'usage: runes <text>'); break;
       case 'theme': if (themes.includes(arg)) { setTheme(arg); say('theme: ' + arg); } else say('usage: theme <' + themes.join('|') + '>'); break;
       case 'matrix': say('ᚦ the runes fall.'); if (!still) matrix(); break;
