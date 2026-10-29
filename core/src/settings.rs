@@ -67,7 +67,7 @@ impl Default for Settings {
             reduce_motion: false,
             intro_seen: false,
             notifications: true,
-            close_to_tray: false,
+            close_to_tray: true,
             extra: Map::new(),
         }
     }
