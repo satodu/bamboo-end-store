@@ -21,6 +21,7 @@ fn main() {
             .qml_file("qml/RuneField.qml")
             .qml_file("qml/RuneRuler.qml")
             .qml_file("qml/RuneSpinner.qml")
+            .qml_file("qml/LoadingBody.qml")
             .qml_file("qml/PanelDetails.qml")
             .qml_file("qml/Field.qml")
             .qml_file("qml/Toggle.qml")

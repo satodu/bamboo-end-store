@@ -23,6 +23,7 @@ Item {
     property string category: ""
     readonly property string mode: field.text.length ? "search" : category.length ? "category" : "home"
     readonly property var categoryInfo: JSON.parse(backend.categories).find(c => c.name === category) || ({})
+    readonly property bool categoriesEmpty: JSON.parse(backend.categories).length === 0
     readonly property int pageSize: Math.max(1, appSettings.search_limit)
     readonly property int pageCount: Math.max(1, Math.ceil(backend.total / pageSize))
 
@@ -185,6 +186,11 @@ Item {
                     onOpened: pkg => { root.current = pkg; backend.loadDetails(pkg.name, pkg.source) }
                     onInstallRequested: pkg => backend.install(pkg.name, pkg.source)
                     onRemoveRequested: pkg => backend.remove(pkg.name, pkg.source)
+                }
+
+                LoadingBody {
+                    active: backend.busy && (root.mode !== "home" || root.categoriesEmpty)
+                    caption: root.mode === "home" ? Tr.t("Loading curated categories...") : Tr.t("Loading Packages...")
                 }
 
                 Plinth {

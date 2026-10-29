@@ -102,13 +102,7 @@ Item {
                     onRemoveRequested: pkg => backend.remove(pkg.name, pkg.source)
                 }
 
-                Plinth {
-                    anchors.centerIn: parent
-                    width: Math.min(parent.width - 40, 420)
-                    height: Math.min(parent.height - 40, 320)
-                    visible: root.packages.length === 0
-                    caption: Tr.t("Loading Scripts...")
-                }
+                LoadingBody { active: backend.busy || root.packages.length === 0; caption: Tr.t("Loading Scripts...") }
             }
         }
 

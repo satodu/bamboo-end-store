@@ -218,45 +218,11 @@ ApplicationWindow {
 
             // A terminal job (system update, Flatpak setup) is running: the work happens in
             // the terminal window, so say so over the page and block clicks until it ends.
-            Item {
-                id: jobOverlay
-                anchors.fill: parent
-                visible: opacity > 0
-                opacity: appBackend.busy ? 1 : 0
-                Behavior on opacity { NumberAnimation { duration: Style.quick; easing.type: Easing.BezierSpline; easing.bezierCurve: Style.ease } }
-
-                Rectangle { anchors.fill: parent; color: Qt.alpha(Theme.surface, 0.86) }
-                MouseArea { anchors.fill: parent; hoverEnabled: true; preventStealing: true }
-
-                ColumnLayout {
-                    anchors.centerIn: parent
-                    spacing: 18
-
-                    Item {
-                        Layout.alignment: Qt.AlignHCenter
-                        implicitWidth: 190
-                        implicitHeight: 190
-                        RuneRing { anchors.fill: parent; size: 190 }
-                        RuneSpinner { anchors.centerIn: parent; size: 44; running: jobOverlay.visible }
-                    }
-                    Text {
-                        Layout.alignment: Qt.AlignHCenter
-                        text: Tr.t("Running updates")
-                        color: Theme.fgSurface
-                        font.family: Style.displayFont
-                        font.pixelSize: 28
-                        font.capitalization: Font.AllUppercase
-                    }
-                    Text {
-                        Layout.alignment: Qt.AlignHCenter
-                        text: Tr.t("Working in the terminal window. Close it to cancel.")
-                        color: Theme.fgSurfaceVariant
-                        font.family: Style.mono
-                        font.pixelSize: 11
-                        font.letterSpacing: 1.5
-                        font.capitalization: Font.AllUppercase
-                    }
-                }
+            LoadingBody {
+                active: appBackend.busy
+                ringSize: 190
+                title: Tr.t("Running updates")
+                caption: Tr.t("Working in the terminal window. Close it to cancel.")
             }
         }
     }

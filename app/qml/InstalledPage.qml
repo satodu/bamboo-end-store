@@ -100,6 +100,8 @@ Item {
                     onRemoveRequested: pkg => backend.remove(pkg.name, pkg.source)
                 }
 
+                LoadingBody { active: backend.busy }
+
                 Plinth {
                     anchors.centerIn: parent
                     width: Math.min(parent.width - 40, 420)
