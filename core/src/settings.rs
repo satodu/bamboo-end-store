@@ -38,11 +38,21 @@ pub struct Settings {
     pub notifications: bool,
     /// Closing the window hides it to the system tray instead of quitting.
     pub close_to_tray: bool,
+    /// Which defaults this file was written under; see `migrate`. A file without the key is version 0.
+    #[serde(default = "no_schema")]
+    pub schema: u32,
     /// Set after the first launch's sidebar intro (runes turning into text) has played once.
     pub intro_seen: bool,
     /// Keys this version does not know, kept so they survive a save.
     #[serde(flatten)]
     pub extra: Map<String, Value>,
+}
+
+/// Current settings layout. Bump it and add a step to `Settings::migrate` when a default changes meaning.
+const SCHEMA: u32 = 1;
+
+fn no_schema() -> u32 {
+    0
 }
 
 impl Default for Settings {
@@ -68,6 +78,7 @@ impl Default for Settings {
             intro_seen: false,
             notifications: true,
             close_to_tray: true,
+            schema: SCHEMA,
             extra: Map::new(),
         }
     }
@@ -75,7 +86,18 @@ impl Default for Settings {
 
 impl Settings {
     pub fn from_json(text: &str) -> Option<Self> {
-        serde_json::from_str(text).ok()
+        serde_json::from_str::<Self>(text).ok().map(Self::migrate)
+    }
+
+    /// Bring a file written by an older version up to date.
+    /// Version 0 -> 1: `close_to_tray` used to start switched off and every save wrote that `false` down,
+    /// so an upgrade would never see the new default. It is switched on once; the user can turn it off again.
+    fn migrate(mut self) -> Self {
+        if self.schema < 1 {
+            self.close_to_tray = true;
+        }
+        self.schema = SCHEMA;
+        self
     }
 
     /// Load from `path`; missing or corrupt file gives defaults.
@@ -177,6 +199,16 @@ pub(crate) mod tests {
         let path = dir.join("settings.json");
         fs::write(&path, "{not json").unwrap();
         assert_eq!(Settings::load_from(&path), Settings::default());
+    }
+
+    #[test]
+    fn old_file_gets_the_tray_default_once() {
+        let old = Settings::from_json(r#"{"locale":"pt","close_to_tray":false}"#).unwrap();
+        assert!(old.close_to_tray, "version 0 files are migrated");
+        assert_eq!(old.schema, SCHEMA);
+        assert_eq!(old.locale, "pt");
+        let kept = Settings::from_json(r#"{"close_to_tray":false,"schema":1}"#).unwrap();
+        assert!(!kept.close_to_tray, "a current file keeps the user's choice");
     }
 
     #[test]
