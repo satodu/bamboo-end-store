@@ -258,7 +258,8 @@ footer a:hover { color: var(--primary); }
         <small>Opens in your terminal with sudo, asks for your password there.</small></div>
       <div class="panel cut rv"><div class="btnname"><span class="rune">ᚨ</span>Install · AUR</div>
         <div class="cmd"><code>yay -S spotify</code><button data-copy="yay -S spotify">Copy</button></div>
-        <small>Uses the helper found on your system (yay, paru).</small></div>
+        <div class="cmd" style="margin-top:8px"><code>paru -S spotify</code><button data-copy="paru -S spotify">Copy</button></div>
+        <small>Uses the AUR helper found on your system: yay or paru.</small></div>
       <div class="panel cut rv"><div class="btnname"><span class="rune">ᚠ</span>Install · Flatpak</div>
         <div class="cmd"><code>flatpak install flathub org.gimp.GIMP</code><button data-copy="flatpak install flathub org.gimp.GIMP">Copy</button></div>
         <small>Flatpak and Flathub setup is a button too, and shows its command.</small></div>
@@ -418,12 +419,13 @@ footer a:hover { color: var(--primary); }
 
   // The terminal types its lines in, once.
   const lines = [
-    ['p', '$ ', 'bamboo search firefox'],
-    ['out', '  firefox 134.0-1        [pacman]   Standalone web browser from mozilla.org', ''],
-    ['out', '  firefox-nightly-bin    [aur]      Nightly build of Firefox', ''],
-    ['out', '  org.mozilla.firefox    [flatpak]  Firefox web browser', ''],
+    ['p', '$ ', 'yay -Ss firefox'],
+    ['out', 'extra/firefox 134.0-1', ''],
+    ['out', '    Fast, Private & Safe Web Browser', ''],
+    ['out', 'aur/firefox-nightly-bin 136.0a1-1', ''],
+    ['out', '    Nightly build of Firefox', ''],
     ['p', '$ ', 'sudo pacman -S firefox'],
-    ['ok', '  the command above is what the Install button runs, in a visible terminal', ''],
+    ['ok', '# the Install button runs this same line, in a visible terminal', ''],
   ];
   const term = $('#term');
   function render(upto, partial) {
