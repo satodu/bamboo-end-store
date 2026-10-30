@@ -1,6 +1,6 @@
 use std::time::Duration;
 
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 use crate::http::{get_text, urlencode};
 use crate::manager::PackageManager;
@@ -55,17 +55,24 @@ struct RpcResponse {
     results: Vec<RpcItem>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "PascalCase")]
-struct RpcItem {
-    name: String,
-    version: Option<String>,
-    description: Option<String>,
+pub struct RpcItem {
+    pub name: String,
+    pub version: Option<String>,
+    pub description: Option<String>,
     #[serde(rename = "URL")]
     url: Option<String>,
     license: Option<Vec<String>>,
-    last_modified: Option<i64>,
-    maintainer: Option<String>,
+    pub last_modified: Option<i64>,
+    pub maintainer: Option<String>,
+    /// Unix time the maintainer flagged it as outdated, if they did.
+    pub out_of_date: Option<i64>,
+    pub num_votes: Option<i64>,
+    pub popularity: Option<f64>,
+    pub first_submitted: Option<i64>,
+    pub depends: Option<Vec<String>>,
+    pub make_depends: Option<Vec<String>>,
 }
 
 impl AurManager {
@@ -169,7 +176,18 @@ impl PackageManager for AurManager {
     }
 }
 
-fn parse_rpc(body: &str) -> Option<Vec<RpcItem>> {
+/// What the AUR knows about several packages, in one request. Names it does not know are left out.
+pub fn info_many(names: &[String]) -> Vec<RpcItem> {
+    if names.is_empty() {
+        return Vec::new();
+    }
+    let args: String = names.iter().map(|n| format!("&arg[]={}", urlencode(n))).collect();
+    get_text(&format!("{RPC}&type=info{args}"), Duration::from_secs(10))
+        .and_then(|body| parse_rpc(&body))
+        .unwrap_or_default()
+}
+
+pub(crate) fn parse_rpc(body: &str) -> Option<Vec<RpcItem>> {
     serde_json::from_str::<RpcResponse>(body).ok().map(|r| r.results)
 }
 

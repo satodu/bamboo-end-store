@@ -51,6 +51,7 @@ fn main() {
             .qml_file("qml/FilterBar.qml")
             .qml_file("qml/Confirm.qml")
             .qml_file("qml/ConfirmRemove.qml")
+            .qml_file("qml/ConfirmInstall.qml")
             .qml_file("qml/AppImageCard.qml")
             .qml_file("qml/AppImageRow.qml")
             .qml_file("qml/AppImagesPage.qml")

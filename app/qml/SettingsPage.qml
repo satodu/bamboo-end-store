@@ -115,13 +115,13 @@ Item {
     // is used instead of one stretched column with controls far from their labels.
     readonly property var sectionComponents: ({
         "repos": sec_repos, "appearance": sec_appearance, "terminal": sec_terminal,
-        "appimages": sec_appimages, "maintenance": sec_maintenance, "about": sec_about
+        "appimages": sec_appimages, "maintenance": sec_maintenance, "support": sec_support, "about": sec_about
     })
     readonly property var columnPlan: width < 1000
-        ? [["repos", "appearance", "terminal", "appimages", "maintenance", "about"]]
+        ? [["repos", "appearance", "terminal", "appimages", "maintenance", "support", "about"]]
         : width < 1650
-            ? [["repos", "terminal", "appimages", "maintenance"], ["appearance", "about"]]
-            : [["repos", "terminal"], ["appearance"], ["appimages", "maintenance", "about"]]
+            ? [["repos", "terminal", "appimages", "maintenance"], ["appearance", "support", "about"]]
+            : [["repos", "terminal"], ["appearance", "support"], ["appimages", "maintenance", "about"]]
 
     Component {
         id: sec_repos
@@ -460,6 +460,25 @@ Item {
                             variant: "outline"
                             onClicked: { backend.clearCache(); root.note = "cleared" }
                         }
+                    }
+                }
+            }
+    }
+
+    Component {
+        id: sec_support
+            SettingsSection {
+                title: Tr.t("Support EndeavourOS")
+                rune: "success"
+                delay: 320
+                SettingRow {
+                    title: Tr.t("Help the project")
+                    stacked: true
+                    description: Tr.t("EndeavourOS is free and kept alive by volunteers and donations. This store would not exist without it.")
+                    Btn {
+                        text: Tr.t("Donate")
+                        variant: "outline"
+                        onClicked: Qt.openUrlExternally("https://endeavouros.com/donate/")
                     }
                 }
             }

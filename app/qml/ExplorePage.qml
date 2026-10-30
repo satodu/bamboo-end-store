@@ -76,6 +76,7 @@ Item {
     }
 
     ConfirmRemove { id: removal; owner: backend }
+    ConfirmInstall { id: installing; owner: backend }
 
     Timer {
         id: debounce
@@ -177,7 +178,7 @@ Item {
                     busy: backend.busy
                     onCategoryOpened: name => root.openCategory(name)
                     onPackageOpened: pkg => { root.current = pkg; backend.loadDetails(pkg.name, pkg.source) }
-                    onInstallRequested: pkg => backend.install(pkg.name, pkg.source)
+                    onInstallRequested: pkg => installing.ask(pkg)
                     onRemoveRequested: pkg => removal.ask(pkg)
                 }
 
@@ -188,7 +189,7 @@ Item {
                     viewMode: root.viewMode
                     busy: backend.busy
                     onOpened: pkg => { root.current = pkg; backend.loadDetails(pkg.name, pkg.source) }
-                    onInstallRequested: pkg => backend.install(pkg.name, pkg.source)
+                    onInstallRequested: pkg => installing.ask(pkg)
                     onRemoveRequested: pkg => removal.ask(pkg)
                 }
 
@@ -232,7 +233,7 @@ Item {
                 status: root.status
                 busy: backend.busy
                 onClosed: root.current = null
-                onInstallRequested: backend.install(root.current.name, root.current.source)
+                onInstallRequested: installing.ask(root.current)
                 onRemoveRequested: removal.ask(root.current)
             }
         }

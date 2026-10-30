@@ -11,6 +11,13 @@ fn main() {
         let p = bamboo_core::theme::generate(&opts, *mode == "dark");
         return println!("{}", serde_json::to_string(&p).unwrap());
     }
+    // `review <aur package> [lang]`: what installing it would bring, with the plain-language notes.
+    if let ["review", name, rest @ ..] = args.as_slice() {
+        let db = bamboo_core::knowledge::Knowledge::open();
+        let review = bamboo_core::review::review(name, rest.first().copied().unwrap_or("en"), db.as_ref());
+        println!("{}", serde_json::to_string_pretty(&review).unwrap());
+        return;
+    }
     if args == ["appimages"] {
         // read-only: lists the configured directory, never registers or removes anything
         let dir = bamboo_core::AppImages::directory_for(&bamboo_core::Settings::load().appimage_path);

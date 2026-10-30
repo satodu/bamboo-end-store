@@ -34,6 +34,7 @@ Item {
     }
 
     ConfirmRemove { id: removal; owner: backend }
+    ConfirmInstall { id: installing; owner: backend }
 
     Timer { id: debounce; interval: 250; onTriggered: { root.page = 1; root.reload() } }
 
@@ -138,7 +139,7 @@ Item {
                 status: root.status
                 busy: backend.busy
                 onClosed: root.current = null
-                onInstallRequested: backend.install(root.current.name, root.current.source)
+                onInstallRequested: installing.ask(root.current)
                 onRemoveRequested: removal.ask(root.current)
             }
         }

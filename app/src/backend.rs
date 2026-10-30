@@ -124,6 +124,17 @@ pub mod qobject {
         #[qinvokable]
         fn install(self: Pin<&mut Backend>, name: &QString, source: &QString);
 
+        /// Review installing the AUR package `name`: what comes with it, plain-language notes and warning
+        /// signs. Answers with `reviewReady`.
+        #[qinvokable]
+        #[cxx_name = "reviewInstall"]
+        fn review_install(self: Pin<&mut Backend>, name: &QString);
+
+        /// `json` is a `bamboo_core::review::Review`.
+        #[qsignal]
+        #[cxx_name = "reviewReady"]
+        fn review_ready(self: Pin<&mut Backend>, name: QString, json: QString);
+
         #[qinvokable]
         fn remove(self: Pin<&mut Backend>, name: &QString, source: &QString);
 
@@ -529,6 +540,18 @@ impl qobject::Backend {
 
     fn install(self: Pin<&mut Self>, name: &QString, source: &QString) {
         self.run_op(Op::Install, name, source);
+    }
+
+    fn review_install(self: Pin<&mut Self>, name: &QString) {
+        let name = name.to_string();
+        let lang = bamboo_core::i18n::language_for(&self.rust().store.settings().locale);
+        let thread = self.qt_thread();
+        std::thread::spawn(move || {
+            let db = bamboo_core::knowledge::Knowledge::open();
+            let review = bamboo_core::review::review(&name, lang, db.as_ref());
+            let json = serde_json::to_string(&review).unwrap_or_else(|_| "null".into());
+            let _ = thread.queue(move |mut this| this.as_mut().review_ready(QString::from(&name), QString::from(&json)));
+        });
     }
 
     fn remove(self: Pin<&mut Self>, name: &QString, source: &QString) {

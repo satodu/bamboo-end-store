@@ -11,6 +11,9 @@ Item {
     property string acceptText: Tr.t("Delete")
     property bool danger: true
     property string command: ""
+    /// When set, the accept button stays off until the user ticks this sentence ("I understand ...").
+    property string ackText: ""
+    property bool acknowledged: false
 
     signal accepted()
     signal rejected()
@@ -22,6 +25,7 @@ Item {
     function open(title, message) {
         root.title = title
         root.message = message
+        acknowledged = false
         visible = true
     }
     function close() { visible = false }
@@ -35,7 +39,7 @@ Item {
     Loader {
         anchors.centerIn: parent
         width: 480
-        height: 250 + (root.command.length ? 110 : 0)
+        height: 250 + (root.command.length ? 110 : 0) + (root.ackText.length ? 50 : 0)
         active: root.visible
         sourceComponent: Reveal {
             ChamferPanel {
@@ -76,13 +80,27 @@ Item {
                         label: Tr.t("Command")
                         command: root.command
                     }
+                    // The acknowledgement: the action cannot go on until it is switched on.
+                    RowLayout {
+                        Layout.fillWidth: true
+                        visible: root.ackText.length > 0
+                        spacing: 12
+                        Toggle { checked: root.acknowledged; onToggled: v => root.acknowledged = v }
+                        Text {
+                            Layout.fillWidth: true
+                            text: root.ackText
+                            color: Theme.fgSurface
+                            font.pixelSize: 13
+                            wrapMode: Text.Wrap
+                        }
+                    }
                     Item { Layout.fillHeight: true }
                     RowLayout {
                         Layout.fillWidth: true
                         spacing: 10
                         Item { Layout.fillWidth: true }
                         Btn { text: Tr.t("Cancel"); variant: "ghost"; onClicked: { root.close(); root.rejected() } }
-                        Btn { text: root.acceptText; variant: root.danger ? "danger" : "filled"; onClicked: { root.close(); root.accepted() } }
+                        Btn { text: root.acceptText; enabled: root.ackText.length === 0 || root.acknowledged; variant: root.danger ? "danger" : "filled"; onClicked: { root.close(); root.accepted() } }
                     }
                 }
             }

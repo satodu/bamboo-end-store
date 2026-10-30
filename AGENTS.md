@@ -94,6 +94,12 @@ the palette, the shapes and motion come from Galdr.
   files and the hicolor theme first, then the PHP app's Flathub table, and a *strict* Flathub search in the details view only; a search
   hit must really be that package, the old app took the first one).
 - Settings keep the PHP app's key names and defaults so an old `settings.json` loads unchanged. Unknown keys are kept.
+- The install review (`core/src/review.rs`, `ConfirmInstall.qml`) runs before every AUR install: it lists what comes with the package,
+  explains each piece in plain words and shows the warning signs the AUR reports (orphan, out of date, few votes, new, stale, VCS build).
+  It never calls a package "safe": the best answer is "no warning signs found". A level 2 sign (orphan) needs the user's acknowledgement.
+- `core/src/knowledge.rs` is the app's SQLite file (`knowledge.db` in `XDG_DATA_HOME`): the glossary, seeded from `core/src/glossary/<lang>.json`
+  (all four languages must name the same packages; bump `SEED_VERSION` when they change) and a six-hour cache of AUR answers.
+  Glossary keys `prefix:x` / `suffix:x` are patterns; a package the glossary does not know shows its own description, never an invented one.
 - Matugen: the app generates palettes in-process (`material-colors`) and never runs the `matugen` binary. If that ever
   changes, it must use `--dry-run` and an empty config: Matugen with the user's config re-themes the whole desktop.
 - The Bamboo Installs scripts (`core/src/installers/*.sh`) change `/etc/pacman.conf`, use `pkexec`, build from the AUR and
