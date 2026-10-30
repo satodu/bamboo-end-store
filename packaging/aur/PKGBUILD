@@ -18,7 +18,7 @@ optdepends=('paru: AUR support'
 conflicts=('bamboo-end-store-bin')
 options=('!lto')
 source=("${pkgname}-${pkgver}.tar.gz::${url}/archive/refs/tags/${pkgver}.tar.gz")
-sha256sums=('890e698fea40de1cc50608cfd9b946ec61a271da1320378af347a30b715f6f89')
+sha256sums=('15c85d5d4646c3c047f59f9dd8d29fc29c3c627bce51d89f5770c96e7de935af')
 
 prepare() {
     cd "${pkgname}-${pkgver}"
