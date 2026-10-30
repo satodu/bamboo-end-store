@@ -62,6 +62,9 @@ the palette, the shapes and motion come from Galdr.
   with its last window (`app/src/app_shim.cpp` turns `quitOnLastWindowClosed` off, Qt exposes it nowhere else), so `Main.qml` quits or
   hides to the tray itself in `onClosing`. Qt registers the tray item under the bus's unique name, so look for `/StatusNotifierItem`
   in `busctl --user tree`, not for a `StatusNotifierItem-<pid>` name.
+- One instance only: `app_shim.cpp` listens on a local socket named after a hash of the config directory; a second launch asks the first to
+  run `bringToFront` (Main.qml) and exits. Runs with their own `XDG_CONFIG_HOME` (tests, screenshots) and `BAMBOO_QML` files are exempt.
+  The application object is a `QApplication` on purpose (the KDE platform theme needs QtWidgets).
 
 ## QML rules
 
