@@ -89,10 +89,12 @@ impl CustomInstall {
     }
 
     /// Remove whichever of the known package names is installed (`winboat-bin` rather than `winboat`).
+    /// `pacman -Qq` resolves "provides", so `-Qq linuxtoys` answers `linuxtoys-bin`, and `-Rns linuxtoys`
+    /// would then fail: the name pacman prints is the one to remove.
     pub fn remove_command(&self) -> String {
         let aliases: Vec<String> = self.aliases.iter().map(|a| shell_quote(a)).collect();
         format!(
-            "PKG={default}; for a in {list}; do if pacman -Qq \"$a\" >/dev/null 2>&1; then PKG=\"$a\"; break; fi; done; echo \":: Removing $PKG...\"; sudo pacman -Rns \"$PKG\"",
+            "PKG={default}; for a in {list}; do if real=$(pacman -Qq \"$a\" 2>/dev/null); then PKG=\"$real\"; break; fi; done; echo \":: Removing $PKG...\"; sudo pacman -Rns \"$PKG\"",
             default = shell_quote(self.name),
             list = aliases.join(" ")
         )
@@ -195,6 +197,34 @@ mod tests {
         let cmd = find("winboat").unwrap().remove_command();
         assert!(cmd.contains("'winboat' 'winboat-bin'"));
         assert!(cmd.contains("sudo pacman -Rns \"$PKG\""));
+    }
+
+    /// `linuxtoys-bin` provides `linuxtoys`, so `pacman -Qq linuxtoys` succeeds with the other name.
+    /// Fake `pacman` and `sudo` on the PATH stand in for the real ones.
+    #[test]
+    fn remove_uses_the_name_pacman_reports() {
+        let dir = std::env::temp_dir().join(format!("bamboo-test-{}-remove", std::process::id()));
+        let _ = std::fs::remove_dir_all(&dir);
+        std::fs::create_dir_all(&dir).unwrap();
+        let script = |name: &str, body: &str| {
+            use std::os::unix::fs::PermissionsExt;
+            let path = dir.join(name);
+            std::fs::write(&path, format!("#!/bin/bash\n{body}\n")).unwrap();
+            std::fs::set_permissions(&path, std::fs::Permissions::from_mode(0o755)).unwrap();
+        };
+        script("pacman", r#"case "$1 $2" in "-Qq linuxtoys") echo linuxtoys-bin;; "-Rns "*) echo "removed $2";; *) exit 1;; esac"#);
+        script("sudo", r#"exec "$@""#);
+        let path = format!("{}:{}", dir.display(), std::env::var("PATH").unwrap_or_default());
+        let out = std::process::Command::new("bash")
+            .arg("-c")
+            .arg(find("linuxtoys").unwrap().remove_command())
+            .env("PATH", path)
+            .output()
+            .unwrap();
+        let text = String::from_utf8_lossy(&out.stdout);
+        assert!(out.status.success(), "{text}");
+        assert!(text.contains("removed linuxtoys-bin"), "{text}");
+        let _ = std::fs::remove_dir_all(&dir);
     }
 
     #[test]
