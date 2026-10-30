@@ -18,6 +18,7 @@ Item {
 
     ChamferPanel {
         anchors.fill: parent
+        details: true
         padding: 16
         fill: mouse.containsMouse ? Theme.surfaceContainerHigh : Theme.surfaceContainerLow
         stroke: mouse.containsMouse ? Theme.primary : Theme.outlineVariant
@@ -30,7 +31,7 @@ Item {
                 Layout.fillWidth: true
                 spacing: 12
 
-                PackageIcon { name: root.pkg.display_name || root.pkg.name || ""; source: Style.iconFor(root.pkg); size: 44 }
+                PackageIcon { kind: root.pkg.source || ""; name: root.pkg.display_name || root.pkg.name || ""; source: Style.iconFor(root.pkg); size: 44 }
                 ColumnLayout {
                     Layout.fillWidth: true
                     spacing: 2

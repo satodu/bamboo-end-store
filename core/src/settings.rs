@@ -38,6 +38,8 @@ pub struct Settings {
     pub notifications: bool,
     /// Closing the window hides it to the system tray instead of quitting.
     pub close_to_tray: bool,
+    /// Show the latest EndeavourOS announcement as a banner on the Explore home.
+    pub show_news: bool,
     /// Which defaults this file was written under; see `migrate`. A file without the key is version 0.
     #[serde(default = "no_schema")]
     pub schema: u32,
@@ -78,6 +80,7 @@ impl Default for Settings {
             intro_seen: false,
             notifications: true,
             close_to_tray: true,
+            show_news: true,
             schema: SCHEMA,
             extra: Map::new(),
         }

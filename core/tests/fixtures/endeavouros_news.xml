@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <channel>
+    <title>EndeavourOS News</title>
+    <link>https://endeavouros.com/news/</link>
+    <description>Release announcements from the EndeavourOS team.</description>
+    <language>en</language>
+    <atom:link href="https://endeavouros.com/news/feed.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Titan Nova is available</title>
+      <link>https://endeavouros.com/news/titan-nova-is-available/</link>
+      <guid isPermaLink="true">https://endeavouros.com/news/titan-nova-is-available/</guid>
+      <pubDate>Fri, 28 Aug 2026 00:00:00 GMT</pubDate>
+      <dc:creator>Bryanpwo</dc:creator>
+      <description>Titan Nova is an update boost on the way to Triton: Linux 7.1.8, a keyboard setup fix, better Nouveau support, and Budgie temporarily removed.</description>
+    </item>
+    <item>
+      <title>Titan Neo with some fixes and upstream updates is available</title>
+      <link>https://endeavouros.com/news/titan-neo-with-some-fixes-and-upstream-updates-is-available/</link>
+      <guid isPermaLink="true">https://endeavouros.com/news/titan-neo-with-some-fixes-and-upstream-updates-is-available/</guid>
+      <pubDate>Fri, 01 May 2026 00:00:00 GMT</pubDate>
+      <dc:creator>Bryanpwo</dc:creator>
+      <description>Six weeks after our Titan release, we refreshed our ISO, Titan Neo, with some fixes and minor improvements.</description>
+    </item>
+    <item>
+      <title>What’s New in EndeavourOS Titan Release?</title>
+      <link>https://endeavouros.com/news/whats-new-in-endeavouros-titan-release/</link>
+      <guid isPermaLink="true">https://endeavouros.com/news/whats-new-in-endeavouros-titan-release/</guid>
+      <pubDate>Thu, 12 Mar 2026 00:00:00 GMT</pubDate>
+      <dc:creator>Bryanpwo</dc:creator>
+      <description>Titan brings Linux 6.19.6, hardware detection for every GPU and VM, GPU drivers loaded early, and eos-hwtool for adding or removing them yourself.</description>
+    </item>
+    <item>
+      <title>Ganymede Neo is out with core updates and upstream NVIDIA changes</title>
+      <link>https://endeavouros.com/news/ganymede-neo-is-out-with-core-updates-and-upstream-nvidia-changes/</link>
+      <guid isPermaLink="true">https://endeavouros.com/news/ganymede-neo-is-out-with-core-updates-and-upstream-nvidia-changes/</guid>
+      <pubDate>Thu, 15 Jan 2026 00:00:00 GMT</pubDate>
+      <dc:creator>Bryanpwo</dc:creator>
+      <description>Ganymede Neo ships Linux 6.18.4 and Calamares 26.01, fixes the slow installer start, and switches the proprietary NVIDIA option to nvidia-open.</description>
+    </item>
+    <item>
+      <title>The long wait is over, Ganymede has arrived</title>
+      <link>https://endeavouros.com/news/the-long-wait-is-over-ganymede-has-arrived/</link>
+      <guid isPermaLink="true">https://endeavouros.com/news/the-long-wait-is-over-ganymede-has-arrived/</guid>
+      <pubDate>Sat, 29 Nov 2025 00:00:00 GMT</pubDate>
+      <dc:creator>Bryanpwo</dc:creator>
+      <description>Ganymede ships Linux 6.17.8, detects your GPU and installs nvidia or nvidia-open automatically, and only enables broadcom-wl when a device needs it.</description>
+    </item>
+    <item>
+      <title>Mercury Neo with Linux 6.13.7 and Arch mirror ranking bug fix</title>
+      <link>https://endeavouros.com/news/mercury-neo-with-linux-6-13-7-and-arch-mirror-ranking-bug-fix/</link>
+      <guid isPermaLink="true">https://endeavouros.com/news/mercury-neo-with-linux-6-13-7-and-arch-mirror-ranking-bug-fix/</guid>
+      <pubDate>Sun, 23 Mar 2025 00:00:00 GMT</pubDate>
+      <dc:creator>Bryanpwo</dc:creator>
+      <description>Mercury Neo refreshes the ISO with Linux 6.13.7, fixes the Arch mirror ranking bug that failed installs in some regions, and doubles the EFI partition to 2GB.</description>
+    </item>
+    <item>
+      <title>Our new ISO release is here, meet Mercury</title>
+      <link>https://endeavouros.com/news/our-new-iso-release-is-here-meet-mercury/</link>
+      <guid isPermaLink="true">https://endeavouros.com/news/our-new-iso-release-is-here-meet-mercury/</guid>
+      <pubDate>Mon, 10 Feb 2025 00:00:00 GMT</pubDate>
+      <dc:creator>Bryanpwo</dc:creator>
+      <description>Mercury arrives with Linux 6.13.1, a memory test in the EFI boot menu, dark themes by default on the larger desktops, and a fix for BIOS and legacy installs.</description>
+    </item>
+  </channel>
+</rss>

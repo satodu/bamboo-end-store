@@ -64,7 +64,7 @@ ColumnLayout {
             }
             RuneDecode {
                 // long names must not run out of the sidebar
-                text: line.modelData.text.length > 24 ? line.modelData.text.slice(0, 23) + "…" : line.modelData.text
+                text: line.modelData.text.length > 20 ? line.modelData.text.slice(0, 19) + "…" : line.modelData.text
                 decode: root.intro
                 startDelay: 350 + line.index * 260
                 color: line.modelData.tone === 1 ? Theme.primary : Theme.fgSurfaceVariant

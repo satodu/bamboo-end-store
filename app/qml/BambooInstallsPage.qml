@@ -29,6 +29,8 @@ Item {
         }
     }
 
+    ConfirmRemove { id: removal; owner: backend }
+
     RowLayout {
         anchors.fill: parent
         anchors.margins: 28
@@ -99,7 +101,7 @@ Item {
                     busy: backend.busy
                     onOpened: pkg => { root.current = pkg; backend.loadDetails(pkg.name, pkg.source) }
                     onInstallRequested: pkg => backend.install(pkg.name, pkg.source)
-                    onRemoveRequested: pkg => backend.remove(pkg.name, pkg.source)
+                    onRemoveRequested: pkg => removal.ask(pkg)
                 }
 
                 LoadingBody { active: backend.busy || root.packages.length === 0; caption: Tr.t("Loading Scripts...") }
@@ -120,7 +122,7 @@ Item {
                 busy: backend.busy
                 onClosed: root.current = null
                 onInstallRequested: backend.install(root.current.name, root.current.source)
-                onRemoveRequested: backend.remove(root.current.name, root.current.source)
+                onRemoveRequested: removal.ask(root.current)
             }
         }
     }

@@ -309,5 +309,16 @@
   "Copy": "Копировать",
   "Behavior": "Поведение",
   "Keep running in the tray": "Оставаться в трее",
-  "Closing the window hides it to the system tray instead of quitting. Quit from the tray menu.": "Закрытие окна сворачивает его в системный трей вместо выхода. Выйти можно из меню трея."
+  "Closing the window hides it to the system tray instead of quitting. Quit from the tray menu.": "Закрытие окна сворачивает его в системный трей вместо выхода. Выйти можно из меню трея.",
+  "Latest from EndeavourOS": "Новости EndeavourOS",
+  "Read": "Читать",
+  "EndeavourOS news": "Новости EndeavourOS",
+  "Show the latest EndeavourOS announcement as a banner on the Explore page.": "Показывает последнее объявление EndeavourOS баннером на странице «Обзор».",
+  "Remove %s?": "Удалить %s?",
+  "It will be uninstalled from this system. The command is below.": "Он будет удалён из этой системы. Команда указана ниже.",
+  "Command": "Команда",
+  "Update the system?": "Обновить систему?",
+  "Opens a terminal and updates the official packages, the AUR and Flatpak, then offers to remove orphaned packages. It asks for your password.": "Открывает терминал и обновляет официальные пакеты, AUR и Flatpak, затем предлагает удалить пакеты-сироты. Потребуется пароль.",
+  "Update": "Обновить",
+  "Store": "Магазин"
 }

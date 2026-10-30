@@ -37,6 +37,8 @@ pub mod qobject {
         #[qproperty(QString, categories)]
         /// JSON list of official EndeavourOS tools found on this system (empty elsewhere).
         #[qproperty(QString, essentials)]
+        /// JSON list of the latest EndeavourOS announcements `{title, link, date, summary, image}`.
+        #[qproperty(QString, news)]
         /// JSON `{loaded, failed, items:[{id, author, date, content, url}]}` for the AUR package last asked about.
         #[qproperty(QString, comments)]
         type Backend = super::BackendRust;
@@ -69,6 +71,11 @@ pub mod qobject {
         #[qinvokable]
         #[cxx_name = "loadCategories"]
         fn load_categories(self: Pin<&mut Backend>);
+
+        /// Fill `news` (an empty list when the setting is off or the feed is unreachable).
+        #[qinvokable]
+        #[cxx_name = "loadNews"]
+        fn load_news(self: Pin<&mut Backend>);
 
         /// Fill `essentials`.
         #[qinvokable]
@@ -198,6 +205,7 @@ pub struct BackendRust {
     flatpak: QString,
     categories: QString,
     essentials: QString,
+    news: QString,
     comments: QString,
     store: Arc<Store>,
     /// Bumped per search; a slow older search must not overwrite a newer one.
@@ -245,6 +253,7 @@ impl Default for BackendRust {
             flatpak: QString::from("{}"),
             categories: QString::from("[]"),
             essentials: QString::from("[]"),
+            news: QString::from("[]"),
             comments: QString::from("{\"loaded\":false}"),
             store,
             search_gen: Arc::new(AtomicU64::new(0)),
@@ -414,6 +423,16 @@ impl qobject::Backend {
         std::thread::spawn(move || {
             let json = serde_json::to_string(&store.categories()).unwrap_or_else(|_| "[]".into());
             let _ = thread.queue(move |mut this| this.as_mut().set_categories(QString::from(&json)));
+        });
+    }
+
+    fn load_news(self: Pin<&mut Self>) {
+        let store = self.rust().store.clone();
+        let thread = self.qt_thread();
+        std::thread::spawn(move || {
+            let items = if store.settings().show_news { bamboo_core::news::recent() } else { Vec::new() };
+            let json = serde_json::to_string(&items).unwrap_or_else(|_| "[]".into());
+            let _ = thread.queue(move |mut this| this.as_mut().set_news(QString::from(&json)));
         });
     }
 

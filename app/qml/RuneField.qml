@@ -7,7 +7,7 @@ Item {
     clip: true
 
     // [x%, y%, size, rune index, tone (0 bone, 1 grey, 2 primary), alpha, drift seconds]
-    readonly property var spec: [
+    property var spec: [
         [0.06, 0.10, 260, 0, 0, 0.04, 29], [0.78, 0.06, 180, 4, 1, 0.05, 23],
         [0.45, 0.32, 340, 9, 0, 0.03, 34], [0.90, 0.48, 220, 12, 2, 0.05, 27],
         [0.14, 0.60, 300, 17, 1, 0.04, 31], [0.62, 0.74, 200, 21, 0, 0.06, 25],

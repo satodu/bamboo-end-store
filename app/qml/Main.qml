@@ -47,6 +47,13 @@ ApplicationWindow {
         raise()
         requestActivate()
     }
+    /// Update System always asks first; from the tray the window comes forward so the question is seen.
+    function askUpdate() {
+        if (appBackend.busy) return
+        bringToFront()
+        updateConfirm.open(Tr.t("Update the system?"),
+            Tr.t("Opens a terminal and updates the official packages, the AUR and Flatpak, then offers to remove orphaned packages. It asks for your password."))
+    }
     function toggleVisible() { visible ? hide() : bringToFront() }
 
     // The program no longer ends with its last window (the tray keeps it alive), so closing
@@ -70,7 +77,7 @@ ApplicationWindow {
         menu: Platform.Menu {
             Platform.MenuItem { text: Tr.t("Open Store"); onTriggered: root.bringToFront() }
             Platform.MenuItem { separator: true }
-            Platform.MenuItem { text: Tr.t("Update System"); onTriggered: if (!appBackend.busy) appBackend.updateSystem() }
+            Platform.MenuItem { text: Tr.t("Update System"); onTriggered: root.askUpdate() }
             Platform.MenuItem { separator: true }
             Platform.MenuItem { text: Tr.t("Quit"); onTriggered: Qt.quit() }
         }
@@ -106,6 +113,16 @@ ApplicationWindow {
                 width: Style.border
                 height: parent.height
                 color: Theme.outlineVariant
+            }
+
+            // The empty lower half of the sidebar: big runes cut by the edges, behind the entries.
+            RuneField {
+                anchors.fill: parent
+                anchors.rightMargin: Style.border
+                spec: [
+                    [0.00, 0.58, 240, 9, 1, 0.06, 31], [1.00, 0.72, 280, 12, 2, 0.07, 27],
+                    [0.10, 0.84, 200, 17, 0, 0.05, 33], [0.92, 0.95, 260, 21, 1, 0.06, 29]
+                ]
             }
 
             ColumnLayout {
@@ -150,30 +167,48 @@ ApplicationWindow {
                     }
                 }
 
-                NavItem { Layout.fillWidth: true; text: Tr.t("Explore"); rune: "explore"; active: root.page === "explore"; onClicked: root.openPage("explore") }
-                NavItem { Layout.fillWidth: true; text: Tr.t("Installed"); rune: "installed"; active: root.page === "installed"; onClicked: root.openPage("installed") }
-                NavItem { Layout.fillWidth: true; text: Tr.t("Bamboo Installs"); rune: "bamboo"; active: root.page === "bamboo"; onClicked: root.openPage("bamboo") }
-                NavItem { Layout.fillWidth: true; text: Tr.t("AppImages"); rune: "appimages"; active: root.page === "appimages"; onClicked: root.openPage("appimages") }
+                NavLabel { text: Tr.t("Store") }
+                NavItem { Layout.fillWidth: true; text: Tr.t("Explore"); rune: "explore"; index: "01"; delay: 60; active: root.page === "explore"; onClicked: root.openPage("explore") }
+                NavItem { Layout.fillWidth: true; text: Tr.t("Installed"); rune: "installed"; index: "02"; delay: 100; active: root.page === "installed"; onClicked: root.openPage("installed") }
+                NavItem { Layout.fillWidth: true; text: Tr.t("Bamboo Installs"); rune: "bamboo"; index: "03"; delay: 140; active: root.page === "bamboo"; onClicked: root.openPage("bamboo") }
+                NavItem { Layout.fillWidth: true; text: Tr.t("AppImages"); rune: "appimages"; index: "04"; delay: 180; active: root.page === "appimages"; onClicked: root.openPage("appimages") }
+
+                NavLabel { text: Tr.t("System") }
                 // An action, not a page: runs the full system update in a terminal.
                 NavItem {
                     Layout.fillWidth: true
                     text: appBackend.busy ? Tr.t("Running updates") : Tr.t("Update System")
                     rune: "update"
+                    delay: 240
                     busy: appBackend.busy
-                    onClicked: if (!appBackend.busy) appBackend.updateSystem()
+                    onClicked: root.askUpdate()
                 }
-                NavItem { Layout.fillWidth: true; text: Tr.t("Settings"); rune: "settings"; active: root.page === "settings"; onClicked: root.openPage("settings") }
+                NavItem { Layout.fillWidth: true; text: Tr.t("Settings"); rune: "settings"; index: "05"; delay: 280; active: root.page === "settings"; onClicked: root.openPage("settings") }
 
                 Item { Layout.fillHeight: true }
 
-                SystemInfoBlock {
-                    Layout.leftMargin: 22
+                // The machine, on a small plate with the Galdr line work.
+                ChamferPanel {
+                    Layout.fillWidth: true
+                    Layout.leftMargin: 12
                     Layout.rightMargin: 12
-                    Layout.bottomMargin: 18
-                    info: JSON.parse(appBackend.systemInfo())
-                    intro: root.intro
-                    // remembered, so the intro plays only once
-                    onIntroFinished: { appBackend.setSetting("intro_seen", "true"); root.intro = false }
+                    Layout.bottomMargin: 14
+                    Layout.preferredHeight: sysinfo.implicitHeight + padding * 2
+                    padding: 16
+                    chamfer: Style.chamferSm
+                    fill: Theme.surfaceContainer
+                    details: true
+
+                    SystemInfoBlock {
+                        id: sysinfo
+                        anchors.left: parent.left
+                        anchors.right: parent.right
+                        anchors.top: parent.top
+                        info: JSON.parse(appBackend.systemInfo())
+                        intro: root.intro
+                        // remembered, so the intro plays only once
+                        onIntroFinished: { appBackend.setSetting("intro_seen", "true"); root.intro = false }
+                    }
                 }
             }
         }
@@ -225,6 +260,13 @@ ApplicationWindow {
                 caption: Tr.t("Working in the terminal window. Close it to cancel.")
             }
         }
+    }
+
+    Confirm {
+        id: updateConfirm
+        danger: false
+        acceptText: Tr.t("Update")
+        onAccepted: appBackend.updateSystem()
     }
 
     // Used by the screenshot harness.

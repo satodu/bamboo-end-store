@@ -49,6 +49,7 @@ Item {
                     spacing: 12
 
                     PackageIcon {
+                        kind: root.pkg.source || ""
                         name: root.pkg.display_name || root.pkg.name || ""
                         // the list already knew an icon, or the details view found one on Flathub
                         source: Style.iconFor(root.pkg) || (root.info && root.info.icon_url ? root.info.icon_url : "")

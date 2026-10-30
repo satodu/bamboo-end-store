@@ -33,6 +33,8 @@ Item {
         }
     }
 
+    ConfirmRemove { id: removal; owner: backend }
+
     Timer { id: debounce; interval: 250; onTriggered: { root.page = 1; root.reload() } }
 
     RowLayout {
@@ -97,7 +99,7 @@ Item {
                     busy: backend.busy
                     showInstalledTag: false
                     onOpened: pkg => { root.current = pkg; backend.loadDetails(pkg.name, pkg.source) }
-                    onRemoveRequested: pkg => backend.remove(pkg.name, pkg.source)
+                    onRemoveRequested: pkg => removal.ask(pkg)
                 }
 
                 LoadingBody { active: backend.busy }
@@ -137,7 +139,7 @@ Item {
                 busy: backend.busy
                 onClosed: root.current = null
                 onInstallRequested: backend.install(root.current.name, root.current.source)
-                onRemoveRequested: backend.remove(root.current.name, root.current.source)
+                onRemoveRequested: removal.ask(root.current)
             }
         }
     }

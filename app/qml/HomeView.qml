@@ -8,6 +8,8 @@ Item {
 
     property var categories: []
     property var essentials: []
+    // Latest EndeavourOS announcements `{title, link, date, summary, image}`.
+    property var news: []
     property bool busy: false
 
     signal categoryOpened(string name)
@@ -24,6 +26,11 @@ Item {
         ColumnLayout {
             width: scroll.availableWidth
             spacing: 18
+
+            NewsBanner {
+                Layout.fillWidth: true
+                items: root.news
+            }
 
             // Official tools: only present on EndeavourOS.
             ColumnLayout {

@@ -18,6 +18,7 @@ Item {
 
     ChamferPanel {
         anchors.fill: parent
+        details: true
         padding: 20
         fill: mouse.containsMouse ? Theme.surfaceContainerHigh : Theme.surfaceContainerLow
         stroke: mouse.containsMouse ? Theme.primary : Theme.outlineVariant

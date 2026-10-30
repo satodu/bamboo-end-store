@@ -12,6 +12,7 @@ pub mod icons;
 mod http;
 mod manager;
 mod package;
+pub mod news;
 pub mod notify;
 pub mod pacman;
 pub(crate) mod settings;

@@ -309,5 +309,16 @@
   "Copy": "Copiar",
   "Behavior": "Comportamiento",
   "Keep running in the tray": "Seguir en la bandeja",
-  "Closing the window hides it to the system tray instead of quitting. Quit from the tray menu.": "Cerrar la ventana la oculta en la bandeja del sistema en lugar de salir. Para salir, usa el menú de la bandeja."
+  "Closing the window hides it to the system tray instead of quitting. Quit from the tray menu.": "Cerrar la ventana la oculta en la bandeja del sistema en lugar de salir. Para salir, usa el menú de la bandeja.",
+  "Latest from EndeavourOS": "Novedades de EndeavourOS",
+  "Read": "Leer",
+  "EndeavourOS news": "Noticias de EndeavourOS",
+  "Show the latest EndeavourOS announcement as a banner on the Explore page.": "Muestra el último anuncio de EndeavourOS como un banner en la página Explorar.",
+  "Remove %s?": "¿Eliminar %s?",
+  "It will be uninstalled from this system. The command is below.": "Se desinstalará de este sistema. El comando está abajo.",
+  "Command": "Comando",
+  "Update the system?": "¿Actualizar el sistema?",
+  "Opens a terminal and updates the official packages, the AUR and Flatpak, then offers to remove orphaned packages. It asks for your password.": "Abre una terminal y actualiza los paquetes oficiales, el AUR y Flatpak, y luego ofrece eliminar los paquetes huérfanos. Pide tu contraseña.",
+  "Update": "Actualizar",
+  "Store": "Tienda"
 }

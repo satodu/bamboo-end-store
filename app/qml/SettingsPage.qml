@@ -385,6 +385,11 @@ Item {
                     Toggle { checked: root.s.close_to_tray; onToggled: v => root.set("close_to_tray", v) }
                 }
                 SettingRow {
+                    title: Tr.t("EndeavourOS news")
+                    description: Tr.t("Show the latest EndeavourOS announcement as a banner on the Explore page.")
+                    Toggle { checked: root.s.show_news; onToggled: v => root.set("show_news", v) }
+                }
+                SettingRow {
                     title: Tr.t("Notifications")
                     description: Tr.t("Show a desktop notification when an install, removal or update finishes.")
                     Toggle { checked: root.s.notifications; onToggled: v => root.set("notifications", v) }

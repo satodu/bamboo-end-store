@@ -44,11 +44,12 @@ Item {
     function closeCategory() { category = ""; current = null }
     /// Back to the home of categories: no search, no open category, no details.
     function goHome() { field.text = ""; category = ""; current = null; page = 1 }
-    Component.onCompleted: { backend.loadCategories(); backend.loadEssentials() }
+    Component.onCompleted: { backend.loadCategories(); backend.loadEssentials(); backend.loadNews() }
     // A filter for a repository that was just turned off in Settings would hide everything.
     Connections {
         target: root
         function onAppSettingsChanged() {
+            backend.loadNews()
             if ((backend.repo === "aur" && !root.appSettings.enable_aur)
                     || (backend.repo === "flatpak" && !root.appSettings.enable_flatpak)) {
                 backend.repo = "all"
@@ -73,6 +74,8 @@ Item {
             backend.loadEssentials()
         }
     }
+
+    ConfirmRemove { id: removal; owner: backend }
 
     Timer {
         id: debounce
@@ -170,11 +173,12 @@ Item {
                     visible: root.mode === "home"
                     categories: JSON.parse(backend.categories)
                     essentials: JSON.parse(backend.essentials)
+                    news: JSON.parse(backend.news)
                     busy: backend.busy
                     onCategoryOpened: name => root.openCategory(name)
                     onPackageOpened: pkg => { root.current = pkg; backend.loadDetails(pkg.name, pkg.source) }
                     onInstallRequested: pkg => backend.install(pkg.name, pkg.source)
-                    onRemoveRequested: pkg => backend.remove(pkg.name, pkg.source)
+                    onRemoveRequested: pkg => removal.ask(pkg)
                 }
 
                 PackageResults {
@@ -185,7 +189,7 @@ Item {
                     busy: backend.busy
                     onOpened: pkg => { root.current = pkg; backend.loadDetails(pkg.name, pkg.source) }
                     onInstallRequested: pkg => backend.install(pkg.name, pkg.source)
-                    onRemoveRequested: pkg => backend.remove(pkg.name, pkg.source)
+                    onRemoveRequested: pkg => removal.ask(pkg)
                 }
 
                 LoadingBody {
@@ -229,7 +233,7 @@ Item {
                 busy: backend.busy
                 onClosed: root.current = null
                 onInstallRequested: backend.install(root.current.name, root.current.source)
-                onRemoveRequested: backend.remove(root.current.name, root.current.source)
+                onRemoveRequested: removal.ask(root.current)
             }
         }
     }
