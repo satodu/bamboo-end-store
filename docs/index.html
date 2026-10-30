@@ -287,7 +287,7 @@ footer a:hover { color: var(--primary); }
     <h1 style="margin-top:22px">The store is the front<span class="dot">.</span><br>The terminal is the star<span class="dot">.</span></h1>
     <p class="lead">A storefront for people who live in a shell. Search <strong>pacman, the AUR, Flatpak and AppImages</strong> in one place, then see the exact command behind every button before anything runs.</p>
     <div class="cta">
-      <a class="btn" href="#install">Build from source</a>
+      <a class="btn" href="#install">Install with AUR</a>
       <a class="btn ghost" href="https://github.com/satodu/bamboo-end-store"><span></span><b>GitHub</b></a>
     </div>
 
@@ -390,9 +390,18 @@ footer a:hover { color: var(--primary); }
   <div class="wrap">
     <div class="head rv">
       <span class="eyebrow">Install</span>
-      <h2>Build it, run it<span class="dot">.</span></h2>
-      <p>Version 2 is a rewrite. Prefer the AUR (yay or paru, above). To build it yourself on Arch or EndeavourOS:</p>
+      <h2>Install it<span class="dot">.</span></h2>
+      <p>One command from the AUR, with yay or paru. Prefer to compile it yourself? The source steps are right below.</p>
     </div>
+    <div class="panel cut rv" style="margin-bottom:16px">
+      <div class="btnname" style="font:800 22px var(--display);text-transform:uppercase;margin-bottom:14px"><span class="rune" style="margin-right:12px">ᛒ</span>AUR · prebuilt <span class="tag-soon">installs in seconds</span></div>
+      <div class="two">
+        <div class="cmd"><code>yay -S bamboo-end-store-bin</code><button data-copy="yay -S bamboo-end-store-bin">Copy</button></div>
+        <div class="cmd"><code>paru -S bamboo-end-store-bin</code><button data-copy="paru -S bamboo-end-store-bin">Copy</button></div>
+      </div>
+      <small style="display:block;margin-top:12px;color:var(--muted);font-size:14px">Prefer to compile it? <code style="font:400 13px var(--mono);background:var(--bg3);padding:2px 7px">yay -S bamboo-end-store</code> builds the same release from source in a few minutes. The two packages conflict: install one.</small>
+    </div>
+    <p class="note rv" style="margin:28px 0 16px">Or build it yourself from the repository:</p>
     <div class="steps">
       <div class="panel cut rv"><div class="btnname" style="font:800 22px var(--display);text-transform:uppercase;margin-bottom:14px">Source · dependencies</div>
         <div class="cmd"><code>sudo pacman -S --needed base-devel rust qt6-base qt6-declarative qt6-svg qt6-wayland</code><button data-copy="sudo pacman -S --needed base-devel rust qt6-base qt6-declarative qt6-svg qt6-wayland">Copy</button></div></div>
