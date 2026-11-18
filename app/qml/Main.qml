@@ -35,6 +35,17 @@ ApplicationWindow {
     property var visited: ({ "explore": true })
     readonly property var appSettings: JSON.parse(appBackend.settings)
 
+    // Updates waiting, from the background check. Only a notice: nothing is installed until the user
+    // picks "Update System" and confirms.
+    // The tray sits on the desktop panel, so follow the system colour scheme, not the app palette.
+    readonly property bool lightPanel: Qt.styleHints.colorScheme === Qt.ColorScheme.Light
+
+    readonly property var pending: JSON.parse(appBackend.updates)
+    readonly property int pendingCount: appSettings.check_updates ? (pending.total || 0) : 0
+    readonly property string updatesText: pendingCount > 0
+        ? Tr.f("%s updates available", pendingCount)
+        : Tr.t("System is up to date")
+
     /// Clicking the logo: the Explore home (the categories), from wherever we are.
     function goHome() {
         explore.goHome()
@@ -52,7 +63,9 @@ ApplicationWindow {
         if (appBackend.busy) return
         bringToFront()
         updateConfirm.open(Tr.t("Update the system?"),
-            Tr.t("Opens a terminal and updates the official packages, the AUR and Flatpak, then offers to remove orphaned packages. It asks for your password."))
+            appSettings.enable_npm
+                ? Tr.t("Opens a terminal and updates the official packages, the AUR, Flatpak and npm, then offers to remove orphaned packages. It asks for your password.")
+                : Tr.t("Opens a terminal and updates the official packages, the AUR and Flatpak, then offers to remove orphaned packages. It asks for your password."))
     }
     function toggleVisible() { visible ? hide() : bringToFront() }
 
@@ -70,14 +83,20 @@ ApplicationWindow {
     Platform.SystemTrayIcon {
         id: tray
         visible: true
-        icon.source: Qt.resolvedUrl("../icons/app-icon.png")
-        tooltip: "Bamboo End Store"
+        // White glyph for dark panels, dark glyph for light ones; the orange dot marks waiting updates.
+        icon.source: Qt.resolvedUrl("../icons/app-icon" + (root.lightPanel ? "-onlight" : "") + (root.pendingCount > 0 ? "-update" : "") + ".png")
+        tooltip: root.pendingCount > 0 ? "Bamboo End Store: " + root.updatesText : "Bamboo End Store"
         onActivated: reason => { if (reason === Platform.SystemTrayIcon.Trigger) root.toggleVisible() }
 
         menu: Platform.Menu {
             Platform.MenuItem { text: Tr.t("Open Store"); onTriggered: root.bringToFront() }
             Platform.MenuItem { separator: true }
-            Platform.MenuItem { text: Tr.t("Update System"); onTriggered: root.askUpdate() }
+            Platform.MenuItem { visible: root.pending.checked === true; enabled: false; text: root.updatesText }
+            Platform.MenuItem {
+                text: root.pendingCount > 0 ? Tr.f("Update System (%s)", root.pendingCount) : Tr.t("Update System")
+                onTriggered: root.askUpdate()
+            }
+            Platform.MenuItem { text: Tr.t("Check now"); onTriggered: appBackend.checkUpdates() }
             Platform.MenuItem { separator: true }
             Platform.MenuItem { text: Tr.t("Quit"); onTriggered: Qt.quit() }
         }
@@ -98,6 +117,25 @@ ApplicationWindow {
     // Owns the settings JSON for the whole app; each screen has its own Backend for data.
     Backend { id: appBackend }
 
+    // The background check: once shortly after start, then every `update_check_hours`. A check only reads
+    // (checkupdates, flatpak remote-ls, npm outdated); it never installs and never asks for a password.
+    Timer {
+        id: firstCheck
+        interval: 20000
+        running: !!root.appSettings.check_updates
+        onTriggered: appBackend.checkUpdates()
+    }
+    Timer {
+        interval: Math.max(1, root.appSettings.update_check_hours || 6) * 3600000
+        repeat: true
+        running: !!root.appSettings.check_updates
+        onTriggered: appBackend.checkUpdates()
+    }
+    Connections {
+        target: appBackend
+        // After an update (or an install) the count changes: look again.
+        function onOperationFinished(name, action, code) { if (root.appSettings.check_updates) appBackend.checkUpdates() }
+    }
     RowLayout {
         anchors.fill: parent
         spacing: 0
@@ -177,7 +215,8 @@ ApplicationWindow {
                 // An action, not a page: runs the full system update in a terminal.
                 NavItem {
                     Layout.fillWidth: true
-                    text: appBackend.busy ? Tr.t("Running updates") : Tr.t("Update System")
+                    text: appBackend.busy ? Tr.t("Running updates")
+                        : root.pendingCount > 0 ? Tr.f("Update System (%s)", root.pendingCount) : Tr.t("Update System")
                     rune: "update"
                     delay: 240
                     busy: appBackend.busy

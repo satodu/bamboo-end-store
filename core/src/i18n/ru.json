@@ -344,5 +344,17 @@
   "Support EndeavourOS": "Поддержите EndeavourOS",
   "Help the project": "Помогите проекту",
   "EndeavourOS is free and kept alive by volunteers and donations. This store would not exist without it.": "EndeavourOS бесплатен и живёт благодаря добровольцам и пожертвованиям. Без него этого магазина не было бы.",
-  "Donate": "Пожертвовать"
+  "Donate": "Пожертвовать",
+  "console_updating_npm": "Обновление пакетов npm...",
+  "npm Integration": "Интеграция с npm",
+  "Manage npm packages installed globally (npm install -g).": "Управляйте глобально установленными пакетами npm (npm install -g).",
+  "Check for updates": "Проверять обновления",
+  "Looks now and then and marks the tray icon. Nothing is installed until you choose to update.": "Время от времени проверяет и отмечает значок в трее. Ничего не устанавливается, пока вы сами не решите обновить.",
+  "Check every": "Проверять каждые",
+  "%s hours": "%s ч",
+  "Check now": "Проверить сейчас",
+  "%s updates available": "Доступно обновлений: %s",
+  "System is up to date": "Система обновлена",
+  "Update System (%s)": "Обновить систему (%s)",
+  "Opens a terminal and updates the official packages, the AUR, Flatpak and npm, then offers to remove orphaned packages. It asks for your password.": "Открывает терминал и обновляет официальные пакеты, AUR, Flatpak и npm, затем предлагает удалить осиротевшие пакеты. Запрашивает пароль."
 }

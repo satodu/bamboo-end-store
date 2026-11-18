@@ -12,7 +12,7 @@ use crate::{AurManager, Details, FlatpakManager, Package, PacmanManager, Package
 const SEARCH_TTL: Duration = Duration::from_secs(300);
 const DETAILS_TTL: Duration = Duration::from_secs(600);
 
-/// Which repositories a result list shows. `Official` is everything that is neither AUR nor Flatpak.
+/// Which repositories a result list shows. `Official` is the pacman repositories only.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum RepoFilter {
     #[default]
@@ -20,6 +20,7 @@ pub enum RepoFilter {
     Official,
     Aur,
     Flatpak,
+    Npm,
 }
 
 impl RepoFilter {
@@ -28,6 +29,7 @@ impl RepoFilter {
             "official" => Self::Official,
             "aur" => Self::Aur,
             "flatpak" => Self::Flatpak,
+            "npm" => Self::Npm,
             _ => Self::All,
         }
     }
@@ -38,6 +40,7 @@ impl RepoFilter {
             Self::Official => p.source == PackageSource::Pacman,
             Self::Aur => p.source == PackageSource::Aur,
             Self::Flatpak => p.source == PackageSource::Flatpak,
+            Self::Npm => p.source == PackageSource::Npm,
         }
     }
 }
@@ -75,6 +78,7 @@ pub struct Counts {
     pub official: usize,
     pub aur: usize,
     pub flatpak: usize,
+    pub npm: usize,
 }
 
 /// One page of a filtered, sorted list.
@@ -99,6 +103,7 @@ pub fn apply_filter(all: &[Package], filter: Filter, page: usize, limit: usize) 
         official: count(RepoFilter::Official),
         aur: count(RepoFilter::Aur),
         flatpak: count(RepoFilter::Flatpak),
+        npm: count(RepoFilter::Npm),
     };
     let mut kept: Vec<&Package> = all.iter().filter(|p| filter.repo.matches(p)).collect();
     if filter.sort == SortBy::Name {
@@ -138,6 +143,7 @@ pub fn console_commands(name: &str, source: PackageSource, helper: crate::aur::H
             (format!("{tool} -S {n}"), format!("sudo pacman -Rns {n}"))
         }
         PackageSource::Flatpak => (format!("flatpak install flathub {n}"), format!("flatpak uninstall {n}")),
+        PackageSource::Npm => (format!("npm install -g {n}"), format!("npm uninstall -g {n}")),
         PackageSource::Custom => (String::new(), String::new()),
     };
     ConsoleCommands { install, remove }
@@ -175,6 +181,7 @@ pub struct Store {
     pacman: Box<dyn PackageManager>,
     aur: Box<dyn PackageManager>,
     flatpak: Box<dyn PackageManager>,
+    npm: Box<dyn PackageManager>,
     custom: Box<dyn PackageManager>,
     settings: Mutex<Settings>,
     searches: TtlCache<Vec<Package>>,
@@ -193,6 +200,7 @@ impl Store {
             Box::new(PacmanManager),
             Box::new(AurManager::default()),
             Box::new(FlatpakManager),
+            Box::new(crate::NpmManager),
             settings,
         )
     }
@@ -201,12 +209,14 @@ impl Store {
         pacman: Box<dyn PackageManager>,
         aur: Box<dyn PackageManager>,
         flatpak: Box<dyn PackageManager>,
+        npm: Box<dyn PackageManager>,
         settings: Settings,
     ) -> Self {
         Self {
             pacman,
             aur,
             flatpak,
+            npm,
             custom: Box::new(crate::bamboo::CustomManager),
             settings: Mutex::new(settings),
             searches: TtlCache::new(),
@@ -237,11 +247,12 @@ impl Store {
             PackageSource::Pacman => &*self.pacman,
             PackageSource::Aur => &*self.aur,
             PackageSource::Flatpak => &*self.flatpak,
+            PackageSource::Npm => &*self.npm,
             PackageSource::Custom => &*self.custom,
         }
     }
 
-    /// Official repos, then AUR, then Flatpak, honouring the enable toggles. The sources run in
+    /// Official repos, then AUR, Flatpak and npm, honouring the enable toggles. The sources run in
     /// parallel; the full result is cached for 5 minutes.
     pub fn search(&self, query: &str) -> Vec<Package> {
         let query = query.trim();
@@ -249,7 +260,7 @@ impl Store {
             return Vec::new();
         }
         let s = self.settings();
-        let key = format!("{query}|aur={}|flatpak={}", s.enable_aur, s.enable_flatpak);
+        let key = format!("{query}|aur={}|flatpak={}|npm={}", s.enable_aur, s.enable_flatpak, s.enable_npm);
 
         self.searches.remember(&key, SEARCH_TTL, || {
             let mut sources = vec![PackageSource::Pacman];
@@ -258,6 +269,9 @@ impl Store {
             }
             if s.enable_flatpak {
                 sources.push(PackageSource::Flatpak);
+            }
+            if s.enable_npm {
+                sources.push(PackageSource::Npm);
             }
             std::thread::scope(|scope| {
                 let handles: Vec<_> = sources
@@ -275,7 +289,7 @@ impl Store {
         apply_filter(&all, filter, page, self.settings().search_limit as usize)
     }
 
-    /// Installed packages: pacman and AUR (foreign) plus Flatpaks, cached for a minute. A non-empty
+    /// Installed packages: pacman and AUR (foreign) plus Flatpaks and npm, cached for a minute. A non-empty
     /// `text` keeps names containing it (case-insensitive), then `filter` is applied.
     pub fn installed_page(&self, text: &str, page: usize, filter: Filter) -> Page {
         let all = self.installed.remember("all", Duration::from_secs(60), || self.collect_installed());
@@ -290,6 +304,9 @@ impl Store {
     fn collect_installed(&self) -> Vec<Package> {
         let mut all = self.pacman.installed();
         all.extend(self.flatpak.installed());
+        if self.settings().enable_npm {
+            all.extend(self.npm.installed());
+        }
         all
     }
 
@@ -422,6 +439,11 @@ impl Store {
         outcome
     }
 
+    /// Look for updates in the enabled sources (read-only; nothing is installed). Blocks: call from a worker thread.
+    pub fn check_updates(&self) -> crate::updates::Pending {
+        crate::updates::check(&self.settings())
+    }
+
     pub fn flatpak_status(&self) -> FlatpakStatus {
         FlatpakManager.status()
     }
@@ -429,7 +451,7 @@ impl Store {
     /// Full system update in a terminal: the distro updater or AUR helper, Flatpak, then orphans.
     pub fn update_system(&self) -> OpOutcome {
         let lang = crate::i18n::language_for(&self.settings().locale);
-        let command = crate::update::system_update_command(crate::aur::Helper::detect(), lang);
+        let command = crate::update::system_update_command(crate::aur::Helper::detect(), lang, self.settings().enable_npm);
         self.run_command(&command, UserState::Updating, "System Update")
     }
 
@@ -455,6 +477,7 @@ mod tests {
             match self.0 {
                 "aur" => PackageSource::Aur,
                 "flatpak" => PackageSource::Flatpak,
+                "npm" => PackageSource::Npm,
                 _ => PackageSource::Pacman,
             }
         }
@@ -494,7 +517,7 @@ mod tests {
     }
 
     fn store(settings: Settings) -> Store {
-        Store::with_managers(Box::new(Fake("pacman", 2)), Box::new(Fake("aur", 2)), Box::new(Fake("flatpak", 2)), settings)
+        Store::with_managers(Box::new(Fake("pacman", 2)), Box::new(Fake("aur", 2)), Box::new(Fake("flatpak", 2)), Box::new(Fake("npm", 2)), settings)
     }
 
     fn names(p: &[Package]) -> Vec<&str> {
@@ -562,7 +585,7 @@ mod tests {
     fn counts_ignore_the_repo_filter() {
         let all = mixed();
         let p = apply_filter(&all, Filter { repo: RepoFilter::Aur, sort: SortBy::Relevance }, 1, 50);
-        assert_eq!(p.counts, Counts { all: 5, official: 2, aur: 1, flatpak: 2 });
+        assert_eq!(p.counts, Counts { all: 5, official: 2, aur: 1, flatpak: 2, npm: 0 });
         assert_eq!(p.total, 1);
     }
 
@@ -631,7 +654,7 @@ mod tests {
 
     #[test]
     fn category_packages_fall_back_to_exact_aur_matches() {
-        let st = Store::with_managers(Box::new(CatFake(false)), Box::new(CatFake(true)), Box::new(CatFake(false)), Settings::default());
+        let st = Store::with_managers(Box::new(CatFake(false)), Box::new(CatFake(true)), Box::new(CatFake(false)), Box::new(CatFake(false)), Settings::default());
         // seed the category list so the test never touches the network
         st.categories.put(
             "all",

@@ -1,0 +1,13 @@
+{
+  "name": "lib",
+  "dependencies": {
+    "@scope/tool": {
+      "version": "0.1.38",
+      "overridden": false
+    },
+    "typescript": {
+      "version": "5.4.5",
+      "overridden": false
+    }
+  }
+}

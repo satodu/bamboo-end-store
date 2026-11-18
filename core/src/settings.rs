@@ -12,6 +12,12 @@ use serde_json::{Map, Value};
 pub struct Settings {
     pub enable_aur: bool,
     pub enable_flatpak: bool,
+    /// Search, list and manage npm packages installed globally.
+    pub enable_npm: bool,
+    /// Look for updates in the background and mark the tray icon when there are some. Never installs them.
+    pub check_updates: bool,
+    /// Hours between two background checks.
+    pub update_check_hours: u32,
     pub search_limit: u32,
     pub appimage_path: String,
     pub locale: String,
@@ -62,6 +68,9 @@ impl Default for Settings {
         Self {
             enable_aur: true,
             enable_flatpak: false,
+            enable_npm: false,
+            check_updates: true,
+            update_check_hours: 6,
             search_limit: 50,
             appimage_path: String::new(),
             locale: "system".into(),

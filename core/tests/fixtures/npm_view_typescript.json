@@ -1,0 +1,11 @@
+{
+  "name": "typescript",
+  "version": "5.4.5",
+  "description": "TypeScript is a language for application scale JavaScript development",
+  "license": "Apache-2.0",
+  "homepage": "https://www.typescriptlang.org/",
+  "dist-tags": {"latest": "5.4.5", "beta": "5.5.0-beta"},
+  "maintainers": ["alice <alice@example.org>", "bob <bob@example.org>"],
+  "dist": {"unpackedSize": 64000000},
+  "time": {"modified": "2024-04-02T10:11:12.000Z"}
+}

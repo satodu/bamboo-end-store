@@ -1,0 +1,6 @@
+{
+  "error": {
+    "code": "E401",
+    "summary": "Unable to authenticate, your authentication token seems to be invalid."
+  }
+}

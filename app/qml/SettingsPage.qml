@@ -207,6 +207,14 @@ Item {
                     }
                 }
                 SettingRow {
+                    title: Tr.t("npm Integration")
+                    description: Tr.t("Manage npm packages installed globally (npm install -g).")
+                    Toggle {
+                        checked: root.s.enable_npm
+                        onToggled: v => { root.set("enable_npm", v); backend.checkUpdates() }
+                    }
+                }
+                SettingRow {
                     title: Tr.t("Search Results Limit")
                     description: Tr.t("Packages per page; lower is faster.")
                     Select {
@@ -449,6 +457,24 @@ Item {
                 title: Tr.t("Maintenance")
                 rune: "loading"
                 delay: 280
+                SettingRow {
+                    title: Tr.t("Check for updates")
+                    description: Tr.t("Looks now and then and marks the tray icon. Nothing is installed until you choose to update.")
+                    Toggle {
+                        checked: root.s.check_updates
+                        onToggled: v => { root.set("check_updates", v); if (v) backend.checkUpdates() }
+                    }
+                }
+                SettingRow {
+                    visible: root.s.check_updates
+                    title: Tr.t("Check every")
+                    Select {
+                        width: 160
+                        options: [1, 3, 6, 12, 24].map(h => ({ label: Tr.f("%s hours", h), value: h }))
+                        current: root.s.update_check_hours
+                        onActivated: v => root.set("update_check_hours", v)
+                    }
+                }
                 SettingRow {
                     title: Tr.t("Clear Cache")
                     description: Tr.t("Clear all cached package details, searches and lists.")

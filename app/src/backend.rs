@@ -33,6 +33,8 @@ pub mod qobject {
         #[qproperty(QString, settings)]
         /// JSON `{installed, flathub}`: is the flatpak binary there, and is the Flathub remote set up.
         #[qproperty(QString, flatpak)]
+        /// JSON `{checked, pacman, aur, flatpak, npm, total}`: updates waiting, from the last `checkUpdates`.
+        #[qproperty(QString, updates)]
         /// JSON list of curated categories `{name, slug, description_key, packages}`.
         #[qproperty(QString, categories)]
         /// JSON list of official EndeavourOS tools found on this system (empty elsewhere).
@@ -91,6 +93,11 @@ pub mod qobject {
         #[qinvokable]
         #[cxx_name = "checkFlatpak"]
         fn check_flatpak(self: Pin<&mut Backend>);
+
+        /// Look for updates in the enabled sources, read-only (never installs); fills `updates`.
+        #[qinvokable]
+        #[cxx_name = "checkUpdates"]
+        fn check_updates(self: Pin<&mut Backend>);
 
         /// Run the full system update in a terminal; `operationFinished("System Update", "updated", code)`.
         #[qinvokable]
@@ -214,6 +221,7 @@ pub struct BackendRust {
     details: QString,
     settings: QString,
     flatpak: QString,
+    updates: QString,
     categories: QString,
     essentials: QString,
     news: QString,
@@ -262,6 +270,7 @@ impl Default for BackendRust {
             details: QString::from("null"),
             settings: settings_json(&store),
             flatpak: QString::from("{}"),
+            updates: QString::from("{\"checked\":false,\"total\":0}"),
             categories: QString::from("[]"),
             essentials: QString::from("[]"),
             news: QString::from("[]"),
@@ -462,6 +471,19 @@ impl qobject::Backend {
         std::thread::spawn(move || {
             let json = serde_json::to_string(&store.flatpak_status()).unwrap_or_else(|_| "{}".into());
             let _ = thread.queue(move |mut this| this.as_mut().set_flatpak(QString::from(&json)));
+        });
+    }
+
+    fn check_updates(self: Pin<&mut Self>) {
+        let store = self.rust().store.clone();
+        let thread = self.qt_thread();
+        std::thread::spawn(move || {
+            // Not while a terminal job is running: the package databases are in use.
+            if store.state.is_busy() {
+                return;
+            }
+            let json = serde_json::to_string(&store.check_updates()).unwrap_or_else(|_| "{}".into());
+            let _ = thread.queue(move |mut this| this.as_mut().set_updates(QString::from(&json)));
         });
     }
 

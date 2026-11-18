@@ -12,7 +12,7 @@ fn message(lang: &str, key: &str, helper: &str) -> String {
 /// The shell script: EndeavourOS' `eos-update` when present, else a full upgrade with the AUR
 /// helper (or plain `sudo pacman -Syu`), then Flatpak, then orphaned packages. Each step prints a
 /// translated heading. Orphan removal is left to pacman's own confirmation prompt.
-pub fn system_update_command(helper: Helper, lang: &str) -> String {
+pub fn system_update_command(helper: Helper, lang: &str, npm: bool) -> String {
     let (helper_name, upgrade) = match helper {
         Helper::Paru => ("paru", "paru -Syu"),
         Helper::Yay => ("yay", "yay -Syu"),
@@ -25,9 +25,16 @@ pub fn system_update_command(helper: Helper, lang: &str) -> String {
         _ => format!("{}; {helper_name} -Sua; ", say("console_updating_aur")),
     };
 
+    let npm_step = if npm {
+        format!("if command -v npm >/dev/null; then {}; {}; fi; ", say("console_updating_npm"), crate::npm::UPDATE_ALL_COMMAND)
+    } else {
+        String::new()
+    };
+
     format!(
         "if command -v eos-update >/dev/null; then {eos}; eos-update; {aur_step}else {sys}; {upgrade}; fi; \
          if command -v flatpak >/dev/null; then {flat}; flatpak update; fi; \
+         {npm_step}\
          orphans=$(pacman -Qtdq); \
          if [ -n \"$orphans\" ]; then {orph}; sudo pacman -Rns $orphans; else {none}; fi",
         eos = say("console_starting_eos_update"),
@@ -44,7 +51,7 @@ mod tests {
 
     #[test]
     fn uses_the_aur_helper_when_there_is_one() {
-        let c = system_update_command(Helper::Paru, "en");
+        let c = system_update_command(Helper::Paru, "en", false);
         assert!(c.contains("paru -Syu"));
         assert!(c.contains("paru -Sua"), "eos-update path updates the AUR separately");
         assert!(c.contains("eos-update; "));
@@ -54,8 +61,16 @@ mod tests {
     }
 
     #[test]
+    fn npm_step_only_when_asked() {
+        assert!(!system_update_command(Helper::Paru, "en", false).contains("npm"));
+        let c = system_update_command(Helper::Paru, "en", true);
+        assert!(c.contains("npm update -g"));
+        assert!(c.contains("Updating npm packages..."));
+    }
+
+    #[test]
     fn without_a_helper_pacman_gets_sudo() {
-        let c = system_update_command(Helper::None, "en");
+        let c = system_update_command(Helper::None, "en", false);
         assert!(c.contains("sudo pacman -Syu"));
         assert!(!c.contains("-Sua"), "no AUR step without a helper");
         assert!(!c.contains(" yay "));
@@ -63,7 +78,7 @@ mod tests {
 
     #[test]
     fn headings_follow_the_language() {
-        let c = system_update_command(Helper::Yay, "pt");
+        let c = system_update_command(Helper::Yay, "pt", false);
         assert!(c.contains("Iniciando atualização do sistema via yay..."));
         assert!(c.contains("Removendo pacotes órfãos..."));
         assert!(!c.contains("{helper}"), "placeholders are filled in");
@@ -72,7 +87,7 @@ mod tests {
     #[test]
     fn is_valid_shell() {
         for helper in [Helper::Paru, Helper::Yay, Helper::None] {
-            let c = system_update_command(helper, "ru");
+            let c = system_update_command(helper, "ru", true);
             let ok = std::process::Command::new("bash").arg("-n").arg("-c").arg(&c).status().unwrap().success();
             assert!(ok, "bash -n rejected the script for {helper:?}: {c}");
         }

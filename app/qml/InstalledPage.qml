@@ -3,7 +3,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import io.bamboo.store
 
-// Everything installed: pacman, AUR (foreign) and Flatpak.
+// Everything installed: pacman, AUR (foreign), Flatpak and npm globals.
 Item {
     id: root
 
@@ -85,6 +85,7 @@ Item {
                 facets: JSON.parse(backend.facets)
                 aur: root.appSettings.enable_aur !== false
                 flatpak: !!root.appSettings.enable_flatpak
+                npm: !!root.appSettings.enable_npm
                 onRepoPicked: v => { backend.repo = v; root.page = 1; root.reload() }
                 onSortPicked: v => { backend.sort = v; root.page = 1; root.reload() }
             }

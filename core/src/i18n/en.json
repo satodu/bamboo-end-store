@@ -344,5 +344,17 @@
   "Support EndeavourOS": "Support EndeavourOS",
   "Help the project": "Help the project",
   "EndeavourOS is free and kept alive by volunteers and donations. This store would not exist without it.": "EndeavourOS is free and kept alive by volunteers and donations. This store would not exist without it.",
-  "Donate": "Donate"
+  "Donate": "Donate",
+  "console_updating_npm": "Updating npm packages...",
+  "npm Integration": "npm Integration",
+  "Manage npm packages installed globally (npm install -g).": "Manage npm packages installed globally (npm install -g).",
+  "Check for updates": "Check for updates",
+  "Looks now and then and marks the tray icon. Nothing is installed until you choose to update.": "Looks now and then and marks the tray icon. Nothing is installed until you choose to update.",
+  "Check every": "Check every",
+  "%s hours": "%s hours",
+  "Check now": "Check now",
+  "%s updates available": "%s updates available",
+  "System is up to date": "System is up to date",
+  "Update System (%s)": "Update System (%s)",
+  "Opens a terminal and updates the official packages, the AUR, Flatpak and npm, then offers to remove orphaned packages. It asks for your password.": "Opens a terminal and updates the official packages, the AUR, Flatpak and npm, then offers to remove orphaned packages. It asks for your password."
 }

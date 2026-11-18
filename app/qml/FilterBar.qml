@@ -7,10 +7,11 @@ Item {
 
     property string repo: "all"
     property string sort: "relevance"
-    /// {all, official, aur, flatpak} counts from the last search; {} while there is no query.
+    /// {all, official, aur, flatpak, npm} counts from the last search; {} while there is no query.
     property var facets: ({})
     property bool aur: true
     property bool flatpak: true
+    property bool npm: false
 
     signal repoPicked(string value)
     signal sortPicked(string value)
@@ -27,6 +28,7 @@ Item {
         ]
         if (aur) o.push({ label: "AUR" + count("aur"), value: "aur" })
         if (flatpak) o.push({ label: Tr.t("Flatpaks") + count("flatpak"), value: "flatpak" })
+        if (npm) o.push({ label: "npm" + count("npm"), value: "npm" })
         return o
     }
 

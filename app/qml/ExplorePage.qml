@@ -51,7 +51,8 @@ Item {
         function onAppSettingsChanged() {
             backend.loadNews()
             if ((backend.repo === "aur" && !root.appSettings.enable_aur)
-                    || (backend.repo === "flatpak" && !root.appSettings.enable_flatpak)) {
+                    || (backend.repo === "flatpak" && !root.appSettings.enable_flatpak)
+                    || (backend.repo === "npm" && !root.appSettings.enable_npm)) {
                 backend.repo = "all"
             }
             root.research()
@@ -161,6 +162,7 @@ Item {
                 facets: JSON.parse(backend.facets)
                 aur: root.appSettings.enable_aur !== false
                 flatpak: !!root.appSettings.enable_flatpak
+                npm: !!root.appSettings.enable_npm
                 onRepoPicked: v => { backend.repo = v; root.research() }
                 onSortPicked: v => { backend.sort = v; root.research() }
             }

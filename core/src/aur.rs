@@ -34,7 +34,7 @@ impl Helper {
         }
     }
 
-    fn bin(self) -> Option<&'static str> {
+    pub(crate) fn bin(self) -> Option<&'static str> {
         match self {
             Self::Paru => Some("paru"),
             Self::Yay => Some("yay"),
